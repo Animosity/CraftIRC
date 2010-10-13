@@ -1,0 +1,10 @@
+bin
+META-INF
+CraftIRC.jar
+MANIFEST.MF
+pircbot.jar
+Minecraft_Mod.jar
+Thumbs.db
+CraftIRC.class
+CraftIRCListener.class
+Minebot.class
