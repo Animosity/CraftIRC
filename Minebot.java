@@ -9,10 +9,7 @@ import java.util.logging.Logger;
 import java.util.Properties;
 import org.jibble.pircbot.*;
 
-/**
- * @author Animosity
- *
- */
+
 public class Minebot extends PircBot 
 {
     	private static Minebot instance = null;
