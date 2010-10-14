@@ -215,17 +215,17 @@ public class Minebot extends PircBot
 		
 			log.info(CraftIRC.NAME + " v" + CraftIRC.VERSION + " loading.");
 
-         		if (this.irc_server_port == null || this.irc_server_port.equals("")) 
-			{
+     		if (this.irc_server_port == null || this.irc_server_port.equals("")) 
+     		{
 				if (this.irc_server_ssl) 
 				{
 					this.irc_server_port = "6697";
 				} 
 				else 
 				{
-                    			this.irc_server_port = "6667";
-                		}
-            		}
+                    this.irc_server_port = "6667";
+                }
+        	}
 
 			try {
 				this.setAutoNickChange(true);
@@ -238,25 +238,25 @@ public class Minebot extends PircBot
 	                		this.connect(this.irc_server,
 	                        		Integer.parseInt(this.irc_server_port),
 	                        		this.irc_server_pass, new TrustingSSLSocketFactory());
-	            		} 
+	            } 
 				else 
-	           		{
-	                		log.info(CraftIRC.NAME + " - Connecting to " 
-	                   			+ this.irc_server + ":"
-	                        		+ this.irc_server_port);
-	                		this.connect(this.irc_server,
-	                        		Integer.parseInt(this.irc_server_port),
-	                        		this.irc_server_pass);
-	            		}
+           		{
+            		log.info(CraftIRC.NAME + " - Connecting to " 
+               			+ this.irc_server + ":"
+                    	+ this.irc_server_port);
+            		this.connect(this.irc_server,
+                		Integer.parseInt(this.irc_server_port),
+                		this.irc_server_pass);
+            	}
 
-	            		if (this.isConnected()) 
-	            		{
-	                		log.info(CraftIRC.NAME + " - Connected");
-	            		} 
-	            		else 
-	            		{
-	                		log.info(CraftIRC.NAME + " - Connection failed!");
-	            		}
+        		if (this.isConnected()) 
+        		{
+            		log.info(CraftIRC.NAME + " - Connected");
+        		} 
+        		else 
+        		{
+            		log.info(CraftIRC.NAME + " - Connection failed!");
+        		}
 
 				this.authenticateBot(); // will always GHOST own registered nick if auth method is nickserv
 				
@@ -267,7 +267,6 @@ public class Minebot extends PircBot
 				
 				
 			} catch (NumberFormatException e) {
-				
 				e.printStackTrace();
 			} catch (NickAlreadyInUseException e) {
 				System.out.println("my handle is taken!");
@@ -333,7 +332,6 @@ public class Minebot extends PircBot
 		else 
 		{ 
 			this.joinChannel(irc_admin_channel, irc_admin_channel_pass); 
-
 		}
 		
 	}
@@ -372,7 +370,6 @@ public class Minebot extends PircBot
 	{
 		if (channel.equalsIgnoreCase(this.irc_channel)) { this.irc_users_main = this.getUsers(channel); }
 		if (channel.equalsIgnoreCase(this.irc_admin_channel)) { this.irc_users_admin = this.getUsers(channel); }
-	
 	}
 		
 	// Update users
@@ -542,6 +539,7 @@ public class Minebot extends PircBot
 	
 	public void onDisconnect()
 	{
+		
 	    // Maybe check if disabled, and if not, start(); depending on a flag set in the settings?
 	}
 	
