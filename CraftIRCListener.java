@@ -64,7 +64,7 @@ public class CraftIRCListener extends PluginListener
 
 
     
-    public boolean onServerCommand(String[] split)
+    public boolean onConsoleCommand(String[] split)
     {
     	if (split[0].equalsIgnoreCase("craftirc") && (split.length >= 2))
     	{
