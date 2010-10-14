@@ -3,6 +3,7 @@ import java.util.logging.Logger;
 /**
  * @author Animosity
  * With various contributions and improvements by ricin
+ * 
  */
 
 public class CraftIRC extends Plugin {
