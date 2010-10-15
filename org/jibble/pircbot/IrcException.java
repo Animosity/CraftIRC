@@ -1,5 +1,5 @@
 /* 
-Copyright Paul James Mutton, 2001-2007, http://www.jibble.org/
+Copyright Paul James Mutton, 2001-2009, http://www.jibble.org/
 
 This file is part of PircBot.
 
@@ -19,17 +19,11 @@ package org.jibble.pircbot;
  * @since   0.9
  * @author  Paul James Mutton,
  *          <a href="http://www.jibble.org/">http://www.jibble.org/</a>
- * @version    1.4.6 (Build time: Wed Apr 11 19:20:59 2007)
+ * @version    1.5.0 (Build time: Mon Dec 14 20:07:17 2009)
  */
 public class IrcException extends Exception {
     
     /**
-	 * @author red/Lz0
-	 * @since Jul 17, 2008 11:27:49 AM
-	 */
-	private static final long serialVersionUID = 0x1L;
-
-	/**
      * Constructs a new IrcException.
      *
      * @param e The error message to report.

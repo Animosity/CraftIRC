@@ -1,5 +1,5 @@
 /* 
-Copyright Paul James Mutton, 2001-2007, http://www.jibble.org/
+Copyright Paul James Mutton, 2001-2009, http://www.jibble.org/
 
 This file is part of PircBot.
 
@@ -14,8 +14,12 @@ found at http://www.jibble.org/licenses/
 
 package org.jibble.pircbot;
 
-import java.net.*;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 /**
  * A simple IdentServer (also know as "The Identification Protocol").
@@ -39,7 +43,7 @@ import java.io.*;
  * @since   0.9c
  * @author  Paul James Mutton,
  *          <a href="http://www.jibble.org/">http://www.jibble.org/</a>
- * @version    1.4.6 (Build time: Wed Apr 11 19:20:59 2007)
+ * @version    1.5.0 (Build time: Mon Dec 14 20:07:17 2009)
  */
 public class IdentServer extends Thread {
     

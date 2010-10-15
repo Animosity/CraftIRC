@@ -14,9 +14,26 @@ found at http://www.jibble.org/licenses/
 
 package org.jibble.pircbot;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.net.SocketFactory;
 
 /**
@@ -61,13 +78,15 @@ public abstract class PircBot implements ReplyConstants {
      * The definitive version number of this release of PircBot.
      * (Note: Change this before automatically building releases)
      */
-    public static final String VERSION = "1.4.6";
+    public static final String VERSION = "1.5.0-ssl";
     
     
     private static final int OP_ADD = 1;
     private static final int OP_REMOVE = 2;
     private static final int VOICE_ADD = 3;
     private static final int VOICE_REMOVE = 4;
+    
+    private static final String PREFIX_DEF = "PREFIX=";
     private SocketFactory _socketFactory = null;   
     
     /**
@@ -215,9 +234,31 @@ public abstract class PircBot implements ReplyConstants {
             if (secondSpace >= 0) {
                 String code = line.substring(firstSpace + 1, secondSpace);
            
-                if (code.equals("004")) {
-                    // We're connected to the server.
-                    break;
+                if (code.equals("005"))
+                {
+                    // Process RPL_ISUPPORT/RPL_PROTOCTL
+                    String[] split = line.split("\\s+");
+                    
+                    for(int i=0; i<split.length;i++)
+                    {
+                        if (split[i].startsWith(PREFIX_DEF))
+                        {
+                            String prefixLine = split[i].substring(split[i].indexOf(PREFIX_DEF) + PREFIX_DEF.length());
+                            Pattern pat = Pattern.compile("\\(([A-Za-z]+)\\)(.*+)");
+                            Matcher matches = pat.matcher(prefixLine);
+                            if(matches.find())
+                            {
+                                setSupportedModes(matches.group(1));
+                                setSupportedPrefixes(matches.group(2));
+                            }
+                       }
+                    }
+                }
+                else if (code.equals("251")) {
+                        // RPL_LUSERCLIENT 
+                        // Connected ... 
+                        // TODO: Check if this is OK for various IRCd implementations.
+                        break; // Must break!
                 }
                 else if (code.equals("433")) {
                     if (_autoNickChange) {
@@ -230,6 +271,9 @@ public abstract class PircBot implements ReplyConstants {
                         _inputThread = null;
                         throw new NickAlreadyInUseException(line);
                     }
+                }
+                else if (code.equals("439")) {
+                    // No action required.
                 }
                 else if (code.startsWith("5") || code.startsWith("4")) {
                     socket.close();
@@ -1202,17 +1246,12 @@ public abstract class PircBot implements ReplyConstants {
             while (tokenizer.hasMoreTokens()) {
                 String nick = tokenizer.nextToken();
                 String prefix = "";
-                if (nick.startsWith("@")) {
-                    // User is an operator in this channel.
-                    prefix = "@";
-                }
-                else if (nick.startsWith("+")) {
-                    // User is voiced in this channel.
-                    prefix = "+";
-                }
-                else if (nick.startsWith(".")) {
-                    // Some wibbly status I've never seen before...
-                    prefix = ".";
+                
+                for(String pf : getSupportedPrefixes())
+                {
+                    if (nick.startsWith(pf)) {
+                        prefix = pf;
+                    }
                 }
                 nick = nick.substring(prefix.length());
                 this.addUser(channel, new User(prefix, nick));
@@ -2956,6 +2995,7 @@ public abstract class PircBot implements ReplyConstants {
                 users = new Hashtable();
                 _channels.put(channel, users);
             }
+            this.log("Adding " + user.toString() + " to " + channel);
             users.put(user, user);
         }
     }
@@ -3087,6 +3127,56 @@ public abstract class PircBot implements ReplyConstants {
     }
 
 
+    /**
+     * Sets the supported prefixes
+     *
+     * @param supportedPrefixes The supportedPrefixes to set.
+     */
+    private void setSupportedPrefixes(String prefixes)
+    {
+        this.supportedPrefixes.clear();
+        for(int x=0;x<prefixes.length();x++)
+         {
+             this.supportedPrefixes.add(String.valueOf(prefixes.charAt(x)));
+         }
+    }
+
+    /**
+     * Returns the supportedPrefixes.
+     *
+     * @return The supportedPrefixes.
+     */
+    public List<String> getSupportedPrefixes()
+    {
+        return supportedPrefixes;
+    }
+
+
+    /**
+     * Returns the supportedModes.
+     *
+     * @return The supportedModes.
+     */
+    public List<String> getSupportedModes()
+    {
+        return supportedModes;
+    }
+
+    /**
+     * Sets supportedModes to the value given.
+     *
+     * @param supportedModes The supportedModes to set.
+     */
+    private void setSupportedModes(String modes)
+    {
+        this.supportedModes.clear();
+        for(int x=0;x<modes.length();x++)
+         {
+             this.supportedModes.add(String.valueOf(modes.charAt(x)));
+         }
+    }
+
+
     // Connection stuff.
     private InputThread _inputThread = null;
     private OutputThread _outputThread = null;
@@ -3125,4 +3215,7 @@ public abstract class PircBot implements ReplyConstants {
     private String _finger = "You ought to be arrested for fingering a bot!";
     
     private String _channelPrefixes = "#&+!";
+    
+    private List<String> supportedPrefixes = new ArrayList<String>(Arrays.asList("@","+"));
+    private List<String> supportedModes = new ArrayList<String>(Arrays.asList("o","v"));
 }

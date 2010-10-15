@@ -1,5 +1,5 @@
 /* 
-Copyright Paul James Mutton, 2001-2007, http://www.jibble.org/
+Copyright Paul James Mutton, 2001-2009, http://www.jibble.org/
 
 This file is part of PircBot.
 
@@ -14,9 +14,13 @@ found at http://www.jibble.org/licenses/
 
 package org.jibble.pircbot;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InterruptedIOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.Socket;
+import java.util.StringTokenizer;
 
 /**
  * A Thread which reads lines from the IRC server.  It then
@@ -26,7 +30,7 @@ import java.util.*;
  *
  * @author  Paul James Mutton,
  *          <a href="http://www.jibble.org/">http://www.jibble.org/</a>
- * @version    1.4.6 (Build time: Wed Apr 11 19:20:59 2007)
+ * @version    1.5.0 (Build time: Mon Dec 14 20:07:17 2009)
  */
 public class InputThread extends Thread {
     

@@ -1,5 +1,5 @@
 /* 
-Copyright Paul James Mutton, 2001-2007, http://www.jibble.org/
+Copyright Paul James Mutton, 2001-2009, http://www.jibble.org/
 
 This file is part of PircBot.
 
@@ -14,7 +14,8 @@ found at http://www.jibble.org/licenses/
 
 package org.jibble.pircbot;
 
-import java.util.*;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 /**
  * This class is used to process DCC events from the server.
@@ -22,7 +23,7 @@ import java.util.*;
  * @since   1.2.0
  * @author  Paul James Mutton,
  *          <a href="http://www.jibble.org/">http://www.jibble.org/</a>
- * @version    1.4.6 (Build time: Wed Apr 11 19:20:59 2007)
+ * @version    1.5.0 (Build time: Mon Dec 14 20:07:17 2009)
  */
 public class DccManager {
     
@@ -86,7 +87,7 @@ public class DccManager {
         }
         else if (type.equals("ACCEPT")) {
             int port = Integer.parseInt(tokenizer.nextToken());
-            //long progress = Long.parseLong(tokenizer.nextToken());
+            long progress = Long.parseLong(tokenizer.nextToken());
             
             DccFileTransfer transfer = null;
             synchronized (_awaitingResume) {
@@ -146,6 +147,6 @@ public class DccManager {
     
     
     private PircBot _bot;
-    private Vector<DccFileTransfer> _awaitingResume = new Vector<DccFileTransfer>();
+    private Vector _awaitingResume = new Vector();
     
 }
