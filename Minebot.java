@@ -27,7 +27,7 @@ public class Minebot extends PircBot
 	String irc_channel, irc_channel_pass, irc_admin_channel, irc_admin_channel_pass;
 	Boolean irc_server_ssl = false;
 	
-	ArrayList<String> optn_main_req_prefixes = new ArrayList<String>(); // require IRC user have +/%/@/&/~
+	ArrayList<String> optn_main_req_prefixes = new ArrayList<String>(); // require IRC user have +/%/@/&/~ -- NOT IMPLEMENTED
 	ArrayList<String> optn_admin_req_prefixes = new ArrayList<String>(); // require IRC user (admin) have +/%/@/&/~
 
 	ArrayList<String> optn_main_send_events = new ArrayList<String>();  // which MC events to send to main IRC channel
@@ -350,8 +350,8 @@ public class Minebot extends PircBot
 		{ 
 			log.info(CraftIRC.NAME + " - " + this.getNick() + " not in main channel: " + this.irc_channel + ", disabling all events for channel");
 			this.optn_main_send_events.clear(); 
-			this.optn_send_all_IRC_chat.remove(this.irc_channel);
-			this.optn_send_all_MC_chat.remove(this.irc_channel);
+			this.optn_send_all_IRC_chat.remove("main");
+			this.optn_send_all_MC_chat.remove("main");
 			this.optn_main_req_prefixes.clear();
 			
 		} else { log.info(CraftIRC.NAME + " - Joined main channel: " + this.irc_channel); }
@@ -361,6 +361,7 @@ public class Minebot extends PircBot
 
 			log.info(CraftIRC.NAME + " - " + this.getNick() + " not in admin channel: " + this.irc_admin_channel + ", disabling all events for channel");
 			this.optn_admin_send_events.clear();
+			this.optn_send_all_IRC_chat.remove("admin");
 			this.optn_notify_admins_cmd = null;
 			this.optn_admin_req_prefixes.clear();
 
