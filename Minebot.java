@@ -22,7 +22,8 @@ public class Minebot extends PircBot {
 	String irc_relayed_user_color;
 	public String irc_handle;
 
-	String irc_server, irc_server_port, irc_server_pass;
+	String irc_server, irc_server_port, irc_server_pass, irc_server_login;
+
 	String irc_auth_method, irc_auth_username, irc_auth_pass;
 	String irc_channel, irc_channel_pass, irc_admin_channel, irc_admin_channel_pass;
 	Boolean irc_server_ssl = false;
@@ -86,7 +87,8 @@ public class Minebot extends PircBot {
 			irc_server_port = ircSettings.getProperty("irc-server-port");
 			irc_server_pass = ircSettings.getProperty("irc-server-password");
 			irc_server_ssl = Boolean.parseBoolean(ircSettings.getProperty("irc-server-ssl"));
-
+			irc_server_login = ircSettings.getProperty("irc-server-login");
+			
 			irc_auth_method = ircSettings.getProperty("irc-auth-method");
 			irc_auth_username = ircSettings.getProperty("irc-auth-username");
 			irc_auth_pass = ircSettings.getProperty("irc-auth-password");
@@ -145,10 +147,10 @@ public class Minebot extends PircBot {
 			this.irc_handle = "minecraftbot";
 		}
 		
-		
 		this.setName(this.irc_handle);
 		this.setFinger(CraftIRC.NAME + " v" + CraftIRC.VERSION);
-		this.setLogin(CraftIRC.NAME);
+		if (irc_server_login.isEmpty()) { this.setLogin(this.irc_handle); }
+        else { this.setLogin(this.irc_server_login); } 
 		this.setVersion(CraftIRC.NAME + " v" + CraftIRC.VERSION);
 
 		/*
@@ -166,6 +168,7 @@ public class Minebot extends PircBot {
 		}
 
 	}
+	
 
 	private void initColorMap() {
 		colorMap.put("black", Colors.Black);
