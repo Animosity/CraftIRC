@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Properties;
 import org.jibble.pircbot.*;
@@ -87,7 +88,7 @@ public class Minebot extends PircBot {
 			irc_server_port = ircSettings.getProperty("irc-server-port");
 			irc_server_pass = ircSettings.getProperty("irc-server-password");
 			irc_server_ssl = Boolean.parseBoolean(ircSettings.getProperty("irc-server-ssl"));
-			irc_server_login = ircSettings.getProperty("irc-server-login");
+			
 			
 			irc_auth_method = ircSettings.getProperty("irc-auth-method");
 			irc_auth_username = ircSettings.getProperty("irc-auth-username");
@@ -134,8 +135,18 @@ public class Minebot extends PircBot {
 			
 			if (ircSettings.containsKey("irc-console-commands")) {
 				this.optn_console_commands = this.getCSVArrayList(ircSettings.getProperty("irc-console-commands"));
-
+				
+			} else {
+				log.log(Level.WARNING, CraftIRC.NAME + " no irc-console-commands defined for the Admin IRC channel!");
 			}
+			
+			if (ircSettings.containsKey("irc-server-login") && !ircSettings.getProperty("irc-server-login").isEmpty()) {
+				irc_server_login = ircSettings.getProperty("irc-server-login");
+			} else { irc_server_login = this.irc_handle; }
+			
+			
+			
+			
 		}
 
 		catch (Exception e) {
@@ -149,8 +160,7 @@ public class Minebot extends PircBot {
 		
 		this.setName(this.irc_handle);
 		this.setFinger(CraftIRC.NAME + " v" + CraftIRC.VERSION);
-		if (irc_server_login.isEmpty()) { this.setLogin(this.irc_handle); }
-        else { this.setLogin(this.irc_server_login); } 
+		this.setLogin(this.irc_server_login);
 		this.setVersion(CraftIRC.NAME + " v" + CraftIRC.VERSION);
 
 		/*
@@ -411,85 +421,107 @@ public class Minebot extends PircBot {
 
 	// IRC commands parsed here
 	public void onMessage(String channel, String sender, String login, String hostname, String message) {
-		// Parse admin commands here
 		
-		if (channel.equalsIgnoreCase(this.irc_admin_channel) && userAuthorized(channel, sender)) {
+		String[] splitMessage = message.split(" ");
+		String command = this.combineSplit(1, splitMessage, " ");
+		try {
+			// Parse admin commands here
+			if (channel.equalsIgnoreCase(this.irc_admin_channel) && userAuthorized(channel, sender)) {
+
+					if ((message.startsWith(cmd_prefix + "console") || message.startsWith(cmd_prefix + "c")) 
+							&& splitMessage.length > 1 
+							&& this.optn_console_commands.contains(splitMessage[1])) 
+					{
+						log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: " + this.combineSplit(0, splitMessage, " "));
+						// Have to call parseConsoleCommand first if you want to use any of the hey0 console commands
+						this.sendNotice(sender, "Executed: " + command); // send notice first, in case you're disabling/reloading the bot
+						if (!etc.getInstance().parseConsoleCommand(command, etc.getMCServer())) {
+							etc.getServer().useConsoleCommand(command);
+						}
+						return;
+						
+					} 
+					
+					
+					// Aliased commands
+					else if ((message.startsWith(cmd_prefix + "kick") && this.optn_console_commands.contains("kick")) && splitMessage.length > 1) {
+						log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: " + this.combineSplit(0, splitMessage, " "));
+						etc.getServer().useConsoleCommand("kick " + this.combineSplit(1, splitMessage, " "));
+						this.sendNotice(sender, "Executed: " + command);
+						return;
+					}
+					
+					else if ((message.startsWith(cmd_prefix + "ban") && this.optn_console_commands.contains("ban")) && splitMessage.length > 1) {
+						log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: " + this.combineSplit(0, splitMessage, " "));
+						etc.getServer().useConsoleCommand("ban " + this.combineSplit(1, splitMessage, " "));
+						this.sendNotice(sender, "Executed: " + command);
+						return;
+					}
 		
-			String[] splitMessage = message.split(" ");
-			String command = this.combineSplit(1, splitMessage, " ");
+					else if (message.startsWith(cmd_prefix + "broadcast") && this.optn_console_commands.contains("say") && splitMessage.length > 1) {
+						log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: " + this.combineSplit(0, splitMessage, " "));
+						etc.getServer().useConsoleCommand("say " + this.combineSplit(1, splitMessage, " "));
+						this.sendNotice(sender, "Executed: " + command);
+						return;
+					}
+					
+					else if (message.startsWith(cmd_prefix + "botsay") && this.getChannelList().contains(this.irc_channel) && splitMessage.length > 1) {
+						this.sendMessage(this.irc_channel, command);
+						this.sendNotice(sender, "Sent to main channel: " + command);
+						return;
+					}
+					
+					else { this.sendNotice(sender, "Command not enabled"); }
+					
+		
+			} // end admin commands
+		
 			
-			if ((message.startsWith(cmd_prefix + "console") || message.startsWith(cmd_prefix + "c")) && splitMessage.length > 1) {
-				
-				log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: " + this.combineSplit(0, splitMessage, " "));
-				// Have to call parseConsoleCommand first if you want to use any of the hey0 console commands
-				if (!etc.getInstance().parseConsoleCommand(command, etc.getMCServer())) {
-					etc.getServer().useConsoleCommand(command);
-				}
-		
-				this.sendNotice(sender, "Executed: " + command);
-				return;
-				
-			}
-			
-			// Aliased commands
-			if ((message.startsWith(cmd_prefix + "kick") && this.optn_console_commands.contains("kick")) && splitMessage.length > 1) {
-				log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: " + this.combineSplit(0, splitMessage, " "));
-				etc.getServer().useConsoleCommand("kick " + this.combineSplit(1, splitMessage, " "));
-				this.sendNotice(sender, "Executed: " + command);
+			// begin public commands
+			if (message.startsWith(cmd_prefix + "players")) {
+				String playerlist = this.getPlayerList();
+				this.sendMessage(channel, playerlist); // set this to reply to the
+														// channel it was requested
+														// from
 				return;
 			}
-			
-			if ((message.startsWith(cmd_prefix + "ban") && this.optn_console_commands.contains("ban")) && splitMessage.length > 1) {
-				log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: " + this.combineSplit(0, splitMessage, " "));
-				etc.getServer().useConsoleCommand("ban " + this.combineSplit(1, splitMessage, " "));
-				this.sendNotice(sender, "Executed: " + command);
-				return;
-			}
-
-			if (message.startsWith(cmd_prefix + "broadcast") && this.optn_console_commands.contains("say") && splitMessage.length > 1) {
-				log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: " + this.combineSplit(0, splitMessage, " "));
-				etc.getServer().useConsoleCommand("say " + this.combineSplit(1, splitMessage, " "));
-				this.sendNotice(sender, "Executed: " + command);
-				return;
-			}
-
-		}
-
-		
-		if (message.startsWith(cmd_prefix + "players")) {
-			String playerlist = this.getPlayerList();
-			this.sendMessage(channel, playerlist); // set this to reply to the
-													// channel it was requested
-													// from
-			return;
-		}
-
-		if (channel.equalsIgnoreCase(this.irc_channel)
-				&& this.optn_send_all_IRC_chat.contains("main")) {
-			if (message.startsWith(cmd_prefix)) {
-				return;
-			} // don't send command messages to MC
-			msgToGame(sender, message);
-		}
-
-		else if (channel.equalsIgnoreCase(this.irc_admin_channel)
-				&& this.optn_send_all_IRC_chat.contains("admin")) {
-			if (message.startsWith(cmd_prefix)) { return; } // don't send command messages to MC
-			msgToGame(sender, message);
-		}
-
-		else {
-			if (message.startsWith(cmd_prefix + "say")) {
-				message = message.substring(message.indexOf(" ")).trim();
+	
+			if (channel.equalsIgnoreCase(this.irc_channel)
+					&& this.optn_send_all_IRC_chat.contains("main")) {
+				if (message.startsWith(cmd_prefix)) { return; } // don't send command messages to MC
 				msgToGame(sender, message);
-				this.sendNotice(sender, "Message sent to game");
+				return;
 			}
+	
+			else if (channel.equalsIgnoreCase(this.irc_admin_channel)
+					&& this.optn_send_all_IRC_chat.contains("admin")) {
+				if (message.startsWith(cmd_prefix)) { return; } // don't send command messages to MC
+				msgToGame(sender, message);
+				return;
+			}
+	
+			else if (message.startsWith(cmd_prefix + "say") || message.startsWith(cmd_prefix + "mc")) {
+				// message = message.substring(message.indexOf(" ")).trim();
+					if (splitMessage.length > 1) {
+						msgToGame(sender, command);
+						this.sendNotice(sender, "Message sent to game");
+						return;
+				}
+			}
+				
+	
+		
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.log(Level.SEVERE, CraftIRC.NAME + " - error while relaying IRC command: " + message);
 		}
 
 	}
 
 	// IRC user authorization check against prefixes
 	// Currently just for admin channel as first-order level of security
+	
+	// TODO: ricin's fix in Pircbot
 
 	public boolean userAuthorized(String channel, String user) {
 		if (channel.equalsIgnoreCase(this.irc_admin_channel)) {
@@ -549,6 +581,7 @@ public class Minebot extends PircBot {
 		}
 	}
 
+	// Combine string array with delimiter
 	public String combineSplit(int initialPos, String[] parts, String delimiter)
 			throws ArrayIndexOutOfBoundsException {
 		String result = "";
@@ -560,7 +593,19 @@ public class Minebot extends PircBot {
 		}
 		return result;
 	}
-
+	
+	
+	
+	public ArrayList<String> getChannelList() {
+	
+		try { return new ArrayList<String>(Arrays.asList(this.getChannels())); }
+		catch (Exception e) { 
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	
 	public void onDisconnect() {
 
 		// Maybe check if disabled, and if not, start(); depending on a flag set
