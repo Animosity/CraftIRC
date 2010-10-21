@@ -443,8 +443,11 @@ public class Minebot extends PircBot {
 					} 
 					
 					
-					// Aliased commands
-					else if ((message.startsWith(cmd_prefix + "kick") && this.optn_console_commands.contains("kick")) && splitMessage.length > 1) {
+					
+					/*
+					 //Aliased commands
+					
+					 else if ((message.startsWith(cmd_prefix + "kick") && this.optn_console_commands.contains("kick")) && splitMessage.length > 1) {
 						log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: " + this.combineSplit(0, splitMessage, " "));
 						etc.getServer().useConsoleCommand("kick " + this.combineSplit(1, splitMessage, " "));
 						this.sendNotice(sender, "Executed: " + command);
@@ -463,7 +466,7 @@ public class Minebot extends PircBot {
 						etc.getServer().useConsoleCommand("say " + this.combineSplit(1, splitMessage, " "));
 						this.sendNotice(sender, "Executed: " + command);
 						return;
-					}
+					}*/
 					
 					else if (message.startsWith(cmd_prefix + "botsay") && this.getChannelList().contains(this.irc_channel) && splitMessage.length > 1) {
 						this.sendMessage(this.irc_channel, command);
@@ -471,7 +474,6 @@ public class Minebot extends PircBot {
 						return;
 					}
 					
-					else { this.sendNotice(sender, "Command not enabled"); }
 					
 		
 			} // end admin commands
