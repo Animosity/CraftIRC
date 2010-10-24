@@ -22,10 +22,8 @@ package org.jibble.pircbot;
  * you may find these constants useful when comparing the numeric
  * value of a given code.
  * 
- * @since   1.0.0
- * @author  Paul James Mutton,
- *          <a href="http://www.jibble.org/">http://www.jibble.org/</a>
- * @version    1.5.0 (Build time: Mon Dec 14 20:07:17 2009)
+ * @author PircBot-PPF project
+ * @version 1.0.0
  */
 public interface ReplyConstants {
     
@@ -76,6 +74,12 @@ public interface ReplyConstants {
     public static final int ERR_UMODEUNKNOWNFLAG = 501;
     public static final int ERR_USERSDONTMATCH = 502;
     
+    // Server Info (RFC2812)
+    public static final int RPL_WELCOME = 1;
+    public static final int RPL_YOURHOST = 2;
+    public static final int RPL_CREATED = 3;
+    public static final int RPL_MYINFO = 4;
+    public static final int RPL_BOUNCE = 5;
     
     // Command Responses.
     public static final int RPL_TRACELINK = 200;
@@ -173,5 +177,4 @@ public interface ReplyConstants {
     public static final int ERR_BADCHANMASK = 476;
     public static final int ERR_NOSERVICEHOST = 492;
     
-    public static final int RPL_ISUPPORT = 005;
 }

@@ -78,9 +78,6 @@ public class DccChat {
     
     /**
      * Accept this DccChat connection.
-     * 
-     * @since 1.2.0
-     * 
      */
     public synchronized void accept() throws IOException {
         if (_acceptable) {

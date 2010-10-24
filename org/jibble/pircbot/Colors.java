@@ -45,10 +45,8 @@ package org.jibble.pircbot;
  * order to remain consistent with the rest of the Java API.
  *
  *
- * @since   0.9.12
- * @author  Paul James Mutton,
- *          <a href="http://www.jibble.org/">http://www.jibble.org/</a>
- * @version    1.5.0 (Build time: Mon Dec 14 20:07:17 2009)
+ * @author PircBot-PPF project
+ * @version 1.0.0
  */
 public class Colors {
 
@@ -184,13 +182,16 @@ public class Colors {
     /**
      * Removes all colours from a line of IRC text.
      * 
-     * @since PircBot 1.2.0
-     * 
      * @param line the input text.
      * 
      * @return the same text, but with all colours removed.
      */
     public static String removeColors(String line) {
+        boolean formattingFound = false;
+        if(line.indexOf(BOLD) >= 0 || line.indexOf(UNDERLINE) >= 0 || line.indexOf(REVERSE) >= 0) {
+            formattingFound = true; 
+        } 
+        
         int length = line.length();
         StringBuffer buffer = new StringBuffer();
         int i = 0;
@@ -240,6 +241,9 @@ public class Colors {
                 }
             }
             else if (ch == '\u000f') {
+                if(formattingFound) { 
+                    buffer.append(ch); 
+                }
                 i++;
             }
             else {
@@ -254,18 +258,22 @@ public class Colors {
     /**
      * Remove formatting from a line of IRC text.
      * 
-     * @since PircBot 1.2.0
-     * 
      * @param line the input text.
      * 
      * @return the same text, but without any bold, underlining, reverse, etc.
      */
     public static String removeFormatting(String line) {
+        boolean coloursFound = false;
+        if(line.indexOf('\u0003') >= 0) {
+            coloursFound = true;
+        }
+        
         int length = line.length();
         StringBuffer buffer = new StringBuffer();
         for (int i = 0; i < length; i++) {
             char ch = line.charAt(i);
-            if (ch == '\u000f' || ch == '\u0002' || ch == '\u001f' || ch == '\u0016') {
+            if ((ch == '\u000f' && !coloursFound) || ch == '\u0002' ||
+                    ch == '\u001f' || ch == '\u0016') {
                 // Don't add this character.
             }
             else {
@@ -279,12 +287,9 @@ public class Colors {
     /**
      * Removes all formatting and colours from a line of IRC text.
      * 
-     * @since PircBot 1.2.0
-     *
      * @param line the input text.
      * 
      * @return the same text, but without formatting and colour characters.
-     * 
      */
     public static String removeFormattingAndColors(String line) {
         return removeFormatting(removeColors(line));

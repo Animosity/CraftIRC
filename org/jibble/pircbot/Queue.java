@@ -30,9 +30,8 @@ import java.util.Vector;
  * a Vector, which is hardly ideal, but this Queue is typically
  * only polled every second before dispatching messages.
  * 
- * @author  Paul James Mutton,
- *          <a href="http://www.jibble.org/">http://www.jibble.org/</a>
- * @version    1.5.0 (Build time: Mon Dec 14 20:07:17 2009)
+ * @author PircBot-PPF project
+ * @version 1.0.0
  */
 public class Queue {
     

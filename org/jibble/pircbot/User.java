@@ -13,21 +13,22 @@ found at http://www.jibble.org/licenses/
 
 package org.jibble.pircbot;
 
+import java.io.Serializable;
+
 /**
  * This class is used to represent a user on an IRC server.
- * Instances of this class are returned by the getUsers method
- * in the PircBot class.
+ * Instances of this class are returned by the getUser and getUsers 
+ * methods in the PircBot class.
  *  <p>
  * Note that this class no longer implements the Comparable interface
  * for Java 1.1 compatibility reasons.
  *
- * @since   1.0.0
- * @author  Paul James Mutton,
- *          <a href="http://www.jibble.org/">http://www.jibble.org/</a>
- * @version    1.5.0 (Build time: Mon Dec 14 20:07:17 2009)
+ * @author PircBot-PPF project
+ * @version 1.0.0
  */
-public class User {
+public class User implements Serializable {
     
+    private static final long serialVersionUID = 4990694420758734789L;
     
     /**
      * Constructs a User object with a known prefix and nick.
@@ -66,7 +67,6 @@ public class User {
     public boolean isOp() {
         return _prefix.indexOf('@') >= 0;
     }
-    
     
     /**
      * Returns whether or not the user represented by this object has
@@ -153,9 +153,49 @@ public class User {
         return -1;
     }
     
+    /**
+     * Returns whether or not the user represented by this object has the given 
+     * prefix. If the User object has been obtained from a list of users
+     * in a channel, then this will reflect the user's status in that 
+     * channel.  This is useful for checking non-standard prefixes that may
+     * exist on different networks (IRCd's).
+     * 
+     * @param prefix the prefix to check for
+     * 
+     * @return true if the user has the given prefix.
+     */
+    public boolean hasPrefix(String prefix) {
+        return _prefix.indexOf(prefix) >= 0;
+    }
+    
+    protected void addPrefix(String prefix) {
+        if(!(hasPrefix(prefix))) {
+            _prefix = prefix + _prefix;
+        }        
+    }
+    
+    protected void removePrefix(String prefix) {
+        if(hasPrefix(prefix)) {
+            int location = _prefix.indexOf(prefix);
+            _prefix = _prefix.substring(0, location) + _prefix.substring(location+1);
+        }
+    }
+
+    protected void setInfo(Object info) {
+        _info = info;
+    }
+    
+    /**
+     * Gets the custom Object that was set using setUserInfo(String, Object)
+     * 
+     * @return the info set, null if none was set
+     */
+    public Object getInfo() {
+        return _info;
+    }
     
     private String _prefix;
     private String _nick;
     private String _lowerNick;
-    
+    private Object _info;
 }

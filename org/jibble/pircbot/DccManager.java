@@ -20,10 +20,8 @@ import java.util.Vector;
 /**
  * This class is used to process DCC events from the server.
  *
- * @since   1.2.0
- * @author  Paul James Mutton,
- *          <a href="http://www.jibble.org/">http://www.jibble.org/</a>
- * @version    1.5.0 (Build time: Mon Dec 14 20:07:17 2009)
+ * @author PircBot-PPF project
+ * @version 1.0.0
  */
 public class DccManager {
     
@@ -87,7 +85,6 @@ public class DccManager {
         }
         else if (type.equals("ACCEPT")) {
             int port = Integer.parseInt(tokenizer.nextToken());
-            long progress = Long.parseLong(tokenizer.nextToken());
             
             DccFileTransfer transfer = null;
             synchronized (_awaitingResume) {

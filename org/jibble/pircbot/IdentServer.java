@@ -40,10 +40,8 @@ import java.net.Socket;
  * if you are running as an unprivileged user who is unable to create
  * a server socket on that port number.
  *
- * @since   0.9c
- * @author  Paul James Mutton,
- *          <a href="http://www.jibble.org/">http://www.jibble.org/</a>
- * @version    1.5.0 (Build time: Mon Dec 14 20:07:17 2009)
+ * @author PircBot-PPF project
+ * @version 1.0.0
  */
 public class IdentServer extends Thread {
     
