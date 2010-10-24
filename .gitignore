@@ -6,4 +6,6 @@ Minecraft_Mod.jar
 Thumbs.db
 CraftIRC.class
 CraftIRCListener.class
-Minebot.class
+Minebot.class/Minecraft_Mod.jar
+/build.xml
+/Minecraft_Mod.jar
