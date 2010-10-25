@@ -19,6 +19,8 @@ public class Minebot extends PircBot {
 	String ircSettingsFilename = "CraftIRC.settings";
 	private static final Map<String, String> colorMap = new HashMap<String, String>();
 
+
+	boolean bot_debug = false;
 	String cmd_prefix;
 	String irc_relayed_user_color;
 	public String irc_handle;
@@ -60,7 +62,7 @@ public class Minebot extends PircBot {
 		return instance;
 	}
 
-	public void init() {
+	public synchronized void init() {
 		
 		this.initColorMap();
 		try {
@@ -102,6 +104,13 @@ public class Minebot extends PircBot {
 			optn_send_all_IRC_chat = this.getChatRelayChannels(ircSettings.getProperty("send-all-IRC").toLowerCase(),"send-all-IRC");
 			optn_main_send_events = this.getCSVArrayList(ircSettings.getProperty("send-events"));
 			optn_admin_send_events = this.getCSVArrayList(ircSettings.getProperty("admin-send-events"));
+		
+			try {	
+				bot_debug = Boolean.parseBoolean(ircSettings.getProperty("bot-debug"));
+			} catch (Exception e) {
+				bot_debug = false;
+			}
+			CraftIRC.setDebug(bot_debug);
 
 			if (ircSettings.containsKey("notify-admins-cmd")) {
 				optn_notify_admins_cmd = ircSettings
@@ -614,5 +623,14 @@ public class Minebot extends PircBot {
 		// Maybe check if disabled, and if not, start(); depending on a flag set
 		// in the settings?
 	}
+
+	public void msg(String target, String message) {
+		if (CraftIRC.isDebug())
+		{
+			log.info(String.format("Sending message to %s : %s",target,message));
+		}
+		sendMessage(target, message);
+    	}
+
 
 } // EO Minebot

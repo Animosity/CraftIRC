@@ -8,7 +8,8 @@ import java.util.logging.Logger;
 
 public class CraftIRC extends Plugin {
 	public static final String NAME = "CraftIRC";
-	public static final String VERSION = "1.5.1";
+	public static final String VERSION = "1.5.2";
+	private static boolean debug = false;
 	private static Minebot bot;
 
     static final CraftIRCListener listener = new CraftIRCListener();
@@ -20,7 +21,6 @@ public class CraftIRC extends Plugin {
         // instantiate bot w/ settings
         bot = Minebot.getInstance();
         bot.init();
-        
 
         etc.getInstance().addCommand("/irc [msg]", "Sends message to " + bot.irc_channel);
         if (bot.optn_notify_admins_cmd != null) 
@@ -51,4 +51,19 @@ public class CraftIRC extends Plugin {
         etc.getLoader().addListener(PluginLoader.Hook.IPBAN, listener, this, PluginListener.Priority.MEDIUM);
        
     }
+
+    public static void setDebug(boolean d) 
+    {	
+	log.info(NAME + " DEBUG [" + (d ? "ON" : "OFF") + "]");
+	debug = d;
+	if (bot != null) {
+		bot.setVerbose(d);
+   	}
+    }
+
+    public static boolean isDebug()
+    {
+	return debug;
+    }
 }
+
