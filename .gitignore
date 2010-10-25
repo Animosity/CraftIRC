@@ -8,3 +8,4 @@ CraftIRC.class
 CraftIRCListener.class
 Minebot.class
 build.xml
+build/
