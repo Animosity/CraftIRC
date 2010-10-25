@@ -7,5 +7,6 @@ Thumbs.db
 CraftIRC.class
 CraftIRCListener.class
 Minebot.class
+*.class
 build.xml
 build/
