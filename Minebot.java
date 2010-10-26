@@ -556,6 +556,9 @@ public class Minebot extends PircBot {
 
 	// Form and broadcast messages to Minecraft
 	public void msgToGame(String sender, String message) {
+		if(CraftIRC.isDebug()) {
+			log.info(String.format(CraftIRC.NAME + " msgToGame : <%s> %s", sender, message));
+		}
 		String msg_to_broadcast = (new StringBuilder()).append("[IRC]")
 				.append(" <").append(irc_relayed_user_color).append(sender)
 				.append(Colors.White).append("> ").append(message).toString();
@@ -627,7 +630,7 @@ public class Minebot extends PircBot {
 	public void msg(String target, String message) {
 		if (CraftIRC.isDebug())
 		{
-			log.info(String.format("Sending message to %s : %s",target,message));
+			log.info(String.format(CraftIRC.NAME + " msgToIRC <%s> : %s", target, message));
 		}
 		sendMessage(target, message);
     	}
