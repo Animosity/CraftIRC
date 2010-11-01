@@ -33,15 +33,15 @@ public class Minebot extends PircBot {
 	ArrayList<String> optn_admin_req_prefixes = new ArrayList<String>(); // require IRC user (admin) to have +/%/@/&/~
 
 	ArrayList<String> optn_main_send_events = new ArrayList<String>(); // which MC events to send to main IRC channel
-	
+
 	ArrayList<String> optn_admin_send_events = new ArrayList<String>(); // which MC events to send to admin IRC channel
 	ArrayList<String> optn_send_all_MC_chat = new ArrayList<String>(); // where to send MC chat
 
-	ArrayList<String> optn_send_all_IRC_chat; 	// send IRC chat to MC? - now
+	ArrayList<String> optn_send_all_IRC_chat; // send IRC chat to MC? - now
 												// channel sources are
 												// selectable
 	String optn_notify_admins_cmd;
-	
+
 	ArrayList<String> optn_console_commands = new ArrayList<String>(); // whitelisted console commands to execute from IRC admin channel
 	int bot_timeout = 5000; // how long to wait after joining channels to wait
 							// for the bot to check itself
@@ -61,23 +61,20 @@ public class Minebot extends PircBot {
 	}
 
 	public void init() {
-		
+
 		this.initColorMap();
 		try {
 			ircSettings.load(new FileInputStream(ircSettingsFilename));
 		} catch (IOException e) {
-			log.info(CraftIRC.NAME + " - Error while READING settings file "
-					+ ircSettingsFilename);
+			log.info(CraftIRC.NAME + " - Error while READING settings file " + ircSettingsFilename);
 			e.printStackTrace();
 		}
 
 		try {
 			cmd_prefix = ircSettings.getProperty("command-prefix");
 
-			if (colorMap.containsKey(ircSettings.getProperty(
-					"irc-relayed-user-color").toLowerCase())) {
-				irc_relayed_user_color = colorMap.get(ircSettings.getProperty(
-						"irc-relayed-user-color").toLowerCase());
+			if (colorMap.containsKey(ircSettings.getProperty("irc-relayed-user-color").toLowerCase())) {
+				irc_relayed_user_color = colorMap.get(ircSettings.getProperty("irc-relayed-user-color").toLowerCase());
 			} else {
 				irc_relayed_user_color = colorMap.get("white");
 			}
@@ -88,8 +85,7 @@ public class Minebot extends PircBot {
 			irc_server_port = ircSettings.getProperty("irc-server-port");
 			irc_server_pass = ircSettings.getProperty("irc-server-password");
 			irc_server_ssl = Boolean.parseBoolean(ircSettings.getProperty("irc-server-ssl"));
-			
-			
+
 			irc_auth_method = ircSettings.getProperty("irc-auth-method");
 			irc_auth_username = ircSettings.getProperty("irc-auth-username");
 			irc_auth_pass = ircSettings.getProperty("irc-auth-password");
@@ -98,17 +94,17 @@ public class Minebot extends PircBot {
 			irc_channel_pass = ircSettings.getProperty("irc-channel-password");
 			irc_admin_channel = ircSettings.getProperty("irc-admin-channel").toLowerCase();
 			irc_admin_channel_pass = ircSettings.getProperty("irc-admin-channel-password");
-			optn_send_all_MC_chat = this.getChatRelayChannels(ircSettings.getProperty("send-all-chat").toLowerCase(),"send-all-chat");
-			optn_send_all_IRC_chat = this.getChatRelayChannels(ircSettings.getProperty("send-all-IRC").toLowerCase(),"send-all-IRC");
+			optn_send_all_MC_chat = this.getChatRelayChannels(ircSettings.getProperty("send-all-chat").toLowerCase(),
+					"send-all-chat");
+			optn_send_all_IRC_chat = this.getChatRelayChannels(ircSettings.getProperty("send-all-IRC").toLowerCase(),
+					"send-all-IRC");
 			optn_main_send_events = this.getCSVArrayList(ircSettings.getProperty("send-events"));
 			optn_admin_send_events = this.getCSVArrayList(ircSettings.getProperty("admin-send-events"));
 
 			if (ircSettings.containsKey("notify-admins-cmd")) {
-				optn_notify_admins_cmd = ircSettings
-						.getProperty("notify-admins-cmd");
+				optn_notify_admins_cmd = ircSettings.getProperty("notify-admins-cmd");
 				if (optn_notify_admins_cmd.length() < 1) {
-					log.info(CraftIRC.NAME
-							+ " - no notify-admins-cmd set, disabling admin notification command.");
+					log.info(CraftIRC.NAME + " - no notify-admins-cmd set, disabling admin notification command.");
 					optn_notify_admins_cmd = null;
 				} else {
 					if (!optn_notify_admins_cmd.startsWith("/")) {
@@ -120,8 +116,7 @@ public class Minebot extends PircBot {
 			// get the 'check' delay from properties
 			if (ircSettings.containsKey("bot-timeout")) {
 				try {
-					this.bot_timeout = 1000 * Integer.parseInt(ircSettings
-							.getProperty("bot-timeout"));
+					this.bot_timeout = 1000 * Integer.parseInt(ircSettings.getProperty("bot-timeout"));
 				} // get input in seconds, convert to ms
 				catch (Exception e) {
 					this.bot_timeout = 5000;
@@ -132,32 +127,30 @@ public class Minebot extends PircBot {
 			if (ircSettings.containsKey("irc-admin-prefixes")) {
 				this.optn_admin_req_prefixes = getRequiredPrefixes(ircSettings.getProperty("irc-admin-prefixes"));
 			}
-			
+
 			if (ircSettings.containsKey("irc-console-commands")) {
 				this.optn_console_commands = this.getCSVArrayList(ircSettings.getProperty("irc-console-commands"));
-				
+
 			} else {
 				log.log(Level.WARNING, CraftIRC.NAME + " no irc-console-commands defined for the Admin IRC channel!");
 			}
-			
+
 			if (ircSettings.containsKey("irc-server-login") && !ircSettings.getProperty("irc-server-login").isEmpty()) {
 				irc_server_login = ircSettings.getProperty("irc-server-login");
-			} else { irc_server_login = this.irc_handle; }
-			
-			
-			
-			
+			} else {
+				irc_server_login = this.irc_handle;
+			}
+
 		}
 
 		catch (Exception e) {
-			log.info(CraftIRC.NAME + " - Error while LOADING settings from "
-					+ this.ircSettingsFilename);
+			log.info(CraftIRC.NAME + " - Error while LOADING settings from " + this.ircSettingsFilename);
 			e.printStackTrace();
 		}
 		if (irc_handle.isEmpty()) {
 			this.irc_handle = "minecraftbot";
 		}
-		
+
 		this.setName(this.irc_handle);
 		this.setFinger(CraftIRC.NAME + " v" + CraftIRC.VERSION);
 		this.setLogin(this.irc_server_login);
@@ -178,7 +171,6 @@ public class Minebot extends PircBot {
 		}
 
 	}
-	
 
 	private void initColorMap() {
 		colorMap.put("black", Colors.Black);
@@ -203,14 +195,13 @@ public class Minebot extends PircBot {
 		return new ArrayList<String>(Arrays.asList(csv_prefixes.split(",")));
 	}
 
-	
 	// Sets the directionality for MC->IRC chat (channels are targets)
 	// And also sets the channel sources for IRC->MC chat
 	private ArrayList<String> getChatRelayChannels(String csv_relay_channels, String propertyName)
 	// Modified to deal w/ send-all-IRC, in addition to the existing send-all-chat support
 	{
 		ArrayList<String> relayChannels = this.getRequiredPrefixes(csv_relay_channels);
-	
+
 		// backward compatibility w/ boolean argument of past
 		if (relayChannels.contains("true")) {
 			relayChannels.remove("true");
@@ -219,8 +210,7 @@ public class Minebot extends PircBot {
 		}
 
 		if ((!relayChannels.contains("main") && !relayChannels.contains("admin"))) {
-			log.info(CraftIRC.NAME
-					+ " - No valid Minecraft chat relay channels set, disabling feature \""
+			log.info(CraftIRC.NAME + " - No valid Minecraft chat relay channels set, disabling feature \""
 					+ propertyName + "\"");
 			return new ArrayList<String>(Arrays.asList(""));
 		}
@@ -233,7 +223,7 @@ public class Minebot extends PircBot {
 	}
 
 	public void start() {
-		
+
 		log.info(CraftIRC.NAME + " v" + CraftIRC.VERSION + " loading.");
 
 		if (this.irc_server_port == null || this.irc_server_port.equals("")) {
@@ -248,17 +238,12 @@ public class Minebot extends PircBot {
 			this.setAutoNickChange(true);
 
 			if (this.irc_server_ssl) {
-				log.info(CraftIRC.NAME + " - Connecting to " + this.irc_server
-						+ ":" + this.irc_server_port + " [SSL]");
-				this.connect(this.irc_server,
-						Integer.parseInt(this.irc_server_port),
-						this.irc_server_pass, new TrustingSSLSocketFactory());
+				log.info(CraftIRC.NAME + " - Connecting to " + this.irc_server + ":" + this.irc_server_port + " [SSL]");
+				this.connect(this.irc_server, Integer.parseInt(this.irc_server_port), this.irc_server_pass,
+						new TrustingSSLSocketFactory());
 			} else {
-				log.info(CraftIRC.NAME + " - Connecting to " + this.irc_server
-						+ ":" + this.irc_server_port);
-				this.connect(this.irc_server,
-						Integer.parseInt(this.irc_server_port),
-						this.irc_server_pass);
+				log.info(CraftIRC.NAME + " - Connecting to " + this.irc_server + ":" + this.irc_server_port);
+				this.connect(this.irc_server, Integer.parseInt(this.irc_server_port), this.irc_server_pass);
 			}
 
 			if (this.isConnected()) {
@@ -306,11 +291,9 @@ public class Minebot extends PircBot {
 	}
 
 	void authenticateBot() {
-		if (this.irc_auth_method.equalsIgnoreCase("nickserv")
-				&& !irc_auth_pass.isEmpty()) {
+		if (this.irc_auth_method.equalsIgnoreCase("nickserv") && !irc_auth_pass.isEmpty()) {
 			log.info(CraftIRC.NAME + " - Using Nickserv authentication.");
-			this.sendMessage("nickserv", "GHOST " + irc_handle + " "
-					+ irc_auth_pass);
+			this.sendMessage("nickserv", "GHOST " + irc_handle + " " + irc_auth_pass);
 			// this.setAutoNickChange(false);
 
 			// Some IRC servers have quite a delay when ghosting...
@@ -327,8 +310,7 @@ public class Minebot extends PircBot {
 		if (this.irc_auth_method.equalsIgnoreCase("gamesurge")) {
 			log.info(CraftIRC.NAME + " - Using GameSurge authentication.");
 			this.changeNick(irc_handle);
-			this.sendMessage("AuthServ@Services.GameSurge.net", "AUTH "
-					+ irc_auth_username + " " + irc_auth_pass);
+			this.sendMessage("AuthServ@Services.GameSurge.net", "AUTH " + irc_auth_username + " " + irc_auth_pass);
 		}
 
 	}
@@ -349,12 +331,10 @@ public class Minebot extends PircBot {
 	// Determine which of the selected channels the bot is actually present in -
 	// disable features if not in the required channels.
 	void checkChannels() {
-		ArrayList<String> botChannels = new ArrayList<String>(
-				Arrays.asList(this.getChannels()));
+		ArrayList<String> botChannels = new ArrayList<String>(Arrays.asList(this.getChannels()));
 
 		if (!botChannels.contains(this.irc_channel)) {
-			log.info(CraftIRC.NAME + " - " + this.getNick()
-					+ " not in main channel: " + this.irc_channel
+			log.info(CraftIRC.NAME + " - " + this.getNick() + " not in main channel: " + this.irc_channel
 					+ ", disabling all events for channel");
 			this.optn_main_send_events.clear();
 			this.optn_send_all_IRC_chat.remove("main");
@@ -362,14 +342,12 @@ public class Minebot extends PircBot {
 			this.optn_main_req_prefixes.clear();
 
 		} else {
-			log.info(CraftIRC.NAME + " - Joined main channel: "
-					+ this.irc_channel);
+			log.info(CraftIRC.NAME + " - Joined main channel: " + this.irc_channel);
 		}
 
 		if (!botChannels.contains(this.irc_admin_channel)) {
 
-			log.info(CraftIRC.NAME + " - " + this.getNick()
-					+ " not in admin channel: " + this.irc_admin_channel
+			log.info(CraftIRC.NAME + " - " + this.getNick() + " not in admin channel: " + this.irc_admin_channel
 					+ ", disabling all events for channel");
 			this.optn_admin_send_events.clear();
 			this.optn_send_all_IRC_chat.remove("admin");
@@ -378,15 +356,13 @@ public class Minebot extends PircBot {
 			this.optn_admin_req_prefixes.clear();
 
 		} else {
-			log.info(CraftIRC.NAME + " - Joined admin channel: "
-					+ this.irc_admin_channel);
+			log.info(CraftIRC.NAME + " - Joined admin channel: " + this.irc_admin_channel);
 		}
 
 	}
 
 	// Update users
-	public void onJoin(String channel, String sender, String login,
-			String hostname) {
+	public void onJoin(String channel, String sender, String login, String hostname) {
 		if (channel.equalsIgnoreCase(this.irc_channel)) {
 			this.irc_users_main = this.getUsers(channel);
 		}
@@ -396,8 +372,7 @@ public class Minebot extends PircBot {
 	}
 
 	// Update users
-	public void onPart(String channel, String sender, String login,
-			String hostname) {
+	public void onPart(String channel, String sender, String login, String hostname) {
 		if (channel.equalsIgnoreCase(this.irc_channel)) {
 			this.irc_users_main = this.getUsers(channel);
 		}
@@ -406,79 +381,73 @@ public class Minebot extends PircBot {
 		}
 	}
 
-	public void onKick(String channel, String kickerNick, String kickerLogin,
-			String kickerHostname, String recipientNick, String reason) {
+	public void onKick(String channel, String kickerNick, String kickerLogin, String kickerHostname,
+			String recipientNick, String reason) {
 		if (recipientNick.equalsIgnoreCase(this.getNick())) {
 			if (channel.equalsIgnoreCase(this.irc_channel)) {
 				this.joinChannel(this.irc_channel, this.irc_channel_pass);
 			}
 			if (channel.equalsIgnoreCase(this.irc_admin_channel)) {
-				this.joinChannel(this.irc_admin_channel,
-						this.irc_admin_channel_pass);
+				this.joinChannel(this.irc_admin_channel, this.irc_admin_channel_pass);
 			}
 		}
 	}
 
 	// IRC commands parsed here
 	public void onMessage(String channel, String sender, String login, String hostname, String message) {
-		
+
 		String[] splitMessage = message.split(" ");
 		String command = this.combineSplit(1, splitMessage, " ");
 		try {
 			// Parse admin commands here
 			if (channel.equalsIgnoreCase(this.irc_admin_channel) && userAuthorized(channel, sender)) {
 
-					if ((message.startsWith(cmd_prefix + "console") || message.startsWith(cmd_prefix + "c")) 
-							&& splitMessage.length > 1 
-							&& this.optn_console_commands.contains(splitMessage[1])) 
-					{
-						log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: " + this.combineSplit(0, splitMessage, " "));
-						// Have to call parseConsoleCommand first if you want to use any of the hey0 console commands
-						this.sendNotice(sender, "Executed: " + command); // send notice first, in case you're disabling/reloading the bot
-						if (!etc.getInstance().parseConsoleCommand(command, etc.getMCServer())) {
-							etc.getServer().useConsoleCommand(command);
-						}
-						return;
-						
-					} 
-					
-					
-					
-					/*
-					 //Aliased commands
-					
-					 else if ((message.startsWith(cmd_prefix + "kick") && this.optn_console_commands.contains("kick")) && splitMessage.length > 1) {
-						log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: " + this.combineSplit(0, splitMessage, " "));
-						etc.getServer().useConsoleCommand("kick " + this.combineSplit(1, splitMessage, " "));
-						this.sendNotice(sender, "Executed: " + command);
-						return;
+				if ((message.startsWith(cmd_prefix + "console") || message.startsWith(cmd_prefix + "c"))
+						&& splitMessage.length > 1 && this.optn_console_commands.contains(splitMessage[1])) {
+					log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: "
+							+ this.combineSplit(0, splitMessage, " "));
+					// Have to call parseConsoleCommand first if you want to use any of the hey0 console commands
+					this.sendNotice(sender, "Executed: " + command); // send notice first, in case you're disabling/reloading the bot
+					if (!etc.getInstance().parseConsoleCommand(command, etc.getMCServer())) {
+						etc.getServer().useConsoleCommand(command);
 					}
-					
-					else if ((message.startsWith(cmd_prefix + "ban") && this.optn_console_commands.contains("ban")) && splitMessage.length > 1) {
-						log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: " + this.combineSplit(0, splitMessage, " "));
-						etc.getServer().useConsoleCommand("ban " + this.combineSplit(1, splitMessage, " "));
-						this.sendNotice(sender, "Executed: " + command);
-						return;
-					}
-		
-					else if (message.startsWith(cmd_prefix + "broadcast") && this.optn_console_commands.contains("say") && splitMessage.length > 1) {
-						log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: " + this.combineSplit(0, splitMessage, " "));
-						etc.getServer().useConsoleCommand("say " + this.combineSplit(1, splitMessage, " "));
-						this.sendNotice(sender, "Executed: " + command);
-						return;
-					}*/
-					
-					else if (message.startsWith(cmd_prefix + "botsay") && this.getChannelList().contains(this.irc_channel) && splitMessage.length > 1) {
-						this.sendMessage(this.irc_channel, command);
-						this.sendNotice(sender, "Sent to main channel: " + command);
-						return;
-					}
-					
-					
-		
+					return;
+
+				}
+
+				/*
+				 //Aliased commands
+				
+				 else if ((message.startsWith(cmd_prefix + "kick") && this.optn_console_commands.contains("kick")) && splitMessage.length > 1) {
+					log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: " + this.combineSplit(0, splitMessage, " "));
+					etc.getServer().useConsoleCommand("kick " + this.combineSplit(1, splitMessage, " "));
+					this.sendNotice(sender, "Executed: " + command);
+					return;
+				}
+				
+				else if ((message.startsWith(cmd_prefix + "ban") && this.optn_console_commands.contains("ban")) && splitMessage.length > 1) {
+					log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: " + this.combineSplit(0, splitMessage, " "));
+					etc.getServer().useConsoleCommand("ban " + this.combineSplit(1, splitMessage, " "));
+					this.sendNotice(sender, "Executed: " + command);
+					return;
+				}
+				
+				else if (message.startsWith(cmd_prefix + "broadcast") && this.optn_console_commands.contains("say") && splitMessage.length > 1) {
+					log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: " + this.combineSplit(0, splitMessage, " "));
+					etc.getServer().useConsoleCommand("say " + this.combineSplit(1, splitMessage, " "));
+					this.sendNotice(sender, "Executed: " + command);
+					return;
+				}*/
+
+				else if (message.startsWith(cmd_prefix + "botsay") && this.getChannelList().contains(this.irc_channel)
+						&& splitMessage.length > 1) {
+					this.sendMessage(this.irc_channel, command);
+					this.sendNotice(sender, "Sent to main channel: " + command);
+					return;
+				}
+
 			} // end admin commands
-		
-			
+
 			// begin public commands
 			if (message.startsWith(cmd_prefix + "players")) {
 				String playerlist = this.getPlayerList();
@@ -487,33 +456,32 @@ public class Minebot extends PircBot {
 														// from
 				return;
 			}
-	
-			if (channel.equalsIgnoreCase(this.irc_channel)
-					&& this.optn_send_all_IRC_chat.contains("main")) {
-				if (!message.startsWith(cmd_prefix)) { msgToGame(sender, message); } // don't send command messages to MC
-				return;
-				
-				
-			}
-	
-			else if (channel.equalsIgnoreCase(this.irc_admin_channel)
-					&& this.optn_send_all_IRC_chat.contains("admin")) {
-				if (!message.startsWith(cmd_prefix)) { msgToGame(sender, message); } // don't send command messages to MC
+
+			if (channel.equalsIgnoreCase(this.irc_channel) && this.optn_send_all_IRC_chat.contains("main")) {
+				if (!message.startsWith(cmd_prefix)) {
+					msgToGame(sender, message);
+				} // don't send command messages to MC
 				return;
 
 			}
-	
+
+			else if (channel.equalsIgnoreCase(this.irc_admin_channel) && this.optn_send_all_IRC_chat.contains("admin")) {
+				if (!message.startsWith(cmd_prefix)) {
+					msgToGame(sender, message);
+				} // don't send command messages to MC
+				return;
+
+			}
+
 			else if (message.startsWith(cmd_prefix + "say") || message.startsWith(cmd_prefix + "mc")) {
 				// message = message.substring(message.indexOf(" ")).trim();
-					if (splitMessage.length > 1) {
-						msgToGame(sender, command);
-						this.sendNotice(sender, "Message sent to game");
-						return;
+				if (splitMessage.length > 1) {
+					msgToGame(sender, command);
+					this.sendNotice(sender, "Message sent to game");
+					return;
 				}
 			}
-				
-	
-		
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.log(Level.SEVERE, CraftIRC.NAME + " - error while relaying IRC command: " + message);
@@ -523,22 +491,23 @@ public class Minebot extends PircBot {
 
 	// IRC user authorization check against prefixes
 	// Currently just for admin channel as first-order level of security
-	
-	// TODO: ricin's fix in Pircbot
 
 	public boolean userAuthorized(String channel, String user) {
 		if (channel.equalsIgnoreCase(this.irc_admin_channel)) {
-			 User[] adminUsers = (User[]) super.getUsers(channel).clone(); // I just want a copy of it god damnit
+			User[] adminUsers = (User[]) super.getUsers(channel).clone(); // I just want a copy of it god damnit
 			//User[] adminUsers = irc_users_admin;
 			// may get NPE if user is disconnected
 			try {
 				for (int i = 0; i < adminUsers.length; i++) {
 					User iterUser = adminUsers[i];
-					if (iterUser.getNick().equalsIgnoreCase(user) && this.optn_admin_req_prefixes.contains(iterUser.getPrefix())) {
+					if (iterUser.getNick().equalsIgnoreCase(user)
+							&& this.optn_admin_req_prefixes.contains(iterUser.getPrefix())) {
 						return true;
 					}
 				}
-			} catch (Exception e) { e.printStackTrace(); }
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 
 		}
 
@@ -547,9 +516,8 @@ public class Minebot extends PircBot {
 
 	// Form and broadcast messages to Minecraft
 	public void msgToGame(String sender, String message) {
-		String msg_to_broadcast = (new StringBuilder()).append("[IRC]")
-				.append(" <").append(irc_relayed_user_color).append(sender)
-				.append(Colors.White).append("> ").append(message).toString();
+		String msg_to_broadcast = (new StringBuilder()).append("[IRC]").append(" <").append(irc_relayed_user_color)
+				.append(sender).append(Colors.White).append("> ").append(message).toString();
 
 		for (Player p : etc.getServer().getPlayerList()) {
 			if (p != null) {
@@ -577,16 +545,14 @@ public class Minebot extends PircBot {
 		} while (true);
 
 		if (playercount > 0) {
-			return "Online (" + playercount + "/" + maxplayers + "): "
-					+ sb.toString();
+			return "Online (" + playercount + "/" + maxplayers + "): " + sb.toString();
 		} else {
 			return "nobody is minecrafting right now";
 		}
 	}
 
 	// Combine string array with delimiter
-	public String combineSplit(int initialPos, String[] parts, String delimiter)
-			throws ArrayIndexOutOfBoundsException {
+	public String combineSplit(int initialPos, String[] parts, String delimiter) throws ArrayIndexOutOfBoundsException {
 		String result = "";
 		for (int i = initialPos; i < parts.length; i++) {
 			result = result + parts[i];
@@ -596,23 +562,20 @@ public class Minebot extends PircBot {
 		}
 		return result;
 	}
-	
-	
-	
+
 	public ArrayList<String> getChannelList() {
-	
-		try { return new ArrayList<String>(Arrays.asList(this.getChannels())); }
-		catch (Exception e) { 
+
+		try {
+			return new ArrayList<String>(Arrays.asList(this.getChannels()));
+		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
-	
-	
+
 	public void onDisconnect() {
 
-		// Maybe check if disabled, and if not, start(); depending on a flag set
-		// in the settings?
+		this.start(); // Bot restart upon disconnect
 	}
 
 } // EO Minebot
