@@ -18,6 +18,8 @@ irc-server-login=
 irc-server-password=
 ## set how long (seconds) to wait for the bot to join the channels and verify settings
 bot-timeout=5
+## set the message delay - default is 1000 (ms) - to prevent bot flooding
+irc-message-delay=1000
 
 ## BOT CREDENTIALS
 ## Mandatory: irc-handle
