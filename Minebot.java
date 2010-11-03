@@ -24,7 +24,7 @@ public class Minebot extends PircBot {
 	String irc_relayed_user_color;
 	public String irc_handle;
 
-	String irc_server, irc_server_port, irc_server_pass, irc_server_login;
+	String irc_server, irc_server_port, irc_server_pass, irc_server_login, irc_message_delay;
 
 	String irc_auth_method, irc_auth_username, irc_auth_pass;
 	String irc_channel, irc_channel_pass, irc_admin_channel, irc_admin_channel_pass;
@@ -95,10 +95,8 @@ public class Minebot extends PircBot {
 			irc_channel_pass = ircSettings.getProperty("irc-channel-password");
 			irc_admin_channel = ircSettings.getProperty("irc-admin-channel").toLowerCase();
 			irc_admin_channel_pass = ircSettings.getProperty("irc-admin-channel-password");
-			optn_send_all_MC_chat = this.getChatRelayChannels(ircSettings.getProperty("send-all-chat").toLowerCase(),
-					"send-all-chat");
-			optn_send_all_IRC_chat = this.getChatRelayChannels(ircSettings.getProperty("send-all-IRC").toLowerCase(),
-					"send-all-IRC");
+			optn_send_all_MC_chat = this.getChatRelayChannels(ircSettings.getProperty("send-all-chat").toLowerCase(),"send-all-chat");
+			optn_send_all_IRC_chat = this.getChatRelayChannels(ircSettings.getProperty("send-all-IRC").toLowerCase(),"send-all-IRC");
 			optn_main_send_events = this.getCSVArrayList(ircSettings.getProperty("send-events"));
 			optn_admin_send_events = this.getCSVArrayList(ircSettings.getProperty("admin-send-events"));
 
@@ -147,6 +145,11 @@ public class Minebot extends PircBot {
 				irc_server_login = ircSettings.getProperty("irc-server-login");
 			} else {
 				irc_server_login = this.irc_handle;
+			}
+
+			if (ircSettings.containsKey("irc-message-delay") && !ircSettings.getProperty("irc-message-delay").isEmpty()) {
+				irc_message_delay = ircSettings.getProperty("irc-message-delay");
+				this.setMessageDelay(Long.parseLong(irc_message_delay));
 			}
 
 		}
