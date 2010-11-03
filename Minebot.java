@@ -19,6 +19,7 @@ public class Minebot extends PircBot {
 	String ircSettingsFilename = "CraftIRC.settings";
 	private static final Map<String, String> colorMap = new HashMap<String, String>();
 
+	boolean bot_debug = false;
 	String cmd_prefix;
 	String irc_relayed_user_color;
 	public String irc_handle;
@@ -60,7 +61,7 @@ public class Minebot extends PircBot {
 		return instance;
 	}
 
-	public void init() {
+	public synchronized void init() {
 
 		this.initColorMap();
 		try {
@@ -100,6 +101,13 @@ public class Minebot extends PircBot {
 					"send-all-IRC");
 			optn_main_send_events = this.getCSVArrayList(ircSettings.getProperty("send-events"));
 			optn_admin_send_events = this.getCSVArrayList(ircSettings.getProperty("admin-send-events"));
+
+			try {
+				bot_debug = Boolean.parseBoolean(ircSettings.getProperty("bot-debug"));
+			} catch (Exception e) {
+				bot_debug = false;
+			}
+			CraftIRC.setDebug(bot_debug);
 
 			if (ircSettings.containsKey("notify-admins-cmd")) {
 				optn_notify_admins_cmd = ircSettings.getProperty("notify-admins-cmd");
@@ -516,6 +524,10 @@ public class Minebot extends PircBot {
 
 	// Form and broadcast messages to Minecraft
 	public void msgToGame(String sender, String message) {
+
+		if (CraftIRC.isDebug()) {
+			log.info(String.format(CraftIRC.NAME + " msgToGame : <%s> %s", sender, message));
+		}
 		String msg_to_broadcast = (new StringBuilder()).append("[IRC]").append(" <").append(irc_relayed_user_color)
 				.append(sender).append(Colors.White).append("> ").append(message).toString();
 
@@ -576,6 +588,13 @@ public class Minebot extends PircBot {
 	public void onDisconnect() {
 
 		this.start(); // Bot restart upon disconnect
+	}
+
+	public void msg(String target, String message) {
+		if (CraftIRC.isDebug()) {
+			log.info(String.format(CraftIRC.NAME + " msgToIRC <%s> : %s", target, message));
+		}
+		sendMessage(target, message);
 	}
 
 } // EO Minebot
