@@ -7,10 +7,10 @@ import java.util.logging.Logger;
 
 public class CraftIRC extends Plugin {
 	public static final String NAME = "CraftIRC";
-	public static final String VERSION = "1.5.2";
+	public static final String VERSION = "1.5.2 Beta 2";
 	private static boolean debug = false;
 	private static Minebot bot;
-
+	
 	static final CraftIRCListener listener = new CraftIRCListener();
 	protected static final Logger log = Logger.getLogger("Minecraft");
 
@@ -26,14 +26,14 @@ public class CraftIRC extends Plugin {
 					"Sends your message to the admins on IRC");
 		}
 	}
-
+	
 	public void disable() {
 		log.info(NAME + " Disabled.");
 		bot = Minebot.getInstance();
-
 		etc.getInstance().removeCommand("/irc [msg]");
 		etc.getInstance().removeCommand(bot.optn_notify_admins_cmd + " [msg]");
 		bot.quitServer(NAME + " Unloaded");
+		
 	}
 
 	public void initialize() {

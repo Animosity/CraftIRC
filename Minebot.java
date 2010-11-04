@@ -95,8 +95,10 @@ public class Minebot extends PircBot {
 			irc_channel_pass = ircSettings.getProperty("irc-channel-password");
 			irc_admin_channel = ircSettings.getProperty("irc-admin-channel").toLowerCase();
 			irc_admin_channel_pass = ircSettings.getProperty("irc-admin-channel-password");
-			optn_send_all_MC_chat = this.getChatRelayChannels(ircSettings.getProperty("send-all-chat").toLowerCase(),"send-all-chat");
-			optn_send_all_IRC_chat = this.getChatRelayChannels(ircSettings.getProperty("send-all-IRC").toLowerCase(),"send-all-IRC");
+			optn_send_all_MC_chat = this.getChatRelayChannels(ircSettings.getProperty("send-all-chat").toLowerCase(),
+					"send-all-chat");
+			optn_send_all_IRC_chat = this.getChatRelayChannels(ircSettings.getProperty("send-all-IRC").toLowerCase(),
+					"send-all-IRC");
 			optn_main_send_events = this.getCSVArrayList(ircSettings.getProperty("send-events"));
 			optn_admin_send_events = this.getCSVArrayList(ircSettings.getProperty("admin-send-events"));
 
@@ -281,8 +283,8 @@ public class Minebot extends PircBot {
 			this.joinAdminChannel();
 
 			try {
-				Thread.sleep(2000); // known to get ahead of the bot actually
-									// joining the channels
+				Thread.sleep(this.bot_timeout); // known to get ahead of the bot actually
+				// joining the channels
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
 			}
@@ -342,8 +344,8 @@ public class Minebot extends PircBot {
 	// Determine which of the selected channels the bot is actually present in -
 	// disable features if not in the required channels.
 	void checkChannels() {
-		ArrayList<String> botChannels = new ArrayList<String>(Arrays.asList(this.getChannels()));
-
+		ArrayList<String> botChannels = this.getChannelList();
+		
 		if (!botChannels.contains(this.irc_channel)) {
 			log.info(CraftIRC.NAME + " - " + this.getNick() + " not in main channel: " + this.irc_channel
 					+ ", disabling all events for channel");
@@ -589,8 +591,14 @@ public class Minebot extends PircBot {
 	}
 
 	public void onDisconnect() {
+		try {
+			if (etc.getLoader().getPlugin(CraftIRC.NAME).isEnabled()) {
+				log.info(CraftIRC.NAME + " - disconnected from IRC server... reconnecting!");
+				this.start(); // Bot restart upon disconnect, if the plugin is still enabled
+			}
+		} catch (Exception e) {
+		}
 
-		this.start(); // Bot restart upon disconnect
 	}
 
 	public void msg(String target, String message) {

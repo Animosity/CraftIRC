@@ -1,5 +1,5 @@
-## CraftIRC v1.5.1 Settings
-## Check http://forum.hey0.net/viewtopic.php?id=44 or #hey0 on irc.esper.net for help.
+## CraftIRC v1.5.2 Settings
+## Check http://forum.hey0.net/showthread.php?tid=45 or #hey0 on irc.esper.net for help.
 
 ## the character to prefix commands with: e.g. .players or !players or -players
 command-prefix=.
