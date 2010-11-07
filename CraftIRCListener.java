@@ -52,7 +52,7 @@ public class CraftIRCListener extends PluginListener {
 		}
 		
 		if (split[0].equalsIgnoreCase("/me") && bot.optn_send_all_MC_chat.size() > 0) {
-			String msgtosend = "* " + player.getName() + bot.combineSplit(1, split, " ");
+			String msgtosend = "* " + player.getName() + " " + bot.combineSplit(1, split, " ");
 			if (bot.optn_send_all_MC_chat.contains("main")) {
 				bot.sendMessage(bot.irc_channel, msgtosend);
 			}
