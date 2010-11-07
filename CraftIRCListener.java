@@ -50,19 +50,25 @@ public class CraftIRCListener extends PluginListener {
 				return true;
 			}
 		}
+		
+		if (split[0].equalsIgnoreCase("/me") && bot.optn_send_all_MC_chat.size() > 0) {
+			String msgtosend = "* " + player.getName() + bot.combineSplit(1, split, " ");
+			if (bot.optn_send_all_MC_chat.contains("main")) {
+				bot.sendMessage(bot.irc_channel, msgtosend);
+			}
+			
+			if (bot.optn_send_all_MC_chat.contains("admin")) {
+				bot.sendMessage(bot.irc_admin_channel, msgtosend);
+			}
+		}
+		
 		return false;
 
 	}
 
 	public boolean onConsoleCommand(String[] split) {
 		if (split[0].equalsIgnoreCase("craftirc") && (split.length >= 2)) {
-			if (split[1].equalsIgnoreCase("motd")) {
-				String[] newMotd = new String[split.length - 2];
-				newMotd = Arrays.copyOfRange(split, 2, split.length);
-				etc.getInstance().setMotd(newMotd);
-				return true;
-			}
-
+			
 			if (split[1].equalsIgnoreCase("verbose")) {
 				if (split[2].equalsIgnoreCase("on")) {
 					bot.setVerbose(true);
@@ -122,7 +128,7 @@ public class CraftIRCListener extends PluginListener {
 		}
 	}
 
-	public void onBan(Player player, String reason) {
+	public void onBan(Player mod, Player player, String reason) {
 		if (reason.length() == 0) {
 			reason = "no reason given";
 		}
@@ -134,7 +140,7 @@ public class CraftIRCListener extends PluginListener {
 		}
 	}
 
-	public void onIpBan(Player player, String reason) {
+	public void onIpBan(Player mod, Player player, String reason) {
 		if (reason.length() == 0) {
 			reason = "no reason given";
 		}
@@ -146,7 +152,7 @@ public class CraftIRCListener extends PluginListener {
 		}
 	}
 
-	public void onKick(Player player, String reason) {
+	public void onKick(Player mod, Player player, String reason) {
 		if (reason.length() == 0) {
 			reason = "no reason given";
 		}

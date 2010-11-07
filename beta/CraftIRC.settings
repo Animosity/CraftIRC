@@ -41,6 +41,9 @@ irc-admin-prefixes=%,@,&,~
 ## Set the console commands you want accessible from the admin IRC channel
 ## Options include but are not limited to: reload,modify,whitelist,reservelist,enableplugin,disableplugin,reloadplugin,say,kick,ban,ban-ip,pardon-ip,op,deop,tp,give,tell,stop,save-all,save-off,save-on
 irc-console-commands=say,kick,ban,ipban,reloadplugin,save-all
+## Add comma-separated command prefixes for the bot to IGNORE, such as those used by other bots in the same IRC channels
+irc-ignored-command-prefixes=
+
 
 ## CHAT RELAY OPTIONS
 ## send-all-chat options are: main,admin -- choose which channels you wish to send game chat to, or none.

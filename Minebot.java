@@ -38,9 +38,12 @@ public class Minebot extends PircBot {
 	ArrayList<String> optn_admin_send_events = new ArrayList<String>(); // which MC events to send to admin IRC channel
 	ArrayList<String> optn_send_all_MC_chat = new ArrayList<String>(); // where to send MC chat
 
-	ArrayList<String> optn_send_all_IRC_chat; // send IRC chat to MC? - now
-												// channel sources are
-												// selectable
+	ArrayList<String> optn_send_all_IRC_chat = new ArrayList<String>(); // send IRC chat to MC? - now
+																		// channel sources are
+																		// selectable
+
+	ArrayList<String> optn_ignored_command_prefixes = new ArrayList<String>(); // list of command prefixes to ignore in IRC, such as those for other bots.
+
 	String optn_notify_admins_cmd;
 
 	ArrayList<String> optn_console_commands = new ArrayList<String>(); // whitelisted console commands to execute from IRC admin channel
@@ -152,6 +155,10 @@ public class Minebot extends PircBot {
 			if (ircSettings.containsKey("irc-message-delay") && !ircSettings.getProperty("irc-message-delay").isEmpty()) {
 				irc_message_delay = ircSettings.getProperty("irc-message-delay");
 				this.setMessageDelay(Long.parseLong(irc_message_delay));
+			}
+
+			if (ircSettings.containsKey("irc-ignored-command-prefixes")) {
+				this.optn_send_all_IRC_chat = this.getCSVArrayList(ircSettings.getProperty("irc-ignored-command-prefixes"));
 			}
 
 		}
@@ -277,7 +284,6 @@ public class Minebot extends PircBot {
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
 		} catch (NickAlreadyInUseException e) {
-			System.out.println("my handle is taken!");
 			this.authenticateBot();
 			this.joinChannel(irc_channel, irc_channel_pass);
 			this.joinAdminChannel();
@@ -345,7 +351,7 @@ public class Minebot extends PircBot {
 	// disable features if not in the required channels.
 	void checkChannels() {
 		ArrayList<String> botChannels = this.getChannelList();
-		
+
 		if (!botChannels.contains(this.irc_channel)) {
 			log.info(CraftIRC.NAME + " - " + this.getNick() + " not in main channel: " + this.irc_channel
 					+ ", disabling all events for channel");
@@ -405,13 +411,14 @@ public class Minebot extends PircBot {
 			}
 		}
 	}
-
+	
 	// IRC commands parsed here
 	public void onMessage(String channel, String sender, String login, String hostname, String message) {
-
+		
 		String[] splitMessage = message.split(" ");
 		String command = this.combineSplit(1, splitMessage, " ");
 		try {
+
 			// Parse admin commands here
 			if (channel.equalsIgnoreCase(this.irc_admin_channel) && userAuthorized(channel, sender)) {
 
@@ -471,7 +478,8 @@ public class Minebot extends PircBot {
 			}
 
 			if (channel.equalsIgnoreCase(this.irc_channel) && this.optn_send_all_IRC_chat.contains("main")) {
-				if (!message.startsWith(cmd_prefix)) {
+				if (!message.startsWith(cmd_prefix)
+						&& !this.optn_ignored_command_prefixes.contains(splitMessage[0].charAt(0))) {
 					msgToGame(sender, message);
 				} // don't send command messages to MC
 				return;
@@ -479,7 +487,8 @@ public class Minebot extends PircBot {
 			}
 
 			else if (channel.equalsIgnoreCase(this.irc_admin_channel) && this.optn_send_all_IRC_chat.contains("admin")) {
-				if (!message.startsWith(cmd_prefix)) {
+				if (!message.startsWith(cmd_prefix)
+						&& !this.optn_ignored_command_prefixes.contains(splitMessage[0].charAt(0))) {
 					msgToGame(sender, message);
 				} // don't send command messages to MC
 				return;
@@ -502,9 +511,13 @@ public class Minebot extends PircBot {
 
 	}
 
+	public void onAction(String sender, String login, String hostname, String target, String action) {
+		
+		return;
+	}
+	
 	// IRC user authorization check against prefixes
 	// Currently just for admin channel as first-order level of security
-
 	public boolean userAuthorized(String channel, String user) {
 		if (channel.equalsIgnoreCase(this.irc_admin_channel)) {
 			User[] adminUsers = (User[]) super.getUsers(channel).clone(); // I just want a copy of it god damnit
