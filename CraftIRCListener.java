@@ -133,10 +133,10 @@ public class CraftIRCListener extends PluginListener {
 			reason = "no reason given";
 		}
 		if (bot.optn_main_send_events.contains("bans")) {
-			bot.msg(bot.irc_channel, "[" + player.getName() + " was BANNED because: " + reason + "]");
+			bot.msg(bot.irc_channel, "[" + mod.getName() + " BANNED " + player.getName() + " because: " + reason + "]");
 		}
 		if (bot.optn_admin_send_events.contains("bans")) {
-			bot.msg(bot.irc_admin_channel, "[" + player.getName() + " was BANNED because: " + reason + "]");
+			bot.msg(bot.irc_admin_channel, "[" + mod.getName() + " BANNED " + player.getName() + " because: " + reason + "]");
 		}
 	}
 
@@ -145,10 +145,10 @@ public class CraftIRCListener extends PluginListener {
 			reason = "no reason given";
 		}
 		if (bot.optn_main_send_events.contains("bans")) {
-			bot.msg(bot.irc_channel, "[" + player.getName() + " was IP BANNED because: " + reason + "]");
+			bot.msg(bot.irc_channel, "[" + mod.getName() + " IP BANNED " + player.getName() + " because: " + reason + "]");
 		}
 		if (bot.optn_admin_send_events.contains("bans")) {
-			bot.msg(bot.irc_admin_channel, "[" + player.getName() + " was BANNED because: " + reason + "]");
+			bot.msg(bot.irc_admin_channel, "[" + mod.getName() + " IP BANNED " + player.getName() + " because: " + reason + "]");
 		}
 	}
 
@@ -157,10 +157,10 @@ public class CraftIRCListener extends PluginListener {
 			reason = "no reason given";
 		}
 		if (bot.optn_main_send_events.contains("kicks")) {
-			bot.msg(bot.irc_channel, "[" + player.getName() + " was KICKED because: " + reason + "]");
+			bot.msg(bot.irc_channel, "[" + mod.getName() + " KICKED " + player.getName() + " because: " + reason + "]");
 		}
 		if (bot.optn_admin_send_events.contains("kicks")) {
-			bot.msg(bot.irc_admin_channel, "[" + player.getName() + " was KICKED because: " + reason + "]");
+			bot.msg(bot.irc_admin_channel, "[" + mod.getName() + " KICKED " + player.getName() + " because: " + reason + "]");
 		}
 	}
 
