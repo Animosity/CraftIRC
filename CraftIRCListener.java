@@ -78,6 +78,11 @@ public class CraftIRCListener extends PluginListener {
 				}
 				return true;
 			}
+			
+			if (split[1].equalsIgnoreCase("sync")) {
+				bot.checkChannels();
+				return true;
+			}
 
 		}
 		return false;

@@ -245,7 +245,7 @@ public class Minebot extends PircBot {
 	public void start() {
 
 		log.info(CraftIRC.NAME + " v" + CraftIRC.VERSION + " loading.");
-
+		this.setVerbose(true);
 		if (this.irc_server_port == null || this.irc_server_port.equals("")) {
 			if (this.irc_server_ssl) {
 				this.irc_server_port = "6697";
@@ -277,9 +277,9 @@ public class Minebot extends PircBot {
 
 			this.joinChannel(irc_channel, irc_channel_pass);
 			this.joinAdminChannel();
-			Thread.sleep(this.bot_timeout); // known to get ahead of the bot
+/*			Thread.sleep(this.bot_timeout); // known to get ahead of the bot
 											// actually joining the channels
-			this.checkChannels();
+*/			this.checkChannels();
 
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
@@ -288,12 +288,12 @@ public class Minebot extends PircBot {
 			this.joinChannel(irc_channel, irc_channel_pass);
 			this.joinAdminChannel();
 
-			try {
+			/*try {
 				Thread.sleep(this.bot_timeout); // known to get ahead of the bot actually
 				// joining the channels
 			} catch (InterruptedException e1) {
 				e1.printStackTrace();
-			}
+			}*/
 
 			this.checkChannels();
 
@@ -350,8 +350,14 @@ public class Minebot extends PircBot {
 	// Determine which of the selected channels the bot is actually present in -
 	// disable features if not in the required channels.
 	void checkChannels() {
+		try {
+			Thread.sleep(this.bot_timeout);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		ArrayList<String> botChannels = this.getChannelList();
-
 		if (!botChannels.contains(this.irc_channel)) {
 			log.info(CraftIRC.NAME + " - " + this.getNick() + " not in main channel: " + this.irc_channel
 					+ ", disabling all events for channel");
@@ -362,6 +368,7 @@ public class Minebot extends PircBot {
 
 		} else {
 			log.info(CraftIRC.NAME + " - Joined main channel: " + this.irc_channel);
+			
 		}
 
 		if (!botChannels.contains(this.irc_admin_channel)) {

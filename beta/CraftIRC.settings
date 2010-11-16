@@ -39,7 +39,7 @@ irc-admin-channel-password=
 ## Prefixes of users in admin channel that can use admin bot commands
 irc-admin-prefixes=%,@,&,~
 ## Set the console commands you want accessible from the admin IRC channel
-## Options include but are not limited to: reload,modify,whitelist,reservelist,enableplugin,disableplugin,reloadplugin,say,kick,ban,ban-ip,pardon-ip,op,deop,tp,give,tell,stop,save-all,save-off,save-on
+## Options include but are not limited to: reload,modify,whitelist,reservelist,enableplugin,disableplugin,reloadplugin,say,kick,ban,ban-ip,pardon,pardon-ip,op,deop,tp,give,tell,stop,save-all,save-off,save-on
 irc-console-commands=say,kick,ban,ipban,reloadplugin,save-all
 ## Add comma-separated command prefixes for the bot to IGNORE, such as those used by other bots in the same IRC channels
 irc-ignored-command-prefixes=
