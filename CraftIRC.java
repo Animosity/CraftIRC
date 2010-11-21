@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 
 public class CraftIRC extends Plugin {
 	public static final String NAME = "CraftIRC";
-	public static final String VERSION = "1.5.2 Beta 5";
+	public static final String VERSION = "1.6 Beta 1";
 	private static boolean debug = false;
 	private static Minebot bot;
 
@@ -18,7 +18,7 @@ public class CraftIRC extends Plugin {
 		log.info(NAME + " Enabled.");
 		// instantiate bot w/ settings
 		bot = Minebot.getInstance();
-		bot.init();
+		bot.run();
 
 		etc.getInstance().addCommand("/irc [msg]", "Sends message to " + bot.irc_channel);
 		if (bot.optn_notify_admins_cmd != null) {

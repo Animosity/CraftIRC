@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -10,9 +11,11 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Properties;
+import java.util.Timer;
+import java.util.TimerTask;
 import org.jibble.pircbot.*;
 
-public class Minebot extends PircBot {
+public class Minebot extends PircBot implements Runnable {
 	private static Minebot instance = null;
 	protected static final Logger log = Logger.getLogger("Minecraft");
 	Properties ircSettings = new Properties();
@@ -127,7 +130,7 @@ public class Minebot extends PircBot {
 			// get the 'check' delay from properties
 			if (ircSettings.containsKey("bot-timeout")) {
 				try {
-					this.bot_timeout = 1000 * Integer.parseInt(ircSettings.getProperty("bot-timeout"));
+					this.bot_timeout = 1000 * Integer.parseInt(ircSettings.getProperty("bot-timeout"),5000);
 				} // get input in seconds, convert to ms
 				catch (Exception e) {
 					this.bot_timeout = 5000;
@@ -245,7 +248,6 @@ public class Minebot extends PircBot {
 	public void start() {
 
 		log.info(CraftIRC.NAME + " v" + CraftIRC.VERSION + " loading.");
-		this.setVerbose(true);
 		if (this.irc_server_port == null || this.irc_server_port.equals("")) {
 			if (this.irc_server_ssl) {
 				this.irc_server_port = "6697";
@@ -277,9 +279,15 @@ public class Minebot extends PircBot {
 
 			this.joinChannel(irc_channel, irc_channel_pass);
 			this.joinAdminChannel();
-/*			Thread.sleep(this.bot_timeout); // known to get ahead of the bot
-											// actually joining the channels
-*/			this.checkChannels();
+			/*Thread.sleep(this.bot_timeout); // known to get ahead of the bot
+											// actually joining the channels*/
+			
+			
+			Timer timer = new Timer();
+			Date checkdelay = new Date();
+			checkdelay.setTime(checkdelay.getTime() + this.bot_timeout);
+			timer.schedule(new CheckChannelsTask(), checkdelay);
+		
 
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
@@ -287,7 +295,9 @@ public class Minebot extends PircBot {
 			this.authenticateBot();
 			this.joinChannel(irc_channel, irc_channel_pass);
 			this.joinAdminChannel();
-
+			
+			
+			
 			/*try {
 				Thread.sleep(this.bot_timeout); // known to get ahead of the bot actually
 				// joining the channels
@@ -295,7 +305,7 @@ public class Minebot extends PircBot {
 				e1.printStackTrace();
 			}*/
 
-			this.checkChannels();
+			//this.checkChannels();
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -326,12 +336,18 @@ public class Minebot extends PircBot {
 			this.identify(irc_auth_pass);
 
 		}
-		if (this.irc_auth_method.equalsIgnoreCase("gamesurge")) {
+		else if (this.irc_auth_method.equalsIgnoreCase("gamesurge")) {
 			log.info(CraftIRC.NAME + " - Using GameSurge authentication.");
 			this.changeNick(irc_handle);
 			this.sendMessage("AuthServ@Services.GameSurge.net", "AUTH " + irc_auth_username + " " + irc_auth_pass);
 		}
-
+		
+		else if (this.irc_auth_method.equalsIgnoreCase("quakenet")) {
+			log.info(CraftIRC.NAME + " - Using QuakeNet authentication.");
+			this.changeNick(irc_handle);
+			this.sendMessage("Q@CServe.quakenet.org", "AUTH " + irc_auth_username + " " + irc_auth_pass);
+		}
+				
 	}
 
 	public void joinAdminChannel() {
@@ -350,13 +366,6 @@ public class Minebot extends PircBot {
 	// Determine which of the selected channels the bot is actually present in -
 	// disable features if not in the required channels.
 	void checkChannels() {
-		try {
-			Thread.sleep(this.bot_timeout);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
 		ArrayList<String> botChannels = this.getChannelList();
 		if (!botChannels.contains(this.irc_channel)) {
 			log.info(CraftIRC.NAME + " - " + this.getNick() + " not in main channel: " + this.irc_channel
@@ -628,4 +637,19 @@ public class Minebot extends PircBot {
 		sendMessage(target, message);
 	}
 
-} // EO Minebot
+	public class CheckChannelsTask extends TimerTask {
+		public void run() {
+			Minebot.getInstance().checkChannels();
+			
+		}
+	}
+	
+	@Override
+	public void run() {
+		this.init();
+		
+	}
+
+}// EO Minebot
+
+
