@@ -33,7 +33,11 @@ public class CraftIRC extends Plugin {
 		etc.getInstance().removeCommand("/irc [msg]");
 		etc.getInstance().removeCommand(bot.optn_notify_admins_cmd + " [msg]");
 		bot.quitServer(NAME + " Unloaded");
+	}
 
+	// Use the first instance of bot to do the auto-reconnection/recovery
+	public void recover() {
+		bot.init();
 	}
 
 	public void initialize() {
