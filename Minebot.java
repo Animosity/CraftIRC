@@ -53,7 +53,9 @@ public class Minebot extends PircBot implements Runnable {
 																		// channel sources are
 																		// selectable
 
-	ArrayList<String> optn_ignored_command_prefixes = new ArrayList<String>(); // list of command prefixes to ignore in IRC, such as those for other bots.
+	ArrayList<String> optn_ignored_IRC_command_prefixes = new ArrayList<String>(); // list of command prefixes to ignore in IRC, such as those for other bots.
+
+	ArrayList<String> optn_req_MC_message_prefixes = new ArrayList<String>(); // list of message prefixes to ignore sending to IRC from MC. e.g. ChatChannels prefixes messages with a given channel's tag.
 
 	String optn_notify_admins_cmd;
 
@@ -171,6 +173,11 @@ public class Minebot extends PircBot implements Runnable {
 			if (ircSettings.containsKey("irc-ignored-command-prefixes")) {
 				this.optn_send_all_IRC_chat = this.getCSVArrayList(ircSettings
 						.getProperty("irc-ignored-command-prefixes"));
+			}
+			
+			if (ircSettings.containsKey("game-ignored-message-prefixes")) {
+				this.optn_req_MC_message_prefixes = this.getCSVArrayList(ircSettings
+						.getProperty("game-ignored-message-prefixes"));
 			}
 
 		}
@@ -493,8 +500,8 @@ public class Minebot extends PircBot implements Runnable {
 
 			if (channel.equalsIgnoreCase(this.irc_channel) && this.optn_send_all_IRC_chat.contains("main")) {
 				if (!message.startsWith(cmd_prefix)
-						&& !this.optn_ignored_command_prefixes.contains(splitMessage[0].charAt(0))) {
-					msgToGame(sender, message, true);
+						&& !this.optn_ignored_IRC_command_prefixes.contains(splitMessage[0].charAt(0))) {
+					msgToGame(sender, message, false);
 				} // don't send command messages to MC
 				return;
 
@@ -502,8 +509,8 @@ public class Minebot extends PircBot implements Runnable {
 
 			else if (channel.equalsIgnoreCase(this.irc_admin_channel) && this.optn_send_all_IRC_chat.contains("admin")) {
 				if (!message.startsWith(cmd_prefix)
-						&& !this.optn_ignored_command_prefixes.contains(splitMessage[0].charAt(0))) {
-					msgToGame(sender, message, true);
+						&& !this.optn_ignored_IRC_command_prefixes.contains(splitMessage[0].charAt(0))) {
+					msgToGame(sender, message, false);
 				} // don't send command messages to MC
 				return;
 
@@ -561,12 +568,12 @@ public class Minebot extends PircBot implements Runnable {
 	// Form and broadcast messages to Minecraft
 	public void msgToGame(String sender, String message, Boolean isAction) {
 
-		if (!isAction) {
+		if (isAction) {
 			if (CraftIRC.isDebug()) {
-				log.info(String.format(CraftIRC.NAME + " actionToGame : <%s> %s", sender, message));
+				log.info(String.format(CraftIRC.NAME + " msgToGame(action) : <%s> %s", sender, message));
 			}
 			String msg_to_broadcast = (new StringBuilder()).append("[IRC]").append(irc_relayed_user_color).append(" *")
-					.append(sender).append(message).toString();
+					.append(sender).append(" ").append(message).toString();
 
 			for (Player p : etc.getServer().getPlayerList()) {
 				if (p != null) {
