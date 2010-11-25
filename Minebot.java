@@ -1,11 +1,9 @@
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -19,10 +17,7 @@ import org.jibble.pircbot.*;
  * @author Animosity
  *
  */
-/**
- * @author Animosity
- * 
- */
+
 public class Minebot extends PircBot implements Runnable {
 	public static Minebot instance = null;
 	protected static final Logger log = Logger.getLogger("Minecraft");
@@ -33,38 +28,26 @@ public class Minebot extends PircBot implements Runnable {
 	boolean bot_debug = false;
 	String cmd_prefix;
 	String irc_relayed_user_color;
+
 	public String irc_handle;
-
 	String irc_server, irc_server_port, irc_server_pass, irc_server_login, irc_message_delay;
-
 	String irc_auth_method, irc_auth_username, irc_auth_pass;
 	String irc_channel, irc_channel_pass, irc_admin_channel, irc_admin_channel_pass;
 	Boolean irc_server_ssl = false;
 
 	ArrayList<String> optn_main_req_prefixes = new ArrayList<String>(); // require IRC user (main) to have +/%/@/&/~ -- NOT IMPLEMENTED
 	ArrayList<String> optn_admin_req_prefixes = new ArrayList<String>(); // require IRC user (admin) to have +/%/@/&/~
-
 	ArrayList<String> optn_main_send_events = new ArrayList<String>(); // which MC events to send to main IRC channel
-
 	ArrayList<String> optn_admin_send_events = new ArrayList<String>(); // which MC events to send to admin IRC channel
 	ArrayList<String> optn_send_all_MC_chat = new ArrayList<String>(); // where to send MC chat
-
-	ArrayList<String> optn_send_all_IRC_chat = new ArrayList<String>(); // send IRC chat to MC? - now
-																		// channel sources are
-																		// selectable
-
+	ArrayList<String> optn_send_all_IRC_chat = new ArrayList<String>(); // send IRC chat to MC? - now channel sources are selectable
 	ArrayList<String> optn_ignored_IRC_command_prefixes = new ArrayList<String>(); // list of command prefixes to ignore in IRC, such as those for other bots.
-
 	ArrayList<String> optn_req_MC_message_prefixes = new ArrayList<String>(); // list of message prefixes to ignore sending to IRC from MC. e.g. ChatChannels prefixes messages with a given channel's tag.
-
 	String optn_notify_admins_cmd;
-
 	ArrayList<String> optn_console_commands = new ArrayList<String>(); // whitelisted console commands to execute from IRC admin channel
-	int bot_timeout = 5000; // how long to wait after joining channels to wait
-							// for the bot to check itself
+	int bot_timeout = 5000; // how long to wait after joining channels to wait for the bot to check itself
 
-	User[] irc_users_main;
-	User[] irc_users_admin;
+	User[] irc_users_main, irc_users_admin;
 
 	protected Minebot() {
 
@@ -288,13 +271,10 @@ public class Minebot extends PircBot implements Runnable {
 				log.info(CraftIRC.NAME + " - Connection failed!");
 			}
 
-			this.authenticateBot(); // will always GHOST own registered nick if
-									// auth method is nickserv
+			this.authenticateBot(); // will always GHOST own registered nick if auth method is nickserv
 
 			this.joinChannel(irc_channel, irc_channel_pass);
 			this.joinAdminChannel();
-			/*Thread.sleep(this.bot_timeout); // known to get ahead of the bot
-											// actually joining the channels*/
 
 			Timer timer = new Timer();
 			Date checkdelay = new Date();
@@ -353,6 +333,7 @@ public class Minebot extends PircBot implements Runnable {
 
 	}
 
+	// Obsoleting.
 	public void joinAdminChannel() {
 		if (irc_admin_channel == null || irc_admin_channel.equals("")) {
 			optn_admin_send_events.clear(); // clear any event option because we
