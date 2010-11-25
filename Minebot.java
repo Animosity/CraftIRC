@@ -149,7 +149,7 @@ public class Minebot extends PircBot implements Runnable {
 			}
 
 			if (ircSettings.containsKey("irc-admin-prefixes")) {
-				this.optn_admin_req_prefixes = getRequiredPrefixes(ircSettings.getProperty("irc-admin-prefixes").trim());
+				this.optn_admin_req_prefixes = this.getCSVArrayList(ircSettings.getProperty("irc-admin-prefixes").trim());
 			}
 
 			if (ircSettings.containsKey("irc-console-commands")) {
@@ -229,10 +229,6 @@ public class Minebot extends PircBot implements Runnable {
 		colorMap.put("lightpurple", Colors.LightPurple);
 		colorMap.put("yellow", Colors.Yellow);
 		colorMap.put("white", Colors.White);
-	}
-
-	private ArrayList<String> getRequiredPrefixes(String csv_prefixes) {
-		return new ArrayList<String>(Arrays.asList(csv_prefixes.split(",")));
 	}
 
 	// Sets the directionality for MC->IRC chat (channels are targets)
@@ -649,11 +645,11 @@ public class Minebot extends PircBot implements Runnable {
 	public void onDisconnect() {
 		try {
 			Plugin thisBot = etc.getLoader().getPlugin(CraftIRC.NAME);
-			if (this.instance != null && thisBot.isEnabled())
+			if (this.instance != null && thisBot.isEnabled()) {
 				log.info(CraftIRC.NAME + " - disconnected from IRC server... reconnecting!");
 
-			((CraftIRC) thisBot).recover();
-
+				((CraftIRC) thisBot).recover();
+			}
 		} catch (Exception e) {
 		}
 

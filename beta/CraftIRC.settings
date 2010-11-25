@@ -49,7 +49,7 @@ irc-ignored-command-prefixes=
 ## send-all-chat options are: main,admin -- choose which channels you wish to send game chat to, or none.
 ## send-all-IRC options are: main,admin -- choose which IRC channels' chat you want to send to the game.
 send-all-chat=main,admin
-send-all-IRC=main
+send-all-IRC=main,admin
 ## Game events to relay to IRC -- options are: joins, quits, kicks, bans
 send-events=joins,quits,kicks,bans
 admin-send-events=joins,quits,kicks,bans
