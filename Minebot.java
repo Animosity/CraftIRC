@@ -417,6 +417,7 @@ public class Minebot extends PircBot implements Runnable {
 
 		String[] splitMessage = message.split(" ");
 		String command = this.combineSplit(1, splitMessage, " ");
+		
 		try {
 
 			// Parse admin commands here
@@ -465,6 +466,15 @@ public class Minebot extends PircBot implements Runnable {
 					this.sendNotice(sender, "Sent to main channel: " + command);
 					return;
 				}
+				
+				else if (message.startsWith(cmd_prefix + "raw")) {
+					// message = message.substring(message.indexOf(" ")).trim();
+					if (splitMessage.length > 1) {
+						this.sendRawLine(this.combineSplit(1, splitMessage, " "));
+						this.sendNotice(sender, "Raw IRC string sent");
+						return;
+					}
+				}
 
 			} // end admin commands
 
@@ -504,6 +514,7 @@ public class Minebot extends PircBot implements Runnable {
 				}
 			}
 
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.log(Level.SEVERE, CraftIRC.NAME + " - error while relaying IRC command: " + message);
