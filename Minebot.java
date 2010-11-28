@@ -15,7 +15,7 @@ import org.jibble.pircbot.*;
 
 /**
  * @author Animosity
- *
+ * 
  */
 
 public class Minebot extends PircBot implements Runnable {
@@ -71,18 +71,17 @@ public class Minebot extends PircBot implements Runnable {
 		}
 
 		try {
-			cmd_prefix = ircSettings.getProperty("command-prefix");
-
+			cmd_prefix = ircSettings.getProperty("command-prefix", ".").trim();
 			if (colorMap.containsKey(ircSettings.getProperty("irc-relayed-user-color").toLowerCase())) {
 				irc_relayed_user_color = colorMap.get(ircSettings.getProperty("irc-relayed-user-color").toLowerCase());
 			} else {
 				irc_relayed_user_color = colorMap.get("white");
 			}
 
-			irc_handle = ircSettings.getProperty("irc-handle").trim();
+			irc_handle = ircSettings.getProperty("irc-handle", "CraftIRCBot").trim();
 
 			irc_server = ircSettings.getProperty("irc-server").trim();
-			irc_server_port = ircSettings.getProperty("irc-server-port").trim();
+			irc_server_port = ircSettings.getProperty("irc-server-port", "6667").trim();
 			irc_server_pass = ircSettings.getProperty("irc-server-password").trim();
 			irc_server_ssl = Boolean.parseBoolean(ircSettings.getProperty("irc-server-ssl").trim());
 
@@ -171,10 +170,11 @@ public class Minebot extends PircBot implements Runnable {
 			log.info(CraftIRC.NAME + " - Error while LOADING settings from " + this.ircSettingsFilename);
 			e.printStackTrace();
 		}
-		if (irc_handle.isEmpty()) {
-			this.irc_handle = "minecraftbot";
-		}
 
+		/*if (irc_handle.isEmpty()) {
+			this.irc_handle = "CraftIRCBot";
+		}
+		 */
 		this.setName(this.irc_handle);
 		this.setFinger(CraftIRC.NAME + " v" + CraftIRC.VERSION);
 		this.setLogin(this.irc_server_login);
@@ -417,7 +417,7 @@ public class Minebot extends PircBot implements Runnable {
 
 		String[] splitMessage = message.split(" ");
 		String command = this.combineSplit(1, splitMessage, " ");
-		
+
 		try {
 
 			// Parse admin commands here
@@ -466,7 +466,7 @@ public class Minebot extends PircBot implements Runnable {
 					this.sendNotice(sender, "Sent to main channel: " + command);
 					return;
 				}
-				
+
 				else if (message.startsWith(cmd_prefix + "raw")) {
 					// message = message.substring(message.indexOf(" ")).trim();
 					if (splitMessage.length > 1) {
@@ -514,7 +514,6 @@ public class Minebot extends PircBot implements Runnable {
 				}
 			}
 
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.log(Level.SEVERE, CraftIRC.NAME + " - error while relaying IRC command: " + message);

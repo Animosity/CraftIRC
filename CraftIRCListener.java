@@ -1,11 +1,15 @@
 import java.lang.Exception;
 import java.util.logging.Logger;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 public class CraftIRCListener extends PluginListener {
 	protected static final Logger log = Logger.getLogger("Minecraft");
+	private static ArrayList<String> logMessages = new ArrayList<String>();
 	private static Minebot bot;
-
+	
 	public CraftIRCListener() {
 		bot = Minebot.getInstance();
 	}
@@ -199,5 +203,6 @@ public class CraftIRCListener extends PluginListener {
 
 		return result.toString();
 	}
-
+	
+	
 }
