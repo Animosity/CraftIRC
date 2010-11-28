@@ -43,6 +43,7 @@ public class Minebot extends PircBot implements Runnable {
 	ArrayList<String> optn_send_all_IRC_chat = new ArrayList<String>(); // send IRC chat to MC? - now channel sources are selectable
 	ArrayList<String> optn_ignored_IRC_command_prefixes = new ArrayList<String>(); // list of command prefixes to ignore in IRC, such as those for other bots.
 	ArrayList<String> optn_req_MC_message_prefixes = new ArrayList<String>(); // list of message prefixes to ignore sending to IRC from MC. e.g. ChatChannels prefixes messages with a given channel's tag.
+	ArrayList<String> optn_ignored_IRC_users = new ArrayList<String>(); // IRC users who are completely ignored
 	String optn_notify_admins_cmd;
 	ArrayList<String> optn_console_commands = new ArrayList<String>(); // whitelisted console commands to execute from IRC admin channel
 	int bot_timeout = 5000; // how long to wait after joining channels to wait for the bot to check itself
@@ -162,6 +163,11 @@ public class Minebot extends PircBot implements Runnable {
 			if (ircSettings.containsKey("game-ignored-message-prefixes")) {
 				this.optn_req_MC_message_prefixes = this.getCSVArrayList(ircSettings.getProperty(
 						"game-ignored-message-prefixes").trim());
+			}
+			
+			if (ircSettings.containsKey("irc-ignored-users")) {
+				this.optn_ignored_IRC_users = this.getCSVArrayList(ircSettings.getProperty(
+						"irc-ignored-users").trim());
 			}
 
 		}
@@ -414,6 +420,8 @@ public class Minebot extends PircBot implements Runnable {
 
 	// IRC commands parsed here
 	public void onMessage(String channel, String sender, String login, String hostname, String message) {
+	
+		if (this.optn_ignored_IRC_users.contains(sender.toLowerCase())) return;
 
 		String[] splitMessage = message.split(" ");
 		String command = this.combineSplit(1, splitMessage, " ");
