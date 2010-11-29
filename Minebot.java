@@ -1,11 +1,9 @@
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -17,12 +15,9 @@ import org.jibble.pircbot.*;
 
 /**
  * @author Animosity
- *
- */
-/**
- * @author Animosity
  * 
  */
+
 public class Minebot extends PircBot implements Runnable {
 	public static Minebot instance = null;
 	protected static final Logger log = Logger.getLogger("Minecraft");
@@ -33,38 +28,27 @@ public class Minebot extends PircBot implements Runnable {
 	boolean bot_debug = false;
 	String cmd_prefix;
 	String irc_relayed_user_color;
+
 	public String irc_handle;
-
 	String irc_server, irc_server_port, irc_server_pass, irc_server_login, irc_message_delay;
-
 	String irc_auth_method, irc_auth_username, irc_auth_pass;
 	String irc_channel, irc_channel_pass, irc_admin_channel, irc_admin_channel_pass;
 	Boolean irc_server_ssl = false;
 
 	ArrayList<String> optn_main_req_prefixes = new ArrayList<String>(); // require IRC user (main) to have +/%/@/&/~ -- NOT IMPLEMENTED
 	ArrayList<String> optn_admin_req_prefixes = new ArrayList<String>(); // require IRC user (admin) to have +/%/@/&/~
-
 	ArrayList<String> optn_main_send_events = new ArrayList<String>(); // which MC events to send to main IRC channel
-
 	ArrayList<String> optn_admin_send_events = new ArrayList<String>(); // which MC events to send to admin IRC channel
 	ArrayList<String> optn_send_all_MC_chat = new ArrayList<String>(); // where to send MC chat
-
-	ArrayList<String> optn_send_all_IRC_chat = new ArrayList<String>(); // send IRC chat to MC? - now
-																		// channel sources are
-																		// selectable
-
+	ArrayList<String> optn_send_all_IRC_chat = new ArrayList<String>(); // send IRC chat to MC? - now channel sources are selectable
 	ArrayList<String> optn_ignored_IRC_command_prefixes = new ArrayList<String>(); // list of command prefixes to ignore in IRC, such as those for other bots.
-
 	ArrayList<String> optn_req_MC_message_prefixes = new ArrayList<String>(); // list of message prefixes to ignore sending to IRC from MC. e.g. ChatChannels prefixes messages with a given channel's tag.
-
+	ArrayList<String> optn_ignored_IRC_users = new ArrayList<String>(); // IRC users who are completely ignored
 	String optn_notify_admins_cmd;
-
 	ArrayList<String> optn_console_commands = new ArrayList<String>(); // whitelisted console commands to execute from IRC admin channel
-	int bot_timeout = 5000; // how long to wait after joining channels to wait
-							// for the bot to check itself
+	int bot_timeout = 5000; // how long to wait after joining channels to wait for the bot to check itself
 
-	User[] irc_users_main;
-	User[] irc_users_admin;
+	User[] irc_users_main, irc_users_admin;
 
 	protected Minebot() {
 
@@ -88,20 +72,19 @@ public class Minebot extends PircBot implements Runnable {
 		}
 
 		try {
-			cmd_prefix = ircSettings.getProperty("command-prefix");
-
+			cmd_prefix = ircSettings.getProperty("command-prefix", ".").trim();
 			if (colorMap.containsKey(ircSettings.getProperty("irc-relayed-user-color").toLowerCase())) {
 				irc_relayed_user_color = colorMap.get(ircSettings.getProperty("irc-relayed-user-color").toLowerCase());
 			} else {
 				irc_relayed_user_color = colorMap.get("white");
 			}
 
-			irc_handle = ircSettings.getProperty("irc-handle").trim();
+			irc_handle = ircSettings.getProperty("irc-handle", "CraftIRCBot").trim();
 
 			irc_server = ircSettings.getProperty("irc-server").trim();
 			irc_server_port = ircSettings.getProperty("irc-server-port").trim();
 			irc_server_pass = ircSettings.getProperty("irc-server-password").trim();
-			irc_server_ssl = Boolean.parseBoolean(ircSettings.getProperty("irc-server-ssl").trim());
+			irc_server_ssl = Boolean.parseBoolean(ircSettings.getProperty("irc-server-ssl", "false").trim());
 
 			irc_auth_method = ircSettings.getProperty("irc-auth-method").trim();
 			irc_auth_username = ircSettings.getProperty("irc-auth-username").trim();
@@ -137,7 +120,7 @@ public class Minebot extends PircBot implements Runnable {
 				}
 			}
 
-			// get the 'check' delay from properties
+			// get the 'checkChannels()' delay from properties
 			if (ircSettings.containsKey("bot-timeout")) {
 				try {
 					this.bot_timeout = 1000 * Integer.parseInt(ircSettings.getProperty("bot-timeout").trim(), 5000);
@@ -149,7 +132,9 @@ public class Minebot extends PircBot implements Runnable {
 			}
 
 			if (ircSettings.containsKey("irc-admin-prefixes")) {
-				this.optn_admin_req_prefixes = this.getCSVArrayList(ircSettings.getProperty("irc-admin-prefixes").trim());
+				this.optn_admin_req_prefixes = this.getCSVArrayList(ircSettings.getProperty("irc-admin-prefixes")
+						.trim());
+
 			}
 
 			if (ircSettings.containsKey("irc-console-commands")) {
@@ -175,10 +160,14 @@ public class Minebot extends PircBot implements Runnable {
 				this.optn_ignored_IRC_command_prefixes = this.getCSVArrayList(ircSettings.getProperty(
 						"irc-ignored-command-prefixes").trim());
 			}
-			
+
 			if (ircSettings.containsKey("game-ignored-message-prefixes")) {
 				this.optn_req_MC_message_prefixes = this.getCSVArrayList(ircSettings.getProperty(
 						"game-ignored-message-prefixes").trim());
+			}
+
+			if (ircSettings.containsKey("irc-ignored-users")) {
+				this.optn_ignored_IRC_users = this.getCSVArrayList(ircSettings.getProperty("irc-ignored-users").trim());
 			}
 
 		}
@@ -187,10 +176,11 @@ public class Minebot extends PircBot implements Runnable {
 			log.info(CraftIRC.NAME + " - Error while LOADING settings from " + this.ircSettingsFilename);
 			e.printStackTrace();
 		}
-		if (irc_handle.isEmpty()) {
-			this.irc_handle = "minecraftbot";
-		}
 
+		/*if (irc_handle.isEmpty()) {
+			this.irc_handle = "CraftIRCBot";
+		}
+		 */
 		this.setName(this.irc_handle);
 		this.setFinger(CraftIRC.NAME + " v" + CraftIRC.VERSION);
 		this.setLogin(this.irc_server_login);
@@ -261,13 +251,6 @@ public class Minebot extends PircBot implements Runnable {
 	public void start() {
 
 		log.info(CraftIRC.NAME + " v" + CraftIRC.VERSION + " loading.");
-		if (this.irc_server_port == null || this.irc_server_port.equals("")) {
-			if (this.irc_server_ssl) {
-				this.irc_server_port = "6697";
-			} else {
-				this.irc_server_port = "6667";
-			}
-		}
 
 		try {
 			this.setAutoNickChange(true);
@@ -287,13 +270,10 @@ public class Minebot extends PircBot implements Runnable {
 				log.info(CraftIRC.NAME + " - Connection failed!");
 			}
 
-			this.authenticateBot(); // will always GHOST own registered nick if
-									// auth method is nickserv
+			this.authenticateBot(); // will always GHOST own registered nick if auth method is nickserv
 
 			this.joinChannel(irc_channel, irc_channel_pass);
 			this.joinAdminChannel();
-			/*Thread.sleep(this.bot_timeout); // known to get ahead of the bot
-											// actually joining the channels*/
 
 			Timer timer = new Timer();
 			Date checkdelay = new Date();
@@ -352,6 +332,7 @@ public class Minebot extends PircBot implements Runnable {
 
 	}
 
+	// Obsoleting.
 	public void joinAdminChannel() {
 		if (irc_admin_channel == null || irc_admin_channel.equals("")) {
 			optn_admin_send_events.clear(); // clear any event option because we
@@ -433,8 +414,12 @@ public class Minebot extends PircBot implements Runnable {
 	// IRC commands parsed here
 	public void onMessage(String channel, String sender, String login, String hostname, String message) {
 
+		if (this.optn_ignored_IRC_users.contains(sender.toLowerCase()))
+			return;
+
 		String[] splitMessage = message.split(" ");
 		String command = this.combineSplit(1, splitMessage, " ");
+
 		try {
 
 			// Parse admin commands here
@@ -484,6 +469,15 @@ public class Minebot extends PircBot implements Runnable {
 					return;
 				}
 
+				else if (message.startsWith(cmd_prefix + "raw")) {
+					// message = message.substring(message.indexOf(" ")).trim();
+					if (splitMessage.length > 1) {
+						this.sendRawLine(this.combineSplit(1, splitMessage, " "));
+						this.sendNotice(sender, "Raw IRC string sent");
+						return;
+					}
+				}
+
 			} // end admin commands
 
 			// begin public commands
@@ -499,7 +493,7 @@ public class Minebot extends PircBot implements Runnable {
 				if (!message.startsWith(cmd_prefix)
 						&& !this.optn_ignored_IRC_command_prefixes.contains(splitMessage[0].charAt(0))) {
 					msgToGame(sender, message, false);
-					
+
 				}
 
 			}
@@ -508,7 +502,7 @@ public class Minebot extends PircBot implements Runnable {
 				if (!message.startsWith(cmd_prefix)
 						&& !this.optn_ignored_IRC_command_prefixes.contains(splitMessage[0].charAt(0))) {
 					msgToGame(sender, message, false);
-					
+
 				}
 
 			}
@@ -533,9 +527,8 @@ public class Minebot extends PircBot implements Runnable {
 
 		if (this.optn_send_all_IRC_chat.contains("main") || this.optn_send_all_IRC_chat.contains("admin")) {
 			msgToGame(sender, action, true);
-			
+
 		}
-		
 
 	}
 
@@ -570,8 +563,8 @@ public class Minebot extends PircBot implements Runnable {
 			if (CraftIRC.isDebug()) {
 				log.info(String.format(CraftIRC.NAME + " msgToGame(action) : <%s> %s", sender, message));
 			}
-			String msg_to_broadcast = (new StringBuilder()).append("[IRC]").append(irc_relayed_user_color).append(" * ")
-					.append(sender).append(" ").append(message).toString();
+			String msg_to_broadcast = (new StringBuilder()).append("[IRC]").append(irc_relayed_user_color)
+					.append(" * ").append(sender).append(" ").append(message).toString();
 
 			for (Player p : etc.getServer().getPlayerList()) {
 				if (p != null) {

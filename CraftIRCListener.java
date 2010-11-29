@@ -1,9 +1,13 @@
 import java.lang.Exception;
-import java.util.Arrays;
 import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 
 public class CraftIRCListener extends PluginListener {
 	protected static final Logger log = Logger.getLogger("Minecraft");
+	private static ArrayList<String> logMessages = new ArrayList<String>();
 	private static Minebot bot;
 
 	public CraftIRCListener() {
@@ -69,12 +73,24 @@ public class CraftIRCListener extends PluginListener {
 	public boolean onConsoleCommand(String[] split) {
 		if (split[0].equalsIgnoreCase("craftirc") && (split.length >= 2)) {
 
-			if (split[1].equalsIgnoreCase("verbose")) {
+			if (split[1].equalsIgnoreCase("debug")) {
 				if (split[2].equalsIgnoreCase("on")) {
-					bot.setVerbose(true);
+					CraftIRC.setDebug(true);
 				}
 				if (split[2].equalsIgnoreCase("off")) {
-					bot.setVerbose(false);
+					CraftIRC.setDebug(false);
+				}
+				return true;
+			}
+
+			if (split[1].equalsIgnoreCase("say")) {
+				//
+				ArrayList<String> botChannels = bot.getChannelList();
+				if (botChannels.contains(bot.irc_channel)) {
+					bot.sendMessage(bot.irc_channel, bot.combineSplit(2, split, " "));
+				}
+				if (botChannels.contains(bot.irc_admin_channel)) {
+					bot.sendMessage(bot.irc_admin_channel, bot.combineSplit(2, split, " "));
 				}
 				return true;
 			}
