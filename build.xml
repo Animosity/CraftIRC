@@ -1,6 +1,6 @@
 <project name="build" basedir="." default="jar">
     <path id="classpath">
-	<fileset dir="../../">
+	<fileset dir="/home/myshelter/minecraft/bin">
                 <include name="Minecraft_Mod.jar"/>
         </fileset>
     </path>

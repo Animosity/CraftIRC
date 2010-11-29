@@ -109,14 +109,20 @@ public class CraftIRCListener extends PluginListener {
 
 	public void sendToIRC(Player player, String message) {
 
+		String playername = player.getName();
+
+		if (bot.irc_colors.equalsIgnoreCase("equiv")) {
+			playername = Character.toString((char)3) + bot.getIRCColor(player.getColor()) + playername + Character.toString((char)15);
+		}
+
 		if (bot.optn_send_all_MC_chat.contains("main") || bot.optn_send_all_MC_chat.contains("true")) {
-			String playername = "(" + player.getName() + ") ";
+			playername = "(" + playername + ") ";
 			String ircmessage = playername + message;
 			bot.msg(bot.irc_channel, ircmessage);
 		}
 
 		if (bot.optn_send_all_MC_chat.contains("admin")) {
-			String playername = "(" + player.getName() + ") ";
+			playername = "(" + playername + ") ";
 			String ircmessage = playername + message;
 			bot.msg(bot.irc_admin_channel, ircmessage);
 
