@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.regex.*;
 import org.jibble.pircbot.*;
 
 /**
@@ -24,6 +25,7 @@ public class Minebot extends PircBot implements Runnable {
 	Properties ircSettings = new Properties();
 	String ircSettingsFilename = "CraftIRC.settings";
 	private static final Map<String, String> colorMap = new HashMap<String, String>();
+	private static final Map<Integer, String> ircColorMap = new HashMap<Integer, String>();
 
 	boolean bot_debug = false;
 	String cmd_prefix;
@@ -33,6 +35,7 @@ public class Minebot extends PircBot implements Runnable {
 	String irc_server, irc_server_port, irc_server_pass, irc_server_login, irc_message_delay;
 	String irc_auth_method, irc_auth_username, irc_auth_pass;
 	String irc_channel, irc_channel_pass, irc_admin_channel, irc_admin_channel_pass;
+	String irc_colors; //Color code treatment - Default: Do nothing; "strip": Remove color codes sent from IRC; "equiv": Colorful messages
 	Boolean irc_server_ssl = false;
 
 	ArrayList<String> optn_main_req_prefixes = new ArrayList<String>(); // require IRC user (main) to have +/%/@/&/~ -- NOT IMPLEMENTED
@@ -169,6 +172,10 @@ public class Minebot extends PircBot implements Runnable {
 			if (ircSettings.containsKey("irc-ignored-users")) {
 				this.optn_ignored_IRC_users = this.getCSVArrayList(ircSettings.getProperty("irc-ignored-users").trim());
 			}
+			
+			if (ircSettings.containsKey("irc-colors")) {
+				this.irc_colors = ircSettings.getProperty("irc-colors").trim();
+			}
 
 		}
 
@@ -219,6 +226,31 @@ public class Minebot extends PircBot implements Runnable {
 		colorMap.put("lightpurple", Colors.LightPurple);
 		colorMap.put("yellow", Colors.Yellow);
 		colorMap.put("white", Colors.White);
+		ircColorMap.put(0, Colors.White);
+		ircColorMap.put(1, Colors.Black);
+		ircColorMap.put(2, Colors.Navy);
+		ircColorMap.put(3, Colors.Green);
+		ircColorMap.put(4, Colors.Rose);
+		ircColorMap.put(5, Colors.Red);
+		ircColorMap.put(6, Colors.Purple);
+		ircColorMap.put(7, Colors.Gold);
+		ircColorMap.put(8, Colors.Yellow);
+		ircColorMap.put(9, Colors.LightGreen);
+		ircColorMap.put(10, Colors.Blue);
+		ircColorMap.put(11, Colors.LightBlue);
+		ircColorMap.put(12, Colors.DarkPurple);
+		ircColorMap.put(13, Colors.LightPurple);
+		ircColorMap.put(14, Colors.Gray);
+		ircColorMap.put(15, Colors.LightGray);
+	}
+	
+	public Integer getIRCColor(String mccolor) {
+		for (Map.Entry<Integer, String> entry: ircColorMap.entrySet()) {
+			if (entry.getValue().equals(mccolor)) {
+				return entry.getKey();
+			}
+		}
+		return 1;
 	}
 
 	// Sets the directionality for MC->IRC chat (channels are targets)
@@ -558,6 +590,22 @@ public class Minebot extends PircBot implements Runnable {
 
 	// Form and broadcast messages to Minecraft
 	public void msgToGame(String sender, String message, Boolean isAction) {
+	
+		if (this.irc_colors.equalsIgnoreCase("strip")) {
+			message = message.replaceAll("(" + Character.toString((char)2) + "|" + Character.toString((char)15) + "|" + Character.toString((char)22)
+							+ Character.toString((char)31) + "|" + Character.toString((char)3) + "[0-9]{0,2}(,[0-9]{0,2})?)", "");
+		}
+		if (this.irc_colors.equalsIgnoreCase("equiv")) {
+			message = message.replaceAll("(" + Character.toString((char)2) + "|" + Character.toString((char)22) + "|" + Character.toString((char)31) + ")", "");
+			message = message.replaceAll(Character.toString((char)15), this.ircColorMap.get(0));
+			Pattern color_codes = Pattern.compile(Character.toString((char)3) + "([01]?[0-9])(,[0-9]{0,2})?");
+			Matcher find_colors = color_codes.matcher(message);
+			while (find_colors.find()) {
+				message = find_colors.replaceFirst(this.ircColorMap.get(Integer.parseInt(find_colors.group(1))));
+				find_colors = color_codes.matcher(message);
+			}
+			message = message + " ";
+		}
 
 		if (isAction) {
 			if (CraftIRC.isDebug()) {
