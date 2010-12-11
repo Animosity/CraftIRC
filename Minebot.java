@@ -64,6 +64,12 @@ public class Minebot extends PircBot implements Runnable {
 		return instance;
 	}
 
+	/**
+	 * 
+	 */
+	/**
+	 * 
+	 */
 	public synchronized void init() {
 
 		this.initColorMap();
@@ -172,7 +178,7 @@ public class Minebot extends PircBot implements Runnable {
 			if (ircSettings.containsKey("irc-ignored-users")) {
 				this.optn_ignored_IRC_users = this.getCSVArrayList(ircSettings.getProperty("irc-ignored-users").trim());
 			}
-			
+
 			if (ircSettings.containsKey("irc-colors")) {
 				this.irc_colors = ircSettings.getProperty("irc-colors").trim();
 			}
@@ -188,6 +194,7 @@ public class Minebot extends PircBot implements Runnable {
 			this.irc_handle = "CraftIRCBot";
 		}
 		 */
+
 		this.setName(this.irc_handle);
 		this.setFinger(CraftIRC.NAME + " v" + CraftIRC.VERSION);
 		this.setLogin(this.irc_server_login);
@@ -243,9 +250,9 @@ public class Minebot extends PircBot implements Runnable {
 		ircColorMap.put(14, Colors.Gray);
 		ircColorMap.put(15, Colors.LightGray);
 	}
-	
+
 	public Integer getIRCColor(String mccolor) {
-		for (Map.Entry<Integer, String> entry: ircColorMap.entrySet()) {
+		for (Map.Entry<Integer, String> entry : ircColorMap.entrySet()) {
 			if (entry.getValue().equals(mccolor)) {
 				return entry.getKey();
 			}
@@ -461,7 +468,7 @@ public class Minebot extends PircBot implements Runnable {
 						&& splitMessage.length > 1 && this.optn_console_commands.contains(splitMessage[1])) {
 					log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: "
 							+ this.combineSplit(0, splitMessage, " "));
-					// Have to call parseConsoleCommand first if you want to use any of the hey0 console commands
+					// Have to call parseConsoleCommand first if you want to use any of the hMod console commands
 					this.sendNotice(sender, "Executed: " + command); // send notice first, in case you're disabling/reloading the bot
 					if (!etc.getInstance().parseConsoleCommand(command, etc.getMCServer())) {
 						etc.getServer().useConsoleCommand(command);
@@ -524,7 +531,7 @@ public class Minebot extends PircBot implements Runnable {
 			if (channel.equalsIgnoreCase(this.irc_channel) && this.optn_send_all_IRC_chat.contains("main")) {
 				if (!message.startsWith(cmd_prefix)
 						&& !this.optn_ignored_IRC_command_prefixes.contains(splitMessage[0].charAt(0))) {
-					msgToGame(sender, message, false);
+					msgToGame(sender, message, 1, null);
 
 				}
 
@@ -533,7 +540,7 @@ public class Minebot extends PircBot implements Runnable {
 			else if (channel.equalsIgnoreCase(this.irc_admin_channel) && this.optn_send_all_IRC_chat.contains("admin")) {
 				if (!message.startsWith(cmd_prefix)
 						&& !this.optn_ignored_IRC_command_prefixes.contains(splitMessage[0].charAt(0))) {
-					msgToGame(sender, message, false);
+					msgToGame(sender, message, 1, null);
 
 				}
 
@@ -542,7 +549,7 @@ public class Minebot extends PircBot implements Runnable {
 			else if (message.startsWith(cmd_prefix + "say") || message.startsWith(cmd_prefix + "mc")) {
 				// message = message.substring(message.indexOf(" ")).trim();
 				if (splitMessage.length > 1) {
-					msgToGame(sender, command, false);
+					msgToGame(sender, command, 1, null);
 					this.sendNotice(sender, "Message sent to game");
 					return;
 				}
@@ -555,10 +562,27 @@ public class Minebot extends PircBot implements Runnable {
 
 	}
 
+	protected void onPrivateMessage(String sender, String login, String hostname, String message) {
+		try {
+			String[] splitMessage = message.split(" ");
+			if (splitMessage.length > 1 && splitMessage[0].equalsIgnoreCase("tell")) {
+				this.msgToGame(sender, this.combineSplit(2, splitMessage, " "), 3, splitMessage[1]);
+			}
+			// check for 'tell'
+
+			// if no 'tell' then assume whisper-target is set (hashmap)
+			// get whisper-target for IRC handle
+			// 
+
+		} catch (Exception e) {
+
+		}
+	}
+
 	public void onAction(String sender, String login, String hostname, String target, String action) {
 
 		if (this.optn_send_all_IRC_chat.contains("main") || this.optn_send_all_IRC_chat.contains("admin")) {
-			msgToGame(sender, action, true);
+			msgToGame(sender, action, 2, null);
 
 		}
 
@@ -589,50 +613,76 @@ public class Minebot extends PircBot implements Runnable {
 	}
 
 	// Form and broadcast messages to Minecraft
-	public void msgToGame(String sender, String message, Boolean isAction) {
-	
-		if (this.irc_colors.equalsIgnoreCase("strip")) {
-			message = message.replaceAll("(" + Character.toString((char)2) + "|" + Character.toString((char)15) + "|" + Character.toString((char)22)
-							+ Character.toString((char)31) + "|" + Character.toString((char)3) + "[0-9]{0,2}(,[0-9]{0,2})?)", "");
-		}
-		if (this.irc_colors.equalsIgnoreCase("equiv")) {
-			message = message.replaceAll("(" + Character.toString((char)2) + "|" + Character.toString((char)22) + "|" + Character.toString((char)31) + ")", "");
-			message = message.replaceAll(Character.toString((char)15), this.ircColorMap.get(0));
-			Pattern color_codes = Pattern.compile(Character.toString((char)3) + "([01]?[0-9])(,[0-9]{0,2})?");
-			Matcher find_colors = color_codes.matcher(message);
-			while (find_colors.find()) {
-				message = find_colors.replaceFirst(this.ircColorMap.get(Integer.parseInt(find_colors.group(1))));
-				find_colors = color_codes.matcher(message);
-			}
-			message = message + " ";
-		}
+	public void msgToGame(String sender, String message, Integer messageMode, String targetPlayer) {
 
-		if (isAction) {
-			if (CraftIRC.isDebug()) {
-				log.info(String.format(CraftIRC.NAME + " msgToGame(action) : <%s> %s", sender, message));
+		try {
+			if (this.irc_colors.equalsIgnoreCase("strip")) {
+				message = message.replaceAll(
+						"(" + Character.toString((char) 2) + "|" + Character.toString((char) 15) + "|"
+								+ Character.toString((char) 22) + Character.toString((char) 31) + "|"
+								+ Character.toString((char) 3) + "[0-9]{0,2}(,[0-9]{0,2})?)", "");
 			}
-			String msg_to_broadcast = (new StringBuilder()).append("[IRC]").append(irc_relayed_user_color)
-					.append(" * ").append(sender).append(" ").append(message).toString();
+			if (this.irc_colors.equalsIgnoreCase("equiv")) {
+				message = message.replaceAll("(" + Character.toString((char) 2) + "|" + Character.toString((char) 22)
+						+ "|" + Character.toString((char) 31) + ")", "");
+				message = message.replaceAll(Character.toString((char) 15), this.ircColorMap.get(0));
+				Pattern color_codes = Pattern.compile(Character.toString((char) 3) + "([01]?[0-9])(,[0-9]{0,2})?");
+				Matcher find_colors = color_codes.matcher(message);
+				while (find_colors.find()) {
+					message = find_colors.replaceFirst(this.ircColorMap.get(Integer.parseInt(find_colors.group(1))));
+					find_colors = color_codes.matcher(message);
+				}
+				message = message + " ";
+			}
 
-			for (Player p : etc.getServer().getPlayerList()) {
+			// MESSAGE TO ALL PLAYERS
+			if (messageMode.equals(1)) {
+				if (CraftIRC.isDebug()) {
+					log.info(String.format(CraftIRC.NAME + " msgToGame(all) : <%s> %s", sender, message));
+				}
+				String msg_to_broadcast = (new StringBuilder()).append("[IRC]").append(" <")
+						.append(irc_relayed_user_color).append(sender).append(Colors.White).append("> ")
+						.append(message).toString();
+
+				for (Player p : etc.getServer().getPlayerList()) {
+					if (p != null) {
+						p.sendMessage(msg_to_broadcast);
+					}
+				}
+			}
+
+			// ACTION
+			else if (messageMode.equals(2)) {
+				if (CraftIRC.isDebug()) {
+					log.info(String.format(CraftIRC.NAME + " msgToGame(action) : <%s> %s", sender, message));
+				}
+				String msg_to_broadcast = (new StringBuilder()).append("[IRC]").append(irc_relayed_user_color)
+						.append(" * ").append(sender).append(" ").append(message).toString();
+
+				for (Player p : etc.getServer().getPlayerList()) {
+					if (p != null) {
+						p.sendMessage(msg_to_broadcast);
+					}
+				}
+			}
+
+			// MESSAGE TO 1 PLAYER
+			else if (messageMode.equals(3)) {
+				if (CraftIRC.isDebug()) {
+					log.info(String.format(CraftIRC.NAME + " msgToGame(player) : <%s> %s", sender, message));
+				}
+				String msg_to_broadcast = (new StringBuilder()).append("[IRC privmsg]").append(" <")
+						.append(irc_relayed_user_color).append(sender).append(Colors.White).append("> ")
+						.append(message).toString();
+				Player p = etc.getServer().getPlayer(targetPlayer);
 				if (p != null) {
 					p.sendMessage(msg_to_broadcast);
 				}
-			}
-		}
 
-		else {
-			if (CraftIRC.isDebug()) {
-				log.info(String.format(CraftIRC.NAME + " msgToGame : <%s> %s", sender, message));
 			}
-			String msg_to_broadcast = (new StringBuilder()).append("[IRC]").append(" <").append(irc_relayed_user_color)
-					.append(sender).append(Colors.White).append("> ").append(message).toString();
 
-			for (Player p : etc.getServer().getPlayerList()) {
-				if (p != null) {
-					p.sendMessage(msg_to_broadcast);
-				}
-			}
+		} catch (Exception e) {
+			System.out.println(e.toString());
 		}
 	}
 

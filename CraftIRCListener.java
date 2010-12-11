@@ -16,24 +16,24 @@ public class CraftIRCListener extends PluginListener {
 
 	public boolean onCommand(Player player, String split[]) {
 
-		if (split[0].equalsIgnoreCase("/irc") && (!bot.optn_send_all_MC_chat.contains("main"))) {
-			if (player.canUseCommand("/irc")) {
+		if (player.canUseCommand("/irc")) {
 
-				if (split.length < 2) // TODO determine the proper length to use here, sometime
-				{
+			if (split[0].equalsIgnoreCase("/irc") && (!bot.optn_send_all_MC_chat.contains("main"))) {
+
+				if (split.length < 2) {
 					player.sendMessage("\247cCorrect usage is: /irc [message]");
 					return true;
 				}
 
 				// player used command correctly
 				String player_name = "(" + player.getName() + ") ";
-				String msgtosend = MessageBuilder(split, " ");
+				String msgtosend = bot.combineSplit(1, split, " ");
 
-				String ircmessage = player_name + msgtosend;
+				String ircMessage = player_name + msgtosend;
 				String echoedMessage = new StringBuilder().append("<").append(bot.irc_relayed_user_color)
 						.append(player.getName()).append(Colors.White).append(" to IRC> ").append(msgtosend).toString();
 
-				bot.msg(bot.irc_channel, ircmessage);
+				bot.msg(bot.irc_channel, ircMessage);
 
 				// echo -> IRC msg locally in game
 				for (Player p : etc.getServer().getPlayerList()) {
@@ -43,28 +43,45 @@ public class CraftIRCListener extends PluginListener {
 				}
 				return true;
 			}
-		}
 
-		// notify/call admins in the admin IRC channel
-		if (bot.optn_notify_admins_cmd != null) {
-			if (split[0].equalsIgnoreCase(bot.optn_notify_admins_cmd)) {
-				bot.sendNotice(bot.irc_admin_channel,
-						"[Admin notice from " + player.getName() + "] " + bot.combineSplit(1, split, " "));
-				player.sendMessage("Admin notice sent.");
-				return true;
-			}
-		}
+			// Whispering to IRC users
+			if (split[0].equalsIgnoreCase("/ircw")) {
 
-		if (split[0].equalsIgnoreCase("/me") && bot.optn_send_all_MC_chat.size() > 0) {
-			String msgtosend = "* " + player.getName() + " " + bot.combineSplit(1, split, " ");
-			if (bot.optn_send_all_MC_chat.contains("main")) {
-				bot.sendMessage(bot.irc_channel, msgtosend);
+				if (split.length < 3) {
+					player.sendMessage("\247cCorrect usage is: /ircw [IRC user] [message]");
+					return true;
+				}
+
+				String player_name = "(" + player.getName() + ") ";
+				String ircMessage = player_name + bot.combineSplit(2, split, " ");
+				bot.sendMessage(split[1], ircMessage);
+				String echoedMessage = "Whispered to IRC";
+				player.sendMessage(echoedMessage);
+
 			}
 
-			if (bot.optn_send_all_MC_chat.contains("admin")) {
-				bot.sendMessage(bot.irc_admin_channel, msgtosend);
+			// notify/call admins in the admin IRC channel
+			if (bot.optn_notify_admins_cmd != null) {
+				if (split[0].equalsIgnoreCase(bot.optn_notify_admins_cmd)) {
+					bot.sendNotice(bot.irc_admin_channel,
+							"[Admin notice from " + player.getName() + "] " + bot.combineSplit(1, split, " "));
+					player.sendMessage("Admin notice sent.");
+					return true;
+				}
 			}
-		}
+
+			// ACTION/EMOTE
+			if (split[0].equalsIgnoreCase("/me") && bot.optn_send_all_MC_chat.size() > 0) {
+				String msgtosend = "* " + player.getName() + " " + bot.combineSplit(1, split, " ");
+				if (bot.optn_send_all_MC_chat.contains("main")) {
+					bot.sendMessage(bot.irc_channel, msgtosend);
+				}
+
+				if (bot.optn_send_all_MC_chat.contains("admin")) {
+					bot.sendMessage(bot.irc_admin_channel, msgtosend);
+				}
+			}
+		} // endif player.canUseCommand("/irc")
 
 		return false;
 
@@ -112,7 +129,8 @@ public class CraftIRCListener extends PluginListener {
 		String playername = player.getName();
 
 		if (bot.irc_colors.equalsIgnoreCase("equiv")) {
-			playername = Character.toString((char)3) + bot.getIRCColor(player.getColor()) + playername + Character.toString((char)15);
+			playername = Character.toString((char) 3) + bot.getIRCColor(player.getColor()) + playername
+					+ Character.toString((char) 15);
 		}
 
 		if (bot.optn_send_all_MC_chat.contains("main") || bot.optn_send_all_MC_chat.contains("true")) {
