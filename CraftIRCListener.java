@@ -10,8 +10,9 @@ public class CraftIRCListener extends PluginListener {
 	protected static final Logger log = Logger.getLogger("Minecraft");
 	private static ArrayList<String> logMessages = new ArrayList<String>();
 	private static Minebot bot;
+
 	// private HashMap<Player,String> IRCWhisperMemory = new HashMap<Player,String>();
-	
+
 	public CraftIRCListener() {
 		bot = Minebot.getInstance();
 	}
@@ -132,8 +133,10 @@ public class CraftIRCListener extends PluginListener {
 		String playername = player.getName();
 
 		if (bot.irc_colors.equalsIgnoreCase("equiv")) {
-			playername = Character.toString((char) 3) + bot.getIRCColor(player.getColor()) + playername
-					+ Character.toString((char) 15);
+			playername = Character.toString((char) 3)
+					+ bot.getIRCColor(player.getColor().replaceAll(player.getPrefix(), "")) 
+					+ playername
+					+ Character.toString((char) 15); // need to remove the player prefix from getColor()'s return, so Minebot getIRCColor() will get the proper mapping
 		}
 
 		if (bot.optn_send_all_MC_chat.contains("main") || bot.optn_send_all_MC_chat.contains("true")) {
