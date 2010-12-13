@@ -42,7 +42,8 @@ public class Minebot extends PircBot implements Runnable {
 	ArrayList<String> optn_admin_req_prefixes = new ArrayList<String>(); // require IRC user (admin) to have +/%/@/&/~
 	ArrayList<String> optn_main_send_events = new ArrayList<String>(); // which MC events to send to main IRC channel
 	ArrayList<String> optn_admin_send_events = new ArrayList<String>(); // which MC events to send to admin IRC channel
-	ArrayList<String> optn_send_all_MC_chat = new ArrayList<String>(); // where to send MC chat
+	ArrayList<String> optn_send_all_MC_chat = new ArrayList<String>(); // where to send MC chat e.g. main, admin
+	HashMap<String, String> send_all_MC_chat_targets = new HashMap<String, String>();
 	ArrayList<String> optn_send_all_IRC_chat = new ArrayList<String>(); // send IRC chat to MC? - now channel sources are selectable
 	ArrayList<String> optn_ignored_IRC_command_prefixes = new ArrayList<String>(); // list of command prefixes to ignore in IRC, such as those for other bots.
 	ArrayList<String> optn_req_MC_message_prefixes = new ArrayList<String>(); // list of message prefixes to ignore sending to IRC from MC. e.g. ChatChannels prefixes messages with a given channel's tag.
@@ -109,6 +110,7 @@ public class Minebot extends PircBot implements Runnable {
 					.trim(), "send-all-IRC");
 			optn_main_send_events = this.getCSVArrayList(ircSettings.getProperty("send-events").trim());
 			optn_admin_send_events = this.getCSVArrayList(ircSettings.getProperty("admin-send-events").trim());
+			this.irc_colors = ircSettings.getProperty("irc-colors","").trim();
 
 			try {
 				bot_debug = Boolean.parseBoolean(ircSettings.getProperty("bot-debug").trim());
@@ -178,11 +180,7 @@ public class Minebot extends PircBot implements Runnable {
 			if (ircSettings.containsKey("irc-ignored-users")) {
 				this.optn_ignored_IRC_users = this.getCSVArrayList(ircSettings.getProperty("irc-ignored-users").trim());
 			}
-
-			if (ircSettings.containsKey("irc-colors")) {
-				this.irc_colors = ircSettings.getProperty("irc-colors").trim();
-			}
-
+		
 		}
 
 		catch (Exception e) {
@@ -426,6 +424,8 @@ public class Minebot extends PircBot implements Runnable {
 		if (channel.equalsIgnoreCase(this.irc_admin_channel)) {
 			this.irc_users_admin = this.getUsers(channel);
 		}
+
+		// if irc-joins, send event to game
 	}
 
 	// Update users
@@ -436,6 +436,8 @@ public class Minebot extends PircBot implements Runnable {
 		if (channel.equalsIgnoreCase(this.irc_admin_channel)) {
 			this.irc_users_admin = this.getUsers(channel);
 		}
+
+		// if irc-quits, send event to game
 	}
 
 	public void onKick(String channel, String kickerNick, String kickerLogin, String kickerHostname,
@@ -566,7 +568,10 @@ public class Minebot extends PircBot implements Runnable {
 		try {
 			String[] splitMessage = message.split(" ");
 			if (splitMessage.length > 1 && splitMessage[0].equalsIgnoreCase("tell")) {
-				this.msgToGame(sender, this.combineSplit(2, splitMessage, " "), 3, splitMessage[1]);
+				if (etc.getServer().getPlayer(splitMessage[1]) != null) {
+				 this.msgToGame(sender, this.combineSplit(2, splitMessage, " "), 3, splitMessage[1]);
+				 this.sendNotice(sender, "Whispered to " + splitMessage[1]);
+				}
 			}
 			// check for 'tell'
 
@@ -682,7 +687,7 @@ public class Minebot extends PircBot implements Runnable {
 			}
 
 		} catch (Exception e) {
-			System.out.println(e.toString());
+			e.printStackTrace();
 		}
 	}
 

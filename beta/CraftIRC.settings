@@ -6,6 +6,8 @@ command-prefix=.
 ## Set the color to change username to in IRC->MC messages
 ## Color options are: black, navy, green, blue, red, purple, gold, lightgray, gray, darkpurple, lightgreen, lightblue, rose, lightpurple, yellow, white
 irc-relayed-user-color=green
+# Send Minecraft/IRC colors across the bot? -- Default: Do nothing; "strip": Remove color codes sent from IRC; "equiv": Colorful messages
+irc-colors=equiv
 
 ## SERVER CONNECTION DETAILS
 ## Mandatory: irc-server, irc-server-port

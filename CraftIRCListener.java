@@ -1,6 +1,7 @@
 import java.lang.Exception;
 import java.util.logging.Logger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
@@ -9,7 +10,8 @@ public class CraftIRCListener extends PluginListener {
 	protected static final Logger log = Logger.getLogger("Minecraft");
 	private static ArrayList<String> logMessages = new ArrayList<String>();
 	private static Minebot bot;
-
+	// private HashMap<Player,String> IRCWhisperMemory = new HashMap<Player,String>();
+	
 	public CraftIRCListener() {
 		bot = Minebot.getInstance();
 	}
@@ -57,6 +59,7 @@ public class CraftIRCListener extends PluginListener {
 				bot.sendMessage(split[1], ircMessage);
 				String echoedMessage = "Whispered to IRC";
 				player.sendMessage(echoedMessage);
+				return true;
 
 			}
 
