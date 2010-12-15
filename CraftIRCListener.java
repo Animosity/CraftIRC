@@ -130,27 +130,37 @@ public class CraftIRCListener extends PluginListener {
 
 	public void sendToIRC(Player player, String message) {
 
-		String playername = player.getName();
-		String playerColorPrefix = player.getColor();
-		if (bot.irc_colors.equalsIgnoreCase("equiv")) {
-			playername = Character.toString((char) 3)
-					+ bot.getIRCColor(playerColorPrefix.substring(0, 2)) 
-					+ playerColorPrefix.substring(2,playerColorPrefix.length())
-					+ playername
-					+ Character.toString((char) 15); // need to remove the player prefix from getColor()'s return, so Minebot getIRCColor() will get the proper mapping
-		}
+		// TODO - functionize this.
+		try {
+			String playername = player.getName();
+			String playerColorPrefix = player.getColor();
 
-		if (bot.optn_send_all_MC_chat.contains("main") || bot.optn_send_all_MC_chat.contains("true")) {
-			playername = "(" + playername + ") ";
-			String ircmessage = playername + message;
-			bot.msg(bot.irc_channel, ircmessage);
-		}
-
-		if (bot.optn_send_all_MC_chat.contains("admin")) {
-			playername = "(" + playername + ") ";
-			String ircmessage = playername + message;
-			bot.msg(bot.irc_admin_channel, ircmessage);
-
+			if (playerColorPrefix.length() > 3) {
+				playerColorPrefix = bot.getIRCColor(playerColorPrefix.substring(0, 2)) 
+									+ playerColorPrefix.substring(2,playerColorPrefix.length());
+			}
+			
+			if (bot.irc_colors.equalsIgnoreCase("equiv")) {
+				playername = Character.toString((char) 3)
+						+ playerColorPrefix
+						+ playername
+						+ Character.toString((char) 15); // need to remove the player prefix from getColor()'s return, so Minebot getIRCColor() will get the proper mapping
+			}
+	
+			if (bot.optn_send_all_MC_chat.contains("main") || bot.optn_send_all_MC_chat.contains("true")) {
+				playername = "(" + playername + ") ";
+				String ircmessage = playername + message;
+				bot.msg(bot.irc_channel, ircmessage);
+			}
+	
+			if (bot.optn_send_all_MC_chat.contains("admin")) {
+				playername = "(" + playername + ") ";
+				String ircmessage = playername + message;
+				bot.msg(bot.irc_admin_channel, ircmessage);
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
