@@ -127,24 +127,27 @@ public class CraftIRCListener extends PluginListener {
 		}
 		return false;
 	}
-
+ 
 	public void sendToIRC(Player player, String message) {
 
 		// TODO - functionize this.
 		try {
 			String playername = player.getName();
 			String playerColorPrefix = player.getColor();
-
-			if (playerColorPrefix.length() > 3) {
-				playerColorPrefix = bot.getIRCColor(playerColorPrefix.substring(0, 2)) 
-									+ playerColorPrefix.substring(2,playerColorPrefix.length());
+			Integer playerColor = bot.getIRCColor(player.getColor());
+			String playerPrefix = "";
+			
+			if (playerColorPrefix.length() > 2) {
+				playerColor = bot.getIRCColor(playerColorPrefix.substring(0, 2));
+				playerPrefix = playerColorPrefix.substring(2,playerColorPrefix.length());
 			}
 			
 			if (bot.irc_colors.equalsIgnoreCase("equiv")) {
 				playername = Character.toString((char) 3)
-						+ playerColorPrefix
+						+ playerColor
+						+ playerPrefix
 						+ playername
-						+ Character.toString((char) 15); // need to remove the player prefix from getColor()'s return, so Minebot getIRCColor() will get the proper mapping
+						+ Character.toString((char) 15); 
 			}
 	
 			if (bot.optn_send_all_MC_chat.contains("main") || bot.optn_send_all_MC_chat.contains("true")) {
