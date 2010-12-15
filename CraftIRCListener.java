@@ -134,6 +134,11 @@ public class CraftIRCListener extends PluginListener {
 		try {
 			String playername = player.getName();
 			String playerColorPrefix = player.getColor();
+			String[] splitPlayerColorPrefix = playerColorPrefix.split("§");
+			for (int i = 0; i < splitPlayerColorPrefix.length; i++) {
+				System.out.println(splitPlayerColorPrefix[i]);
+			}
+			
 			Integer playerColor = bot.getIRCColor(player.getColor());
 			String playerPrefix = "";
 			
@@ -144,7 +149,7 @@ public class CraftIRCListener extends PluginListener {
 			
 			if (bot.irc_colors.equalsIgnoreCase("equiv")) {
 				playername = Character.toString((char) 3)
-						+ playerColor
+						+ playerColor.toString()
 						+ playerPrefix
 						+ playername
 						+ Character.toString((char) 15); 
