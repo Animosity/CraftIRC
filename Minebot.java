@@ -255,7 +255,7 @@ public class Minebot extends PircBot implements Runnable {
 				return entry.getKey();
 			}
 		}
-		return 1;
+		return 0;
 	}
 
 	// Sets the directionality for MC->IRC chat (channels are targets)
@@ -522,6 +522,8 @@ public class Minebot extends PircBot implements Runnable {
 			} // end admin commands
 
 			// begin public commands
+			
+			// .players - list players
 			if (message.startsWith(cmd_prefix + "players")) {
 				String playerlist = this.getPlayerList();
 				this.sendMessage(channel, playerlist); // set this to reply to the
@@ -529,7 +531,8 @@ public class Minebot extends PircBot implements Runnable {
 														// from
 				return;
 			}
-
+			
+			// Send all IRC chatter from main channel - (no command prefixes or ignored command prefixes)
 			if (channel.equalsIgnoreCase(this.irc_channel) && this.optn_send_all_IRC_chat.contains("main")) {
 				if (!message.startsWith(cmd_prefix)
 						&& !this.optn_ignored_IRC_command_prefixes.contains(splitMessage[0].charAt(0))) {
@@ -539,6 +542,7 @@ public class Minebot extends PircBot implements Runnable {
 
 			}
 
+			// Send all IRC chatter from admin channel - (no command prefixes or ignored command prefixes)
 			else if (channel.equalsIgnoreCase(this.irc_admin_channel) && this.optn_send_all_IRC_chat.contains("admin")) {
 				if (!message.startsWith(cmd_prefix)
 						&& !this.optn_ignored_IRC_command_prefixes.contains(splitMessage[0].charAt(0))) {
@@ -548,6 +552,7 @@ public class Minebot extends PircBot implements Runnable {
 
 			}
 
+			// .say - Send single message to the game
 			else if (message.startsWith(cmd_prefix + "say") || message.startsWith(cmd_prefix + "mc")) {
 				// message = message.substring(message.indexOf(" ")).trim();
 				if (splitMessage.length > 1) {
@@ -556,6 +561,7 @@ public class Minebot extends PircBot implements Runnable {
 					return;
 				}
 			}
+			
 
 		} catch (Exception e) {
 			e.printStackTrace();

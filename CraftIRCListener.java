@@ -131,10 +131,11 @@ public class CraftIRCListener extends PluginListener {
 	public void sendToIRC(Player player, String message) {
 
 		String playername = player.getName();
-
+		String playerColorPrefix = player.getColor();
 		if (bot.irc_colors.equalsIgnoreCase("equiv")) {
 			playername = Character.toString((char) 3)
-					+ bot.getIRCColor(player.getColor().replaceAll(player.getPrefix(), "")) 
+					+ bot.getIRCColor(playerColorPrefix.substring(0, 2)) 
+					+ playerColorPrefix.substring(2,playerColorPrefix.length())
 					+ playername
 					+ Character.toString((char) 15); // need to remove the player prefix from getColor()'s return, so Minebot getIRCColor() will get the proper mapping
 		}

@@ -45,8 +45,6 @@ irc-admin-prefixes=%,@,&,~
 irc-console-commands=say,kick,ban,ipban,reloadplugin,save-all
 ## Add comma-separated command prefixes for the bot to IGNORE, such as those used by other bots in the same IRC channels
 irc-ignored-command-prefixes=
-
-
 ## CHAT RELAY OPTIONS
 ## send-all-chat options are: main,admin -- choose which channels you wish to send game chat to, or none.
 ## send-all-IRC options are: main,admin -- choose which IRC channels' chat you want to send to the game.
