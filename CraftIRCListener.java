@@ -1,6 +1,7 @@
 import java.lang.Exception;
 import java.util.logging.Logger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Handler;
@@ -133,36 +134,51 @@ public class CraftIRCListener extends PluginListener {
 		// TODO - functionize this.
 		try {
 			String playername = player.getName();
-			String playerColorPrefix = player.getColor();
-			String[] splitPlayerColorPrefix = playerColorPrefix.split("§");
-			for (int i = 0; i < splitPlayerColorPrefix.length; i++) {
-				System.out.println(splitPlayerColorPrefix[i]);
+			//String playerColorPrefix = player.getColor();
+			String playerColorPrefix = "";
+			String[] splitPlayerColorPrefix = player.getColor().split("§");
+			for (int i = 1; i < splitPlayerColorPrefix.length; i++) {
+				playerColorPrefix = playerColorPrefix + Character.toString((char) 3) + bot.getIRCColor("§" + splitPlayerColorPrefix[i].substring(0,1));
+
+				if (splitPlayerColorPrefix[i].length() > 1) { 
+					playerColorPrefix = playerColorPrefix + splitPlayerColorPrefix[i].substring(1,splitPlayerColorPrefix[i].length());
+				}
+				
 			}
 			
-			Integer playerColor = bot.getIRCColor(player.getColor());
-			String playerPrefix = "";
+			//Integer playerColor = bot.getIRCColor(player.getColor());
+			//String playerPrefix = "";
 			
-			if (playerColorPrefix.length() > 2) {
+			/*if (playerColorPrefix.length() > 2) {
 				playerColor = bot.getIRCColor(playerColorPrefix.substring(0, 2));
 				playerPrefix = playerColorPrefix.substring(2,playerColorPrefix.length());
-			}
+			}*/
 			
 			if (bot.irc_colors.equalsIgnoreCase("equiv")) {
-				playername = Character.toString((char) 3)
-						+ playerColor.toString()
-						+ playerPrefix
-						+ playername
-						+ Character.toString((char) 15); 
+				playername = "(" 
+				+ playerColorPrefix.toString()
+				+ playername 
+				+ Character.toString((char) 15)  
+				+ ") " ;
+				
+				
 			}
+			/*if (bot.irc_colors.equalsIgnoreCase("equiv")) {
+				playername = "(" + Character.toString((char) 3)
+				+ playerColor.toString()
+				+ playerPrefix
+				+ playername
+				+ Character.toString((char) 15) + ") ";
+			}*/
 	
 			if (bot.optn_send_all_MC_chat.contains("main") || bot.optn_send_all_MC_chat.contains("true")) {
-				playername = "(" + playername + ") ";
+				//playername = "(" + playername + ") ";
 				String ircmessage = playername + message;
 				bot.msg(bot.irc_channel, ircmessage);
 			}
 	
 			if (bot.optn_send_all_MC_chat.contains("admin")) {
-				playername = "(" + playername + ") ";
+				//playername = "(" + playername + ") ";
 				String ircmessage = playername + message;
 				bot.msg(bot.irc_admin_channel, ircmessage);
 			}
