@@ -130,47 +130,17 @@ public class CraftIRCListener extends PluginListener {
 	}
  
 	public void sendToIRC(Player player, String message) {
-
-		// TODO - functionize this.
 		try {
+			
 			String playername = player.getName();
-			//String playerColorPrefix = player.getColor();
-			String playerColorPrefix = "";
-			String[] splitPlayerColorPrefix = player.getColor().split("§");
-			for (int i = 1; i < splitPlayerColorPrefix.length; i++) {
-				playerColorPrefix = playerColorPrefix + Character.toString((char) 3) + bot.getIRCColor("§" + splitPlayerColorPrefix[i].substring(0,1));
 
-				if (splitPlayerColorPrefix[i].length() > 1) { 
-					playerColorPrefix = playerColorPrefix + splitPlayerColorPrefix[i].substring(1,splitPlayerColorPrefix[i].length());
-				}
-				
-			}
-			
-			//Integer playerColor = bot.getIRCColor(player.getColor());
-			//String playerPrefix = "";
-			
-			/*if (playerColorPrefix.length() > 2) {
-				playerColor = bot.getIRCColor(playerColorPrefix.substring(0, 2));
-				playerPrefix = playerColorPrefix.substring(2,playerColorPrefix.length());
-			}*/
-			
 			if (bot.irc_colors.equalsIgnoreCase("equiv")) {
 				playername = "(" 
-				+ playerColorPrefix.toString()
-				+ playername 
+				+ bot.colorizePlayer(player)
 				+ Character.toString((char) 15)  
 				+ ") " ;
-				
-				
 			}
-			/*if (bot.irc_colors.equalsIgnoreCase("equiv")) {
-				playername = "(" + Character.toString((char) 3)
-				+ playerColor.toString()
-				+ playerPrefix
-				+ playername
-				+ Character.toString((char) 15) + ") ";
-			}*/
-	
+			
 			if (bot.optn_send_all_MC_chat.contains("main") || bot.optn_send_all_MC_chat.contains("true")) {
 				//playername = "(" + playername + ") ";
 				String ircmessage = playername + message;

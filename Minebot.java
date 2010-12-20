@@ -257,6 +257,19 @@ public class Minebot extends PircBot implements Runnable {
 		}
 		return 0;
 	}
+	
+	public String colorizePlayer(Player player) {
+		String playerColorPrefix = "";
+		String[] splitPlayerColorPrefix = player.getColor().split("§");
+		for (int i = 1; i < splitPlayerColorPrefix.length; i++) {
+			playerColorPrefix += Character.toString((char) 3) + this.getIRCColor("§" + splitPlayerColorPrefix[i].substring(0,1));
+
+			if (splitPlayerColorPrefix[i].length() > 1) { 
+				playerColorPrefix += splitPlayerColorPrefix[i].substring(1,splitPlayerColorPrefix[i].length());
+			}
+		}
+		return playerColorPrefix + player.getName() + Character.toString((char) 15);
+	}
 
 	// Sets the directionality for MC->IRC chat (channels are targets)
 	// And also sets the channel sources for IRC->MC chat
@@ -703,14 +716,18 @@ public class Minebot extends PircBot implements Runnable {
 		Integer playercount = 0;
 		Integer maxplayers = etc.getInstance().getPlayerLimit();
 		StringBuilder sb = new StringBuilder();
-
+		
 		do {
 			if (!i$.hasNext())
 				break;
 			Player p = (Player) i$.next();
 			if (p != null) {
 				playercount++;
-				sb.append(" ").append(p.getName());
+				if (this.irc_colors.equalsIgnoreCase("equiv")) {
+					sb.append(" ").append(this.colorizePlayer(p)); 
+				} else { 
+					sb.append(" ").append(p.getName()); 
+				}
 			}
 		} while (true);
 
@@ -770,7 +787,8 @@ public class Minebot extends PircBot implements Runnable {
 
 		}
 	}
-
+	
+	
 	@Override
 	public void run() {
 		this.init();
