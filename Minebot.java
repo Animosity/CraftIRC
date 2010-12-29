@@ -260,15 +260,20 @@ public class Minebot extends PircBot implements Runnable {
 	
 	public String colorizePlayer(Player player) {
 		String playerColorPrefix = "";
-		String[] splitPlayerColorPrefix = player.getColor().split("§");
-		for (int i = 1; i < splitPlayerColorPrefix.length; i++) {
-			playerColorPrefix += Character.toString((char) 3) + this.getIRCColor("§" + splitPlayerColorPrefix[i].substring(0,1));
-
-			if (splitPlayerColorPrefix[i].length() > 1) { 
-				playerColorPrefix += splitPlayerColorPrefix[i].substring(1,splitPlayerColorPrefix[i].length());
+		if (this.irc_colors.equalsIgnoreCase("equiv")) {
+			String[] splitPlayerColorPrefix = player.getColor().split("§");
+			for (int i = 1; i < splitPlayerColorPrefix.length; i++) {
+				playerColorPrefix += Character.toString((char) 3) + this.getIRCColor("§" + splitPlayerColorPrefix[i].substring(0,1));
+	
+				if (splitPlayerColorPrefix[i].length() > 1) { 
+					playerColorPrefix += splitPlayerColorPrefix[i].substring(1,splitPlayerColorPrefix[i].length());
+				}
 			}
+			return playerColorPrefix + player.getName() + Character.toString((char) 15);
 		}
-		return playerColorPrefix + player.getName() + Character.toString((char) 15);
+		else {
+			return player.getName();
+		}
 	}
 
 	// Sets the directionality for MC->IRC chat (channels are targets)

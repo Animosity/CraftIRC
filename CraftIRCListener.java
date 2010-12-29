@@ -157,14 +157,14 @@ public class CraftIRCListener extends PluginListener {
 			e.printStackTrace();
 		}
 	}
-
+	
 	public void onLogin(Player player) {
 		try {
 			if (bot.optn_main_send_events.contains("joins")) {
-				bot.msg(bot.irc_channel, "[" + player.getName() + " connected]");
+				bot.msg(bot.irc_channel, "[" + bot.colorizePlayer(player) + " connected]");
 			}
 			if (bot.optn_admin_send_events.contains("joins")) {
-				bot.msg(bot.irc_admin_channel, "[" + player.getName() + " connected]");
+				bot.msg(bot.irc_admin_channel, "[" + bot.colorizePlayer(player) + " connected]");
 			}
 
 		} catch (Exception e) {
@@ -176,10 +176,10 @@ public class CraftIRCListener extends PluginListener {
 
 		try {
 			if (bot.optn_main_send_events.contains("quits")) {
-				bot.msg(bot.irc_channel, "[" + player.getName() + " disconnected]");
+				bot.msg(bot.irc_channel, "[" + bot.colorizePlayer(player) + " disconnected]");
 			}
 			if (bot.optn_admin_send_events.contains("quits")) {
-				bot.msg(bot.irc_admin_channel, "[" + player.getName() + " disconnected]");
+				bot.msg(bot.irc_admin_channel, "[" + bot.colorizePlayer(player) + " disconnected]");
 			}
 
 		} catch (Exception e) {
@@ -192,10 +192,10 @@ public class CraftIRCListener extends PluginListener {
 			reason = "no reason given";
 		}
 		if (bot.optn_main_send_events.contains("bans")) {
-			bot.msg(bot.irc_channel, "[" + mod.getName() + " BANNED " + player.getName() + " because: " + reason + "]");
+			bot.msg(bot.irc_channel, "[" +bot.colorizePlayer(mod) + " BANNED " + bot.colorizePlayer(player) + " because: " + reason + "]");
 		}
 		if (bot.optn_admin_send_events.contains("bans")) {
-			bot.msg(bot.irc_admin_channel, "[" + mod.getName() + " BANNED " + player.getName() + " because: " + reason
+			bot.msg(bot.irc_admin_channel, "[" + bot.colorizePlayer(mod) + " BANNED " + bot.colorizePlayer(player) + " because: " + reason
 					+ "]");
 		}
 	}
@@ -205,11 +205,11 @@ public class CraftIRCListener extends PluginListener {
 			reason = "no reason given";
 		}
 		if (bot.optn_main_send_events.contains("bans")) {
-			bot.msg(bot.irc_channel, "[" + mod.getName() + " IP BANNED " + player.getName() + " because: " + reason
+			bot.msg(bot.irc_channel, "[" + bot.colorizePlayer(mod) + " IP BANNED " + bot.colorizePlayer(player) + " because: " + reason
 					+ "]");
 		}
 		if (bot.optn_admin_send_events.contains("bans")) {
-			bot.msg(bot.irc_admin_channel, "[" + mod.getName() + " IP BANNED " + player.getName() + " because: "
+			bot.msg(bot.irc_admin_channel, "[" + bot.colorizePlayer(mod) + " IP BANNED " + bot.colorizePlayer(player) + " because: "
 					+ reason + "]");
 		}
 	}
@@ -219,10 +219,10 @@ public class CraftIRCListener extends PluginListener {
 			reason = "no reason given";
 		}
 		if (bot.optn_main_send_events.contains("kicks")) {
-			bot.msg(bot.irc_channel, "[" + mod.getName() + " KICKED " + player.getName() + " because: " + reason + "]");
+			bot.msg(bot.irc_channel, "[" + bot.colorizePlayer(mod) + " KICKED " + bot.colorizePlayer(player) + " because: " + reason + "]");
 		}
 		if (bot.optn_admin_send_events.contains("kicks")) {
-			bot.msg(bot.irc_admin_channel, "[" + mod.getName() + " KICKED " + player.getName() + " because: " + reason
+			bot.msg(bot.irc_admin_channel, "[" + bot.colorizePlayer(mod) + " KICKED " + bot.colorizePlayer(player) + " because: " + reason
 					+ "]");
 		}
 	}

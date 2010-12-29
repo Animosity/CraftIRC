@@ -36,7 +36,7 @@ irc-auth-password=
 irc-channel=#yourMainChannel
 irc-channel-password=
 
-irc-admin-channel=#yourAdminChannel
+irc-admin-channel=
 irc-admin-channel-password=
 ## Prefixes of users in admin channel that can use admin bot commands
 irc-admin-prefixes=%,@,&,~
