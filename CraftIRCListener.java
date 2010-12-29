@@ -62,7 +62,7 @@ public class CraftIRCListener extends PluginListener {
 				String echoedMessage = "Whispered to IRC";
 				player.sendMessage(echoedMessage);
 				return true;
-
+ 
 			}
 
 			// notify/call admins in the admin IRC channel
@@ -133,13 +133,10 @@ public class CraftIRCListener extends PluginListener {
 		try {
 			
 			String playername = player.getName();
-
-			if (bot.irc_colors.equalsIgnoreCase("equiv")) {
-				playername = "(" 
-				+ bot.colorizePlayer(player)
-				+ Character.toString((char) 15)  
-				+ ") " ;
-			}
+			playername = "(" 
+			+ bot.colorizePlayer(player)
+			+ Character.toString((char) 15)  
+			+ ") " ;
 			
 			if (bot.optn_send_all_MC_chat.contains("main") || bot.optn_send_all_MC_chat.contains("true")) {
 				//playername = "(" + playername + ") ";
