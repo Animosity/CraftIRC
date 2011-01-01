@@ -5,7 +5,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.*;
 
 public class CraftIRCListener extends PluginListener {
 	protected static final Logger log = Logger.getLogger("Minecraft");
@@ -30,7 +32,7 @@ public class CraftIRCListener extends PluginListener {
 				}
 
 				// player used command correctly
-				String player_name = "(" + player.getName() + ") ";
+				String player_name = "(" + bot.colorizePlayer(player) + ") ";
 				String msgtosend = bot.combineSplit(1, split, " ");
 
 				String ircMessage = player_name + msgtosend;
@@ -130,12 +132,10 @@ public class CraftIRCListener extends PluginListener {
 	}
  
 	public void sendToIRC(Player player, String message) {
+		
 		try {
-			
-			String playername = player.getName();
-			playername = "(" 
+			String playername = "(" 
 			+ bot.colorizePlayer(player)
-			+ Character.toString((char) 15)  
 			+ ") " ;
 			
 			if (bot.optn_send_all_MC_chat.contains("main") || bot.optn_send_all_MC_chat.contains("true")) {
@@ -152,7 +152,10 @@ public class CraftIRCListener extends PluginListener {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			
 		}
+		
 	}
 	
 	public void onLogin(Player player) {

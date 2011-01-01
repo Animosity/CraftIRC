@@ -19,7 +19,7 @@ import org.jibble.pircbot.*;
  * 
  */
 
-public class Minebot extends PircBot implements Runnable {
+public class Minebot extends PircBot {
 	public static Minebot instance = null;
 	protected static final Logger log = Logger.getLogger("Minecraft");
 	Properties ircSettings = new Properties();
@@ -728,11 +728,8 @@ public class Minebot extends PircBot implements Runnable {
 			Player p = (Player) i$.next();
 			if (p != null) {
 				playercount++;
-				if (this.irc_colors.equalsIgnoreCase("equiv")) {
-					sb.append(" ").append(this.colorizePlayer(p)); 
-				} else { 
-					sb.append(" ").append(p.getName()); 
-				}
+				sb.append(" ").append(this.colorizePlayer(p)); 
+				
 			}
 		} while (true);
 
@@ -789,16 +786,9 @@ public class Minebot extends PircBot implements Runnable {
 	public class CheckChannelsTask extends TimerTask {
 		public void run() {
 			Minebot.getInstance().checkChannels();
+			this.cancel();
 
 		}
 	}
-	
-	
-	@Override
-	public void run() {
-		this.init();
-
-	}
-
 }// EO Minebot
 
