@@ -1,3 +1,6 @@
+package org.ensifera.CraftIRC;
+
+import org.ensifera.CraftIRC.*;
 import java.lang.Exception;
 import java.util.logging.Logger;
 import java.util.ArrayList;
@@ -5,81 +8,91 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.*;
+import org.bukkit.Location;
+import org.bukkit.Player;
+import org.bukkit.Server;
+import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.plugin.PluginLoader;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.event.player.PlayerChatEvent;
+import org.bukkit.event.player.PlayerEvent;
+import org.bukkit.event.player.PlayerListener;
+import org.bukkit.event.player.PlayerLoginEvent;
 
-public class CraftIRCListener extends PluginListener {
+public class CraftIRCListener extends PlayerListener {
+	private final CraftIRC plugin;
 	protected static final Logger log = Logger.getLogger("Minecraft");
 	private static ArrayList<String> logMessages = new ArrayList<String>();
 	private static Minebot bot;
 
 	// private HashMap<Player,String> IRCWhisperMemory = new HashMap<Player,String>();
 
-	public CraftIRCListener() {
+	public CraftIRCListener(CraftIRC pluginInstance) {
+		plugin = pluginInstance;
 		bot = Minebot.getInstance();
 	}
 
-	public boolean onCommand(Player player, String split[]) {
-
-		if (player.canUseCommand("/irc")) {
-
+	public void onPlayerCommand(PlayerChatEvent event) {
+			String[] split = event.getMessage().split(" ");
+			Player player = event.getPlayer();
 			if (split[0].equalsIgnoreCase("/irc") && (!bot.optn_send_all_MC_chat.contains("main"))) {
 
 				if (split.length < 2) {
 					player.sendMessage("\247cCorrect usage is: /irc [message]");
-					return true;
+					return;
 				}
 
 				// player used command correctly
-				String player_name = "(" + bot.colorizePlayer(player) + ") ";
-				String msgtosend = bot.combineSplit(1, split, " ");
+				String player_name = "(" + player.getName() + ") ";
+				String msgtosend = util.combineSplit(1, split, " ");
 
 				String ircMessage = player_name + msgtosend;
 				String echoedMessage = new StringBuilder().append("<").append(bot.irc_relayed_user_color)
-						.append(player.getName()).append(Colors.White).append(" to IRC> ").append(msgtosend).toString();
+						.append(player.getName()).append(util.Colors.White).append(" to IRC> ").append(msgtosend).toString();
 
 				bot.msg(bot.irc_channel, ircMessage);
 
 				// echo -> IRC msg locally in game
-				for (Player p : etc.getServer().getPlayerList()) {
+				for (Player p : plugin.getServer().getOnlinePlayers()) {
 					if (p != null) {
 						p.sendMessage(echoedMessage);
 					}
 				}
-				return true;
-			}
+				event.setCancelled(true);
+				return;
+			} // *** /irc <msg> 
 
 			// Whispering to IRC users
 			if (split[0].equalsIgnoreCase("/ircw")) {
 
 				if (split.length < 3) {
 					player.sendMessage("\247cCorrect usage is: /ircw [IRC user] [message]");
-					return true;
+					return;
 				}
 
 				String player_name = "(" + player.getName() + ") ";
-				String ircMessage = player_name + bot.combineSplit(2, split, " ");
+				String ircMessage = player_name + util.combineSplit(2, split, " ");
 				bot.sendMessage(split[1], ircMessage);
 				String echoedMessage = "Whispered to IRC";
 				player.sendMessage(echoedMessage);
-				return true;
- 
-			}
+				event.setCancelled(true);
+				return;
+			} // ** /ircw <user> <msg>
 
 			// notify/call admins in the admin IRC channel
 			if (bot.optn_notify_admins_cmd != null) {
 				if (split[0].equalsIgnoreCase(bot.optn_notify_admins_cmd)) {
 					bot.sendNotice(bot.irc_admin_channel,
-							"[Admin notice from " + player.getName() + "] " + bot.combineSplit(1, split, " "));
+							"[Admin notice from " + player.getName() + "] " + util.combineSplit(1, split, " "));
 					player.sendMessage("Admin notice sent.");
-					return true;
+					return;
 				}
 			}
 
 			// ACTION/EMOTE
 			if (split[0].equalsIgnoreCase("/me") && bot.optn_send_all_MC_chat.size() > 0) {
-				String msgtosend = "* " + player.getName() + " " + bot.combineSplit(1, split, " ");
+				String msgtosend = "* " + player.getName() + " " + util.combineSplit(1, split, " ");
 				if (bot.optn_send_all_MC_chat.contains("main")) {
 					bot.sendMessage(bot.irc_channel, msgtosend);
 				}
@@ -88,9 +101,9 @@ public class CraftIRCListener extends PluginListener {
 					bot.sendMessage(bot.irc_admin_channel, msgtosend);
 				}
 			}
-		} // endif player.canUseCommand("/irc")
+		 // endif player.canUseCommand("/irc")
 
-		return false;
+		return;
 
 	}
 
@@ -111,10 +124,10 @@ public class CraftIRCListener extends PluginListener {
 				//
 				ArrayList<String> botChannels = bot.getChannelList();
 				if (botChannels.contains(bot.irc_channel)) {
-					bot.sendMessage(bot.irc_channel, bot.combineSplit(2, split, " "));
+					bot.sendMessage(bot.irc_channel, util.combineSplit(2, split, " "));
 				}
 				if (botChannels.contains(bot.irc_admin_channel)) {
-					bot.sendMessage(bot.irc_admin_channel, bot.combineSplit(2, split, " "));
+					bot.sendMessage(bot.irc_admin_channel, util.combineSplit(2, split, " "));
 				}
 				return true;
 			}
@@ -123,16 +136,16 @@ public class CraftIRCListener extends PluginListener {
 		return false;
 	}
 
-	public boolean onChat(Player player, String message) {
+	public void onPlayerChat(PlayerChatEvent event) {
 		// String[] split = message.split(" ");
-		if (bot.optn_send_all_MC_chat.size() > 0) {
-			sendToIRC(player, message);
+		try {
+			if (bot.optn_send_all_MC_chat.size() > 0) { sendToIRC(event.getPlayer(), event.getMessage()); }
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		return false;
 	}
  
 	public void sendToIRC(Player player, String message) {
-		
 		try {
 			String playername = "(" 
 			+ bot.colorizePlayer(player)
@@ -152,14 +165,16 @@ public class CraftIRCListener extends PluginListener {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			
 		}
-		
 	}
 	
-	public void onLogin(Player player) {
+	@Override
+	public void onPlayerJoin(PlayerEvent event) {
+		
 		try {
+			System.out.println(event.getEventName()); // <-- null
+			Player player = event.getPlayer();        // <-- null
+			
 			if (bot.optn_main_send_events.contains("joins")) {
 				bot.msg(bot.irc_channel, "[" + bot.colorizePlayer(player) + " connected]");
 			}
@@ -171,10 +186,11 @@ public class CraftIRCListener extends PluginListener {
 			e.printStackTrace();
 		}
 	}
-
-	public void onDisconnect(Player player) {
-
+	
+	@Override
+	public void onPlayerQuit(PlayerEvent event) {
 		try {
+			Player player = event.getPlayer();
 			if (bot.optn_main_send_events.contains("quits")) {
 				bot.msg(bot.irc_channel, "[" + bot.colorizePlayer(player) + " disconnected]");
 			}
