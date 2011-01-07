@@ -17,7 +17,7 @@ import java.util.regex.*;
 
 import org.bukkit.Player;
 import org.jibble.pircbot.*;
-
+import org.bukkit.Color;
 import org.ensifera.CraftIRC.CraftIRC;
 import org.ensifera.CraftIRC.util;
 
@@ -72,11 +72,7 @@ public class Minebot extends PircBot implements Runnable {
 		}
 		return instance;
 	}
-	
-	public static synchronized Minebot getInstance() {
-		return instance;
-	}
-	
+
 	public synchronized void init() {
 
 		this.initColorMap();
@@ -116,7 +112,7 @@ public class Minebot extends PircBot implements Runnable {
 					.trim(), "send-all-IRC");
 			optn_main_send_events = this.getCSVArrayList(ircSettings.getProperty("send-events").trim());
 			optn_admin_send_events = this.getCSVArrayList(ircSettings.getProperty("admin-send-events").trim());
-			this.irc_colors = ircSettings.getProperty("irc-colors","").trim();
+			this.irc_colors = ircSettings.getProperty("irc-colors", "").trim();
 
 			try {
 				bot_debug = Boolean.parseBoolean(ircSettings.getProperty("bot-debug").trim());
@@ -186,7 +182,7 @@ public class Minebot extends PircBot implements Runnable {
 			if (ircSettings.containsKey("irc-ignored-users")) {
 				this.optn_ignored_IRC_users = this.getCSVArrayList(ircSettings.getProperty("irc-ignored-users").trim());
 			}
-		
+
 		}
 
 		catch (Exception e) {
@@ -221,38 +217,38 @@ public class Minebot extends PircBot implements Runnable {
 	}
 
 	private void initColorMap() {
-		colorMap.put("black", util.Colors.Black);
-		colorMap.put("navy", util.Colors.Navy);
-		colorMap.put("green", util.Colors.Green);
-		colorMap.put("blue", util.Colors.Blue);
-		colorMap.put("red", util.Colors.Red);
-		colorMap.put("purple", util.Colors.Purple);
-		colorMap.put("gold", util.Colors.Gold);
-		colorMap.put("lightgray", util.Colors.LightGray);
-		colorMap.put("gray", util.Colors.Gray);
-		colorMap.put("darkpurple", util.Colors.DarkPurple);
-		colorMap.put("lightgreen", util.Colors.LightGreen);
-		colorMap.put("lightblue", util.Colors.LightBlue);
-		colorMap.put("rose", util.Colors.Rose);
-		colorMap.put("lightpurple", util.Colors.LightPurple);
-		colorMap.put("yellow", util.Colors.Yellow);
-		colorMap.put("white", util.Colors.White);
-		ircColorMap.put(0, util.Colors.White);
-		ircColorMap.put(1, util.Colors.Black);
-		ircColorMap.put(2, util.Colors.Navy);
-		ircColorMap.put(3, util.Colors.Green);
-		ircColorMap.put(4, util.Colors.Rose);
-		ircColorMap.put(5, util.Colors.Red);
-		ircColorMap.put(6, util.Colors.Purple);
-		ircColorMap.put(7, util.Colors.Gold);
-		ircColorMap.put(8, util.Colors.Yellow);
-		ircColorMap.put(9, util.Colors.LightGreen);
-		ircColorMap.put(10, util.Colors.Blue);
-		ircColorMap.put(11, util.Colors.LightBlue);
-		ircColorMap.put(12, util.Colors.DarkPurple);
-		ircColorMap.put(13, util.Colors.LightPurple);
-		ircColorMap.put(14, util.Colors.Gray);
-		ircColorMap.put(15, util.Colors.LightGray);
+		colorMap.put("black", Color.BLACK.toString());
+		colorMap.put("navy", Color.DARK_AQUA.toString());
+		colorMap.put("green", Color.GREEN.toString());
+		colorMap.put("blue", Color.BLUE.toString());
+		colorMap.put("red", Color.DARK_RED.toString());
+		colorMap.put("purple", Color.DARK_PURPLE.toString());
+		colorMap.put("gold", Color.GOLD.toString());
+		colorMap.put("lightgray", Color.GRAY.toString());
+		colorMap.put("gray", Color.GRAY.toString());
+		colorMap.put("darkpurple", Color.DARK_PURPLE.toString());
+		colorMap.put("lightgreen", Color.GREEN.toString());
+		colorMap.put("lightblue", Color.BLUE.toString());
+		colorMap.put("rose", Color.RED.toString());
+		colorMap.put("lightpurple", Color.LIGHT_PURPLE.toString());
+		colorMap.put("yellow", Color.YELLOW.toString());
+		colorMap.put("white", Color.WHITE.toString());
+		ircColorMap.put(0, Color.WHITE.toString());
+		ircColorMap.put(1, Color.BLACK.toString());
+		ircColorMap.put(2, Color.DARK_AQUA.toString());
+		ircColorMap.put(3, Color.GREEN.toString());
+		ircColorMap.put(4, Color.RED.toString());
+		ircColorMap.put(5, Color.DARK_RED.toString());
+		ircColorMap.put(6, Color.DARK_PURPLE.toString());
+		ircColorMap.put(7, Color.GOLD.toString());
+		ircColorMap.put(8, Color.YELLOW.toString());
+		ircColorMap.put(9, Color.GREEN.toString());
+		ircColorMap.put(10, Color.DARK_BLUE.toString());
+		ircColorMap.put(11, Color.BLUE.toString());
+		ircColorMap.put(12, Color.DARK_PURPLE.toString());
+		ircColorMap.put(13, Color.LIGHT_PURPLE.toString());
+		ircColorMap.put(14, Color.DARK_GRAY.toString());
+		ircColorMap.put(15, Color.GRAY.toString());
 	}
 
 	public Integer getIRCColor(String mccolor) {
@@ -263,7 +259,7 @@ public class Minebot extends PircBot implements Runnable {
 		}
 		return 0;
 	}
-	
+
 	/*public String colorizePlayer(Player player) {
 		String playerColorPrefix = "";
 		if (this.irc_colors.equalsIgnoreCase("equiv")) {
@@ -285,7 +281,7 @@ public class Minebot extends PircBot implements Runnable {
 	public String colorizePlayer(Player player) {
 		return player.getName();
 	}
-	
+
 	// Sets the directionality for MC->IRC chat (channels are targets)
 	// And also sets the channel sources for IRC->MC chat
 	private ArrayList<String> getChatRelayChannels(String csv_relay_channels, String propertyName)
@@ -398,7 +394,7 @@ public class Minebot extends PircBot implements Runnable {
 	}
 
 	// Obsoleting.
-	
+
 	public void joinAdminChannel() {
 		if (irc_admin_channel == null || irc_admin_channel.equals("")) {
 			optn_admin_send_events.clear(); // clear any event option because we
@@ -481,13 +477,14 @@ public class Minebot extends PircBot implements Runnable {
 		}
 	}
 
-
 	/* (non-Javadoc)
 	 * @see org.jibble.pircbot.PircBot#onMessage(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	public void onMessage(String channel, String sender, String login, String hostname, String message) {
-		
-		if (this.optn_ignored_IRC_users.contains(sender.toLowerCase())) { return; }
+
+		if (this.optn_ignored_IRC_users.contains(sender.toLowerCase())) {
+			return;
+		}
 
 		String[] splitMessage = message.split(" ");
 		String command = util.combineSplit(1, splitMessage, " ");
@@ -554,7 +551,7 @@ public class Minebot extends PircBot implements Runnable {
 			} // end admin commands
 
 			// begin public commands
-			
+
 			// .players - list players
 			if (message.startsWith(cmd_prefix + "players")) {
 				String playerlist = this.getPlayerList();
@@ -563,7 +560,7 @@ public class Minebot extends PircBot implements Runnable {
 														// from
 				return;
 			}
-			
+
 			// Send all IRC chatter from main channel - (no command prefixes or ignored command prefixes)
 			if (channel.equalsIgnoreCase(this.irc_channel) && this.optn_send_all_IRC_chat.contains("main")) {
 				if (!message.startsWith(cmd_prefix)
@@ -593,7 +590,6 @@ public class Minebot extends PircBot implements Runnable {
 					return;
 				}
 			}
-			
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -606,16 +602,14 @@ public class Minebot extends PircBot implements Runnable {
 		try {
 			String[] splitMessage = message.split(" ");
 			ArrayList<Player> playerList = new ArrayList<Player>(Arrays.asList(plugin.getServer().getOnlinePlayers()));
-			
+
 			/*if (splitMessage.length > 1 && splitMessage[0].equalsIgnoreCase("tell")) {
 				if (plugin.getServer() != null) {
 				 this.msgToGame(sender, this.combineSplit(2, splitMessage, " "), messageMode.MSG_PLAYER, splitMessage[1]);
 				 this.sendNotice(sender, "Whispered to " + splitMessage[1]);
 				}
 			}*/
-			
-			
-			
+
 			// if no 'tell' then assume whisper-target is set (hashmap)
 			// get whisper-target for IRC handle
 			// 
@@ -660,8 +654,7 @@ public class Minebot extends PircBot implements Runnable {
 
 	// Form and broadcast messages to Minecraft
 	public void msgToGame(String sender, String message, Enum messageMode, String targetPlayer) {
-		
-	
+
 		try {
 			if (this.irc_colors.equalsIgnoreCase("strip")) {
 				message = message.replaceAll(
@@ -682,18 +675,17 @@ public class Minebot extends PircBot implements Runnable {
 				message = message + " ";
 			}
 
-			
 			Player player;
 			// MESSAGE TO ALL PLAYERS
 			if (messageMode.equals(1)) {
-				
+
 				if (CraftIRC.isDebug()) {
 					log.info(String.format(CraftIRC.NAME + " msgToGame(all) : <%s> %s", sender, message));
 				}
 				String msg_to_broadcast = (new StringBuilder()).append("[IRC]").append(" <")
-						.append(irc_relayed_user_color).append(sender).append(util.Colors.White).append("> ")
+						.append(irc_relayed_user_color).append(sender).append(Color.WHITE).append("> ")
 						.append(message).toString();
-				
+
 				for (Player p : plugin.getServer().getOnlinePlayers()) {
 					if (p != null) {
 						p.sendMessage(msg_to_broadcast);
@@ -722,7 +714,7 @@ public class Minebot extends PircBot implements Runnable {
 					log.info(String.format(CraftIRC.NAME + " msgToGame(player) : <%s> %s", sender, message));
 				}
 				String msg_to_broadcast = (new StringBuilder()).append("[IRC privmsg]").append(" <")
-						.append(irc_relayed_user_color).append(sender).append(util.Colors.White).append("> ")
+						.append(irc_relayed_user_color).append(sender).append(Color.WHITE).append("> ")
 						.append(message).toString();
 				for (Player p : plugin.getServer().getOnlinePlayers()) {
 					if (p != null) {
@@ -740,23 +732,21 @@ public class Minebot extends PircBot implements Runnable {
 	private String getPlayerList() {
 		Player onlinePlayers[] = plugin.getServer().getOnlinePlayers();
 		Integer playercount = 0;
-		
+
 		//Integer maxplayers;
 		StringBuilder sb = new StringBuilder();
-		
-	
+
 		//for (Player p : plugin.getServer().getOnlinePlayers())  {
 		for (int i = 0; i < onlinePlayers.length; i++) {
 			if (onlinePlayers[i] != null) {
 				playercount++;
 				if (this.irc_colors.equalsIgnoreCase("equiv")) {
-					sb.append(" ").append(this.colorizePlayer(onlinePlayers[i])); 
-				} else { 
-					sb.append(" ").append(onlinePlayers[i].getName()); 
+					sb.append(" ").append(this.colorizePlayer(onlinePlayers[i]));
+				} else {
+					sb.append(" ").append(onlinePlayers[i].getName());
 				}
 			}
 		}
-	
 
 		if (playercount > 0) {
 			//return "Online (" + playercount + "/" + maxplayers + "): " + sb.toString();
@@ -765,7 +755,6 @@ public class Minebot extends PircBot implements Runnable {
 			return "nobody is minecrafting right now";
 		}
 	}
-
 
 	public ArrayList<String> getChannelList() {
 
@@ -776,14 +765,15 @@ public class Minebot extends PircBot implements Runnable {
 			return null;
 		}
 	}
-		// Bot restart upon disconnect, if the plugin is still enabled
+
+	// Bot restart upon disconnect, if the plugin is still enabled
 	public void onDisconnect() {
 		try {
 			if (this.instance != null && plugin.isEnabled()) {
 				log.info(CraftIRC.NAME + " - disconnected from IRC server... reconnecting!");
 				plugin.recover();
 			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -802,20 +792,16 @@ public class Minebot extends PircBot implements Runnable {
 			Minebot.instance.checkChannels();
 		}
 	}
-	
-	
+
 	@Override
 	public void run() {
 		this.init();
 	}
-	
+
 	public enum messageMode {
-		MSG_ALL,
-		ACTION_ALL,
-		MSG_PLAYER
+		MSG_ALL, ACTION_ALL, MSG_PLAYER
 
 	}
-	
 
 }// EO Minebot
 

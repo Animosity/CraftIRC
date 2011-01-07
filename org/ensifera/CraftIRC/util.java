@@ -40,4 +40,15 @@ public class util {
 		}
 		return result;
 	}
+	
+	public static String MessageBuilder(String[] a, String separator) {
+		StringBuffer result = new StringBuffer();
+
+		for (int i = 1; i < a.length; i++) {
+			result.append(separator);
+			result.append(a[i]);
+		}
+
+		return result.toString();
+	}
 }

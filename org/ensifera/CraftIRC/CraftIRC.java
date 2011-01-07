@@ -17,11 +17,12 @@ import org.ensifera.CraftIRC.Minebot;
 
 public class CraftIRC extends JavaPlugin {
 	public static final String NAME = "CraftIRC";
-	public static final String VERSION = "1.6.6";
+	public static final String VERSION = "1.66";
 
 	private static boolean debug = false;
 	private static Minebot bot;
     private final CraftIRCListener listener = new CraftIRCListener(this);
+    //private final CraftIRC_ServerListener consoleListener = new CraftIRC_ServerListener(this);
 	protected static final Logger log = Logger.getLogger("Minecraft");
 	
 	public CraftIRC(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File plugin, ClassLoader cLoader) {
@@ -55,10 +56,12 @@ public class CraftIRC extends JavaPlugin {
 	}
 
 	public void initialize() {
-		getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, listener, Priority.Highest, this);
-        getServer().getPluginManager().registerEvent(Event.Type.PLAYER_QUIT, listener, Priority.Highest, this);
+		getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, listener, Priority.Normal, this);
+        getServer().getPluginManager().registerEvent(Event.Type.PLAYER_QUIT, listener, Priority.Normal, this);
         getServer().getPluginManager().registerEvent(Event.Type.PLAYER_COMMAND, listener, Priority.Highest, this);
         getServer().getPluginManager().registerEvent(Event.Type.PLAYER_CHAT, listener, Priority.Highest, this);
+        //getServer().getPluginManager().registerEvent(Event.Type.CONSOLE_COMMAND, consoleListener, Priority.Normal, this);
+        
 		/*
 			etc.getLoader().addListener(PluginLoader.Hook.SERVERCOMMAND, listener, this, PluginListener.Priority.HIGH);
 			etc.getLoader().addListener(PluginLoader.Hook.COMMAND, listener, this, PluginListener.Priority.MEDIUM);
@@ -69,8 +72,6 @@ public class CraftIRC extends JavaPlugin {
 			etc.getLoader().addListener(PluginLoader.Hook.BAN, listener, this, PluginListener.Priority.MEDIUM);
 			etc.getLoader().addListener(PluginLoader.Hook.IPBAN, listener, this, PluginListener.Priority.MEDIUM);
 		 */
-		
-
 	}
 
 	public static void setDebug(boolean d) {

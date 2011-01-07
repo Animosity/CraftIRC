@@ -15,27 +15,31 @@ import org.bukkit.Server;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.Color;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerLoginEvent;
+
+
 
 public class CraftIRCListener extends PlayerListener {
 	private final CraftIRC plugin;
 	protected static final Logger log = Logger.getLogger("Minecraft");
 	private static ArrayList<String> logMessages = new ArrayList<String>();
 	private static Minebot bot;
-
+	
 	// private HashMap<Player,String> IRCWhisperMemory = new HashMap<Player,String>();
 
 	public CraftIRCListener(CraftIRC pluginInstance) {
 		plugin = pluginInstance;
-		bot = Minebot.getInstance();
+		bot = Minebot.getInstance(plugin);
 	}
 
 	public void onPlayerCommand(PlayerChatEvent event) {
 			String[] split = event.getMessage().split(" ");
 			Player player = event.getPlayer();
+			
 			if (split[0].equalsIgnoreCase("/irc") && (!bot.optn_send_all_MC_chat.contains("main"))) {
 
 				if (split.length < 2) {
@@ -49,10 +53,9 @@ public class CraftIRCListener extends PlayerListener {
 
 				String ircMessage = player_name + msgtosend;
 				String echoedMessage = new StringBuilder().append("<").append(bot.irc_relayed_user_color)
-						.append(player.getName()).append(util.Colors.White).append(" to IRC> ").append(msgtosend).toString();
+						.append(player.getName()).append(Color.WHITE.toString()).append(" to IRC> ").append(msgtosend).toString();
 
 				bot.msg(bot.irc_channel, ircMessage);
-
 				// echo -> IRC msg locally in game
 				for (Player p : plugin.getServer().getOnlinePlayers()) {
 					if (p != null) {
@@ -106,36 +109,7 @@ public class CraftIRCListener extends PlayerListener {
 		return;
 
 	}
-
-	public boolean onConsoleCommand(String[] split) {
-		if (split[0].equalsIgnoreCase("craftirc") && (split.length >= 2)) {
-
-			if (split[1].equalsIgnoreCase("debug")) {
-				if (split[2].equalsIgnoreCase("on")) {
-					CraftIRC.setDebug(true);
-				}
-				if (split[2].equalsIgnoreCase("off")) {
-					CraftIRC.setDebug(false);
-				}
-				return true;
-			}
-
-			if (split[1].equalsIgnoreCase("say")) {
-				//
-				ArrayList<String> botChannels = bot.getChannelList();
-				if (botChannels.contains(bot.irc_channel)) {
-					bot.sendMessage(bot.irc_channel, util.combineSplit(2, split, " "));
-				}
-				if (botChannels.contains(bot.irc_admin_channel)) {
-					bot.sendMessage(bot.irc_admin_channel, util.combineSplit(2, split, " "));
-				}
-				return true;
-			}
-
-		}
-		return false;
-	}
-
+	
 	public void onPlayerChat(PlayerChatEvent event) {
 		// String[] split = message.split(" ");
 		try {
@@ -168,13 +142,11 @@ public class CraftIRCListener extends PlayerListener {
 		}
 	}
 	
-	@Override
 	public void onPlayerJoin(PlayerEvent event) {
 		
 		try {
-			System.out.println(event.getEventName()); // <-- null
-			Player player = event.getPlayer();        // <-- null
-			
+			Player player = event.getPlayer();
+
 			if (bot.optn_main_send_events.contains("joins")) {
 				bot.msg(bot.irc_channel, "[" + bot.colorizePlayer(player) + " connected]");
 			}
@@ -187,7 +159,6 @@ public class CraftIRCListener extends PlayerListener {
 		}
 	}
 	
-	@Override
 	public void onPlayerQuit(PlayerEvent event) {
 		try {
 			Player player = event.getPlayer();
@@ -244,15 +215,6 @@ public class CraftIRCListener extends PlayerListener {
 	}
 
 	// 
-	public static String MessageBuilder(String[] a, String separator) {
-		StringBuffer result = new StringBuffer();
 
-		for (int i = 1; i < a.length; i++) {
-			result.append(separator);
-			result.append(a[i]);
-		}
-
-		return result.toString();
-	}
 
 }
