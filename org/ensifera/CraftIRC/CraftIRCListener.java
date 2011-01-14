@@ -15,7 +15,7 @@ import org.bukkit.Server;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.Color;
+import org.bukkit.ChatColor;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerListener;
@@ -53,7 +53,7 @@ public class CraftIRCListener extends PlayerListener {
 
 				String ircMessage = player_name + msgtosend;
 				String echoedMessage = new StringBuilder().append("<").append(bot.irc_relayed_user_color)
-						.append(player.getName()).append(Color.WHITE.toString()).append(" to IRC> ").append(msgtosend).toString();
+						.append(player.getName()).append(ChatColor.WHITE.toString()).append(" to IRC> ").append(msgtosend).toString();
 
 				bot.msg(bot.irc_channel, ircMessage);
 				// echo -> IRC msg locally in game

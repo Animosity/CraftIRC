@@ -17,7 +17,7 @@ import org.ensifera.CraftIRC.Minebot;
 
 public class CraftIRC extends JavaPlugin {
 	public static final String NAME = "CraftIRC";
-	public static final String VERSION = "1.66";
+	public static final String VERSION = "1.67 BETA";
 
 	private static boolean debug = false;
 	private static Minebot bot;

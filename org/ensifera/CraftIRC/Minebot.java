@@ -17,7 +17,7 @@ import java.util.regex.*;
 
 import org.bukkit.Player;
 import org.jibble.pircbot.*;
-import org.bukkit.Color;
+import org.bukkit.ChatColor;
 import org.ensifera.CraftIRC.CraftIRC;
 import org.ensifera.CraftIRC.util;
 
@@ -217,38 +217,38 @@ public class Minebot extends PircBot implements Runnable {
 	}
 
 	private void initColorMap() {
-		colorMap.put("black", Color.BLACK.toString());
-		colorMap.put("navy", Color.DARK_AQUA.toString());
-		colorMap.put("green", Color.GREEN.toString());
-		colorMap.put("blue", Color.BLUE.toString());
-		colorMap.put("red", Color.DARK_RED.toString());
-		colorMap.put("purple", Color.DARK_PURPLE.toString());
-		colorMap.put("gold", Color.GOLD.toString());
-		colorMap.put("lightgray", Color.GRAY.toString());
-		colorMap.put("gray", Color.GRAY.toString());
-		colorMap.put("darkpurple", Color.DARK_PURPLE.toString());
-		colorMap.put("lightgreen", Color.GREEN.toString());
-		colorMap.put("lightblue", Color.BLUE.toString());
-		colorMap.put("rose", Color.RED.toString());
-		colorMap.put("lightpurple", Color.LIGHT_PURPLE.toString());
-		colorMap.put("yellow", Color.YELLOW.toString());
-		colorMap.put("white", Color.WHITE.toString());
-		ircColorMap.put(0, Color.WHITE.toString());
-		ircColorMap.put(1, Color.BLACK.toString());
-		ircColorMap.put(2, Color.DARK_AQUA.toString());
-		ircColorMap.put(3, Color.GREEN.toString());
-		ircColorMap.put(4, Color.RED.toString());
-		ircColorMap.put(5, Color.DARK_RED.toString());
-		ircColorMap.put(6, Color.DARK_PURPLE.toString());
-		ircColorMap.put(7, Color.GOLD.toString());
-		ircColorMap.put(8, Color.YELLOW.toString());
-		ircColorMap.put(9, Color.GREEN.toString());
-		ircColorMap.put(10, Color.DARK_BLUE.toString());
-		ircColorMap.put(11, Color.BLUE.toString());
-		ircColorMap.put(12, Color.DARK_PURPLE.toString());
-		ircColorMap.put(13, Color.LIGHT_PURPLE.toString());
-		ircColorMap.put(14, Color.DARK_GRAY.toString());
-		ircColorMap.put(15, Color.GRAY.toString());
+		colorMap.put("black", ChatColor.BLACK.toString());
+		colorMap.put("navy", ChatColor.DARK_AQUA.toString());
+		colorMap.put("green", ChatColor.GREEN.toString());
+		colorMap.put("blue", ChatColor.BLUE.toString());
+		colorMap.put("red", ChatColor.DARK_RED.toString());
+		colorMap.put("purple", ChatColor.DARK_PURPLE.toString());
+		colorMap.put("gold", ChatColor.GOLD.toString());
+		colorMap.put("lightgray", ChatColor.GRAY.toString());
+		colorMap.put("gray", ChatColor.GRAY.toString());
+		colorMap.put("darkpurple", ChatColor.DARK_PURPLE.toString());
+		colorMap.put("lightgreen", ChatColor.GREEN.toString());
+		colorMap.put("lightblue", ChatColor.BLUE.toString());
+		colorMap.put("rose", ChatColor.RED.toString());
+		colorMap.put("lightpurple", ChatColor.LIGHT_PURPLE.toString());
+		colorMap.put("yellow", ChatColor.YELLOW.toString());
+		colorMap.put("white", ChatColor.WHITE.toString());
+		ircColorMap.put(0, ChatColor.WHITE.toString());
+		ircColorMap.put(1, ChatColor.BLACK.toString());
+		ircColorMap.put(2, ChatColor.DARK_AQUA.toString());
+		ircColorMap.put(3, ChatColor.GREEN.toString());
+		ircColorMap.put(4, ChatColor.RED.toString());
+		ircColorMap.put(5, ChatColor.DARK_RED.toString());
+		ircColorMap.put(6, ChatColor.DARK_PURPLE.toString());
+		ircColorMap.put(7, ChatColor.GOLD.toString());
+		ircColorMap.put(8, ChatColor.YELLOW.toString());
+		ircColorMap.put(9, ChatColor.GREEN.toString());
+		ircColorMap.put(10, ChatColor.DARK_BLUE.toString());
+		ircColorMap.put(11, ChatColor.BLUE.toString());
+		ircColorMap.put(12, ChatColor.DARK_PURPLE.toString());
+		ircColorMap.put(13, ChatColor.LIGHT_PURPLE.toString());
+		ircColorMap.put(14, ChatColor.DARK_GRAY.toString());
+		ircColorMap.put(15, ChatColor.GRAY.toString());
 	}
 
 	public Integer getIRCColor(String mccolor) {
@@ -683,7 +683,7 @@ public class Minebot extends PircBot implements Runnable {
 					log.info(String.format(CraftIRC.NAME + " msgToGame(all) : <%s> %s", sender, message));
 				}
 				String msg_to_broadcast = (new StringBuilder()).append("[IRC]").append(" <")
-						.append(irc_relayed_user_color).append(sender).append(Color.WHITE).append("> ")
+						.append(irc_relayed_user_color).append(sender).append(ChatColor.WHITE).append("> ")
 						.append(message).toString();
 
 				for (Player p : plugin.getServer().getOnlinePlayers()) {
@@ -714,7 +714,7 @@ public class Minebot extends PircBot implements Runnable {
 					log.info(String.format(CraftIRC.NAME + " msgToGame(player) : <%s> %s", sender, message));
 				}
 				String msg_to_broadcast = (new StringBuilder()).append("[IRC privmsg]").append(" <")
-						.append(irc_relayed_user_color).append(sender).append(Color.WHITE).append("> ")
+						.append(irc_relayed_user_color).append(sender).append(ChatColor.WHITE).append("> ")
 						.append(message).toString();
 				for (Player p : plugin.getServer().getOnlinePlayers()) {
 					if (p != null) {
