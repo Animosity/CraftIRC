@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import org.bukkit.Location;
-import org.bukkit.Player;
+import org.bukkit.entity.Player;
 import org.bukkit.Server;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;

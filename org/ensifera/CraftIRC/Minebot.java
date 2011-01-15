@@ -15,7 +15,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.*;
 
-import org.bukkit.Player;
+import org.bukkit.entity.Player;
 import org.jibble.pircbot.*;
 import org.bukkit.ChatColor;
 import org.ensifera.CraftIRC.CraftIRC;
