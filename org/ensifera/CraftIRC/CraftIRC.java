@@ -17,7 +17,7 @@ import org.ensifera.CraftIRC.Minebot;
 
 public class CraftIRC extends JavaPlugin {
 	public static final String NAME = "CraftIRC";
-	public static final String VERSION = "1.68 BETA";
+	public static final String VERSION = "1.68b BETA";
 
 	private static boolean debug = false;
 	private static Minebot bot;
@@ -25,8 +25,8 @@ public class CraftIRC extends JavaPlugin {
     //private final CraftIRC_ServerListener consoleListener = new CraftIRC_ServerListener(this);
 	protected static final Logger log = Logger.getLogger("Minecraft");
 	
-	public CraftIRC(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File plugin, ClassLoader cLoader) {
-		super(pluginLoader, instance, desc, plugin, cLoader);
+	public CraftIRC(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder, File plugin, ClassLoader cLoader) {
+		super(pluginLoader, instance, desc, folder, plugin, cLoader);
 		initialize();
 	}
 	

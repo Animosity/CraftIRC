@@ -200,14 +200,6 @@ public class Minebot extends PircBot implements Runnable {
 		this.setLogin(this.irc_server_login);
 		this.setVersion(CraftIRC.NAME + " v" + CraftIRC.VERSION);
 
-		/*
-		 * this.handle = botname; this.setName(botname);
-		 * this.setFinger("CraftIRC - Minecraft bot");
-		 * this.setLogin("minecraftbot"); this.server_info = irc_server_info;
-		 * this.auth_info = irc_auth_info; this.main_channel = irc_channel;
-		 * this.cmd_prefix = cmd_prefix;
-		 */
-
 		try {
 			this.start();
 		} catch (Exception e) {
@@ -605,8 +597,9 @@ public class Minebot extends PircBot implements Runnable {
 
 			if (splitMessage.length > 1 && splitMessage[0].equalsIgnoreCase("tell")) {
 				if (plugin.getServer().getPlayer(splitMessage[1]) != null) {
-				 this.msgToGame(sender, util.combineSplit(2, splitMessage, " "), messageMode.MSG_PLAYER, splitMessage[1]);
-				 this.sendNotice(sender, "Whispered to " + splitMessage[1]);
+					this.msgToGame(sender, util.combineSplit(2, splitMessage, " "), messageMode.MSG_PLAYER,
+							splitMessage[1]);
+					this.sendNotice(sender, "Whispered to " + splitMessage[1]);
 				}
 			}
 
@@ -678,53 +671,52 @@ public class Minebot extends PircBot implements Runnable {
 			Player player;
 			String msg_to_broadcast;
 			// MESSAGE TO ALL PLAYERS
-			switch(mm) {
-				case MSG_ALL: 
-					if (CraftIRC.isDebug()) {
-						log.info(String.format(CraftIRC.NAME + " msgToGame(all) : <%s> %s", sender, message));
-					}
-					msg_to_broadcast = (new StringBuilder()).append("[IRC]").append(" <")
-							.append(irc_relayed_user_color).append(sender).append(ChatColor.WHITE).append("> ")
-							.append(message).toString();
-	
-					for (Player p : plugin.getServer().getOnlinePlayers()) {
-						if (p != null) {
-							p.sendMessage(msg_to_broadcast);
-						}
-					}
-					break;
-	
-				// ACTION
-				case ACTION_ALL:
-					if (CraftIRC.isDebug()) {
-						log.info(String.format(CraftIRC.NAME + " msgToGame(action) : <%s> %s", sender, message));
-					}
-					msg_to_broadcast = (new StringBuilder()).append("[IRC]").append(irc_relayed_user_color)
-							.append(" * ").append(sender).append(" ").append(message).toString();
-	
-					for (Player p : plugin.getServer().getOnlinePlayers()) {
-						if (p != null) {
-							p.sendMessage(msg_to_broadcast);
-						}
-					}
-					break;
-	
-				// MESSAGE TO 1 PLAYER
-				case MSG_PLAYER:
-					if (CraftIRC.isDebug()) {
-						log.info(String.format(CraftIRC.NAME + " msgToGame(player) : <%s> %s", sender, message));
-					}
-					msg_to_broadcast = (new StringBuilder()).append("[IRC privmsg]").append(" <")
-							.append(irc_relayed_user_color).append(sender).append(ChatColor.WHITE).append("> ")
-							.append(message).toString();
-					Player p = plugin.getServer().getPlayer(targetPlayer);
+			switch (mm) {
+			case MSG_ALL:
+				if (CraftIRC.isDebug()) {
+					log.info(String.format(CraftIRC.NAME + " msgToGame(all) : <%s> %s", sender, message));
+				}
+				msg_to_broadcast = (new StringBuilder()).append("[IRC]").append(" <").append(irc_relayed_user_color)
+						.append(sender).append(ChatColor.WHITE).append("> ").append(message).toString();
+
+				for (Player p : plugin.getServer().getOnlinePlayers()) {
 					if (p != null) {
 						p.sendMessage(msg_to_broadcast);
 					}
-					
-					break;
+				}
+				break;
+
+			// ACTION
+			case ACTION_ALL:
+				if (CraftIRC.isDebug()) {
+					log.info(String.format(CraftIRC.NAME + " msgToGame(action) : <%s> %s", sender, message));
+				}
+				msg_to_broadcast = (new StringBuilder()).append("[IRC]").append(irc_relayed_user_color).append(" * ")
+						.append(sender).append(" ").append(message).toString();
+
+				for (Player p : plugin.getServer().getOnlinePlayers()) {
+					if (p != null) {
+						p.sendMessage(msg_to_broadcast);
+					}
+				}
+				break;
+
+			// MESSAGE TO 1 PLAYER
+			case MSG_PLAYER:
+				if (CraftIRC.isDebug()) {
+					log.info(String.format(CraftIRC.NAME + " msgToGame(player) : <%s> %s", sender, message));
+				}
+				msg_to_broadcast = (new StringBuilder()).append("[IRC privmsg]").append(" <")
+						.append(irc_relayed_user_color).append(sender).append(ChatColor.WHITE).append("> ")
+						.append(message).toString();
+				Player p = plugin.getServer().getPlayer(targetPlayer);
+				if (p != null) {
+					p.sendMessage(msg_to_broadcast);
+				}
+
+				break;
 			} //end switch
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

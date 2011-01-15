@@ -179,7 +179,7 @@ public class CraftIRCListener extends PlayerListener {
 			reason = "no reason given";
 		}
 		if (bot.optn_main_send_events.contains("bans")) {
-			bot.msg(bot.irc_channel, "[" +bot.colorizePlayer(mod) + " BANNED " + bot.colorizePlayer(player) + " because: " + reason + "]");
+			bot.msg(bot.irc_channel, "[" + bot.colorizePlayer(mod) + " BANNED " + bot.colorizePlayer(player) + " because: " + reason + "]");
 		}
 		if (bot.optn_admin_send_events.contains("bans")) {
 			bot.msg(bot.irc_admin_channel, "[" + bot.colorizePlayer(mod) + " BANNED " + bot.colorizePlayer(player) + " because: " + reason
