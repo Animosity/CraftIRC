@@ -21,11 +21,6 @@ import org.bukkit.ChatColor;
 import org.ensifera.CraftIRC.CraftIRC;
 import org.ensifera.CraftIRC.util;
 
-/**
- * @author Animosity
- * 
- */
-
 public class Minebot extends PircBot implements Runnable {
 	public static Minebot instance = null;
 	private CraftIRC plugin = null;
@@ -433,13 +428,19 @@ public class Minebot extends PircBot implements Runnable {
 
 	}
 
-	// Update users
+	
 	public void onJoin(String channel, String sender, String login, String hostname) {
 		if (channel.equalsIgnoreCase(this.irc_channel)) {
-			this.irc_users_main = this.getUsers(channel);
+			//this.irc_users_main = this.getUsers(channel);
+			if (this.optn_main_send_events.contains("irc-joins")) {
+				msgToGame(sender, "joined" + channel, messageMode.MSG_ALL, null);
+			}
 		}
 		if (channel.equalsIgnoreCase(this.irc_admin_channel)) {
-			this.irc_users_admin = this.getUsers(channel);
+			//this.irc_users_admin = this.getUsers(channel);
+			if (this.optn_admin_send_events.contains("irc-joins")) {
+				msgToGame(sender, "joined" + channel, messageMode.MSG_ALL, null);
+			}
 		}
 
 		// if irc-joins, send event to game
@@ -449,9 +450,15 @@ public class Minebot extends PircBot implements Runnable {
 	public void onPart(String channel, String sender, String login, String hostname) {
 		if (channel.equalsIgnoreCase(this.irc_channel)) {
 			this.irc_users_main = this.getUsers(channel);
+			if (this.optn_main_send_events.contains("irc-quits")) {
+				msgToGame(sender, "left" + channel, messageMode.MSG_ALL, null);
+			}
 		}
 		if (channel.equalsIgnoreCase(this.irc_admin_channel)) {
 			this.irc_users_admin = this.getUsers(channel);
+			if (this.optn_admin_send_events.contains("irc-quits")) {
+				msgToGame(sender, "left" + channel, messageMode.MSG_ALL, null);
+			}
 		}
 
 		// if irc-quits, send event to game
@@ -626,7 +633,7 @@ public class Minebot extends PircBot implements Runnable {
 	public boolean userAuthorized(String channel, String user) {
 		if (channel.equalsIgnoreCase(this.irc_admin_channel)) {
 			User[] adminUsers = (User[]) super.getUsers(channel).clone(); // I just want a copy of it god damnit
-			//User[] adminUsers = irc_users_admin;
+						
 			// may get NPE if user is disconnected
 			try {
 				for (int i = 0; i < adminUsers.length; i++) {
@@ -646,6 +653,13 @@ public class Minebot extends PircBot implements Runnable {
 	}
 
 	// Form and broadcast messages to Minecraft
+	
+	/**
+	 * @param sender - The originating source/user of the IRC event
+	 * @param message - The message to be relayed to the game
+	 * @param mm - The message type (see messageMode)
+	 * @param targetPlayer - The target player to message (for private messages), send null if mm != messageMod.MSG_PLAYER
+	 */
 	public void msgToGame(String sender, String message, messageMode mm, String targetPlayer) {
 
 		try {
@@ -774,6 +788,12 @@ public class Minebot extends PircBot implements Runnable {
 
 	}
 
+	
+	/**
+	 * @param target - the IRC #channel to send the message to
+	 * @param message - the message to send to the target #channel; this.irc_channel and this.irc_admin_channel are the common targets.
+	 * 
+	 */
 	public void msg(String target, String message) {
 		if (CraftIRC.isDebug()) {
 			log.info(String.format(CraftIRC.NAME + " msgToIRC <%s> : %s", target, message));
