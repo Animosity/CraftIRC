@@ -1,4 +1,4 @@
-package org.ensifera.CraftIRC;
+package org.bukkit.animosity.craftirc;
 
 import java.io.File;
 import java.util.logging.Logger;
@@ -8,8 +8,8 @@ import org.bukkit.event.Event;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.ensifera.CraftIRC.CraftIRCListener;
-import org.ensifera.CraftIRC.Minebot;
+import org.bukkit.animosity.craftirc.CraftIRCListener;
+import org.bukkit.animosity.craftirc.Minebot;
 
 /**
  * @author Animosity With various contributions and improvements by ricin
@@ -18,10 +18,10 @@ import org.ensifera.CraftIRC.Minebot;
 
 public class CraftIRC extends JavaPlugin {
 	public static final String NAME = "CraftIRC";
-	public static final String VERSION = "1.69 BETA";
+	public static final String VERSION = "1.70 BETA";
 
 	private static boolean debug = false;
-	private static Minebot bot;
+	public static Minebot bot;
 	private final CraftIRCListener listener = new CraftIRCListener(this);
 	//private final CraftIRC_ServerListener consoleListener = new CraftIRC_ServerListener(this);
 	protected static final Logger log = Logger.getLogger("Minecraft");

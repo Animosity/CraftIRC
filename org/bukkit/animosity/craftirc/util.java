@@ -1,9 +1,7 @@
-/**
- * 
- */
-package org.ensifera.CraftIRC;
+package org.bukkit.animosity.craftirc;
 
 import org.bukkit.entity.Player;
+import org.jibble.pircbot.User;
 
 /**
  * @author Animosity
@@ -52,6 +50,31 @@ public class util {
 		}
 
 		return result.toString();
+	}
+	
+	public static String getIrcUserList(Minebot bot, String channel) {
+		StringBuilder sbIrcUserList = new StringBuilder();
+		try {
+			if (channel.equalsIgnoreCase("main") && bot.getChannelList().contains(bot.irc_channel)) {
+				for (int i = 0; i < bot.irc_users_main.length; i++) {
+					sbIrcUserList.append(bot.getHighestUserPrefix(bot.irc_users_main[i]) + bot.irc_users_main[i].getNick()).append(" ");
+				}
+				return sbIrcUserList.toString();
+			}
+			else if
+			(channel.equalsIgnoreCase("admin") && bot.getChannelList().contains(bot.irc_admin_channel)) {
+				for (int i = 0; i < bot.irc_users_admin.length; i++) {
+					sbIrcUserList.append(bot.getHighestUserPrefix(bot.irc_users_admin[i]) + bot.irc_users_admin[i].getNick()).append(" ");
+				}
+				return sbIrcUserList.toString();
+			}
+			else { return ""; }
+			
+		} catch (Exception e) {
+			bot.log.warning(CraftIRC.NAME + ": error while retrieving IRC user list!");
+			e.printStackTrace();
+			return "";
+		}
 	}
 	
 	public static String colorizePlayer(Player player) {

@@ -3580,6 +3580,6 @@ public abstract class PircBot implements ReplyConstants, PircBotLogger {
 	// op/voice
 	private String _userPrefixOrder = "@+";
 	private String _channelPrefixes = "#&+!";
-	private List<String> supportedPrefixes = new ArrayList<String>(Arrays.asList("@", "+"));
-	private List<String> supportedModes = new ArrayList<String>(Arrays.asList("o", "v"));
+	private List<String> supportedPrefixes = new ArrayList<String>(Arrays.asList("~", "&", "@", "%", "+"));
+	private List<String> supportedModes = new ArrayList<String>(Arrays.asList("q", "a", "o", "h", "v"));
 }

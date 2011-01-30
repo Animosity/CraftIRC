@@ -1,6 +1,7 @@
-package org.ensifera.CraftIRC;
+package org.bukkit.animosity.craftirc;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,8 +19,8 @@ import java.util.regex.*;
 import org.bukkit.entity.Player;
 import org.jibble.pircbot.*;
 import org.bukkit.ChatColor;
-import org.ensifera.CraftIRC.CraftIRC;
-import org.ensifera.CraftIRC.util;
+import org.bukkit.animosity.craftirc.CraftIRC;
+import org.bukkit.animosity.craftirc.util;
 
 public class Minebot extends PircBot implements Runnable {
 	public static Minebot instance = null;
@@ -54,6 +55,7 @@ public class Minebot extends PircBot implements Runnable {
 	String optn_notify_admins_cmd;
 	ArrayList<String> optn_console_commands = new ArrayList<String>(); // whitelisted console commands to execute from IRC admin channel
 	int bot_timeout = 5000; // how long to wait after joining channels to wait for the bot to check itself
+	HashMap<String, String> irc_other_relay_bots = new HashMap<String,String>(); // replace message prefix strings with custom ones for a given bot
 
 	User[] irc_users_main, irc_users_admin;
 
@@ -72,10 +74,25 @@ public class Minebot extends PircBot implements Runnable {
 
 		this.initColorMap();
 		try {
-			ircSettings.load(new FileInputStream(ircSettingsFilename));
-		} catch (IOException e) {
-			log.info(CraftIRC.NAME + " - Error while READING settings file " + ircSettingsFilename);
+			ircSettings.load(new FileInputStream("plugins/"+ircSettingsFilename));
+			
+		} catch (FileNotFoundException e) {
+			log.warning(CraftIRC.NAME + ": CraftIRC.settings file not found in plugins/ - checking root directory.");
+			try {
+				ircSettings.load(new FileInputStream(ircSettingsFilename));
+			} catch (FileNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+				log.severe(CraftIRC.NAME + " no CraftIRC.settings file found!");
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+				log.severe(CraftIRC.NAME + " could not open CraftIRC.settings file for some reason. Post trace in CraftIRC thread.");
+			}
+			
+		} catch(IOException e) {
 			e.printStackTrace();
+			log.severe(CraftIRC.NAME + " could not open CraftIRC.settings file for some reason. Post trace in CraftIRC thread.");
 		}
 
 		try {
@@ -273,6 +290,12 @@ public class Minebot extends PircBot implements Runnable {
 	private ArrayList<String> getCSVArrayList(String csv_string) {
 		return new ArrayList<String>(Arrays.asList(csv_string.toLowerCase().split(",")));
 	}
+	private ArrayList<String> getCSVArrayList(String csv_string, String delims) {
+		if (CraftIRC.isDebug()) {
+			System.out.println("getCSVArrayList(): " + new ArrayList<String>(Arrays.asList(csv_string.toLowerCase().split(delims))).toString());
+		}
+		return new ArrayList<String>(Arrays.asList(csv_string.toLowerCase().split(delims)));
+	}
 
 	public void start() {
 
@@ -409,15 +432,15 @@ public class Minebot extends PircBot implements Runnable {
 	
 	public void onJoin(String channel, String sender, String login, String hostname) {
 		if (channel.equalsIgnoreCase(this.irc_channel)) {
-			//this.irc_users_main = this.getUsers(channel);
+			this.irc_users_main = this.getUsers(channel);
 			if (this.optn_main_send_events.contains("irc-joins")) {
-				msgToGame(sender, "joined" + channel, messageMode.MSG_ALL, null);
+				msgToGame(sender, " joined " + channel, messageMode.MSG_IRC_JOIN, null);
 			}
 		}
 		if (channel.equalsIgnoreCase(this.irc_admin_channel)) {
-			//this.irc_users_admin = this.getUsers(channel);
+			this.irc_users_admin = this.getUsers(channel);
 			if (this.optn_admin_send_events.contains("irc-joins")) {
-				msgToGame(sender, "joined" + channel, messageMode.MSG_ALL, null);
+				msgToGame(sender, " joined " + channel, messageMode.MSG_IRC_JOIN, null);
 			}
 		}
 
@@ -429,13 +452,13 @@ public class Minebot extends PircBot implements Runnable {
 		if (channel.equalsIgnoreCase(this.irc_channel)) {
 			this.irc_users_main = this.getUsers(channel);
 			if (this.optn_main_send_events.contains("irc-quits")) {
-				msgToGame(sender, "left" + channel, messageMode.MSG_ALL, null);
+				msgToGame(sender, " left " + channel, messageMode.MSG_IRC_QUIT, null);
 			}
 		}
 		if (channel.equalsIgnoreCase(this.irc_admin_channel)) {
 			this.irc_users_admin = this.getUsers(channel);
 			if (this.optn_admin_send_events.contains("irc-quits")) {
-				msgToGame(sender, "left" + channel, messageMode.MSG_ALL, null);
+				msgToGame(sender, " left " + channel, messageMode.MSG_IRC_QUIT, null);
 			}
 		}
 
@@ -601,7 +624,6 @@ public class Minebot extends PircBot implements Runnable {
 
 		if (this.optn_send_all_IRC_chat.contains("main") || this.optn_send_all_IRC_chat.contains("admin")) {
 			msgToGame(sender, action, messageMode.ACTION_ALL, null);
-
 		}
 
 	}
@@ -610,14 +632,15 @@ public class Minebot extends PircBot implements Runnable {
 	// Currently just for admin channel as first-order level of security
 	public boolean userAuthorized(String channel, String user) {
 		if (channel.equalsIgnoreCase(this.irc_admin_channel)) {
-			User[] adminUsers = (User[]) super.getUsers(channel).clone(); // I just want a copy of it god damnit
+			//User[] adminUsers = super.getUsers(channel); // I just want a copy of it god damnit
 						
 			// may get NPE if user is disconnected
 			try {
-				for (int i = 0; i < adminUsers.length; i++) {
-					User iterUser = adminUsers[i];
+				for (int i = 0; i < this.irc_users_admin.length; i++) {
+					User iterUser = this.irc_users_admin[i];
+					System.out.println(getHighestUserPrefix(iterUser));
 					if (iterUser.getNick().equalsIgnoreCase(user)
-							&& this.optn_admin_req_prefixes.contains(iterUser.getPrefix())) {
+							&& this.optn_admin_req_prefixes.contains(getHighestUserPrefix(iterUser))) {
 						return true;
 					}
 				}
@@ -630,9 +653,9 @@ public class Minebot extends PircBot implements Runnable {
 		return false;
 	}
 
-	// Form and broadcast messages to Minecraft
 	
-	/**
+	/*
+	 * Form and broadcast messages to Minecraft
 	 * @param sender - The originating source/user of the IRC event
 	 * @param message - The message to be relayed to the game
 	 * @param mm - The message type (see messageMode)
@@ -707,6 +730,27 @@ public class Minebot extends PircBot implements Runnable {
 				}
 
 				break;
+				
+			case MSG_IRC_JOIN:
+				msg_to_broadcast = (new StringBuilder()).append("[IRC] ").append(irc_relayed_user_color)
+									.append(sender).append(ChatColor.WHITE).append(message).toString();
+
+				for (Player p1 : plugin.getServer().getOnlinePlayers()) {
+					if (p1 != null) {
+						p1.sendMessage(msg_to_broadcast);
+					}
+				}
+				break;
+				
+			case MSG_IRC_QUIT:
+				msg_to_broadcast = (new StringBuilder()).append("[IRC] ").append(irc_relayed_user_color)
+									.append(sender).append(ChatColor.WHITE).append(message).toString();
+				for (Player p1 : plugin.getServer().getOnlinePlayers()) {
+					if (p1 != null) {
+						p1.sendMessage(msg_to_broadcast);
+					}
+				}
+				break;
 			} //end switch
 
 		} catch (Exception e) {
@@ -742,7 +786,7 @@ public class Minebot extends PircBot implements Runnable {
 		}
 	}
 
-	public ArrayList<String> getChannelList() {
+	ArrayList<String> getChannelList() {
 
 		try {
 			return new ArrayList<String>(Arrays.asList(this.getChannels()));
@@ -791,7 +835,7 @@ public class Minebot extends PircBot implements Runnable {
 	}
 
 	private enum messageMode {
-		MSG_ALL, ACTION_ALL, MSG_PLAYER
+		MSG_ALL, ACTION_ALL, MSG_PLAYER, MSG_IRC_JOIN, MSG_IRC_QUIT
 	}
 
 }// EO Minebot

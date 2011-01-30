@@ -1,6 +1,5 @@
-package org.ensifera.CraftIRC;
+package org.bukkit.animosity.craftirc;
 
-import org.ensifera.CraftIRC.*;
 import java.lang.Exception;
 import java.util.logging.Logger;
 import java.util.ArrayList;
@@ -81,7 +80,12 @@ public class CraftIRCListener extends PlayerListener {
 			event.setCancelled(true);
 			return;
 		} // ** /ircw <user> <msg>
-
+		
+		// IRC user list
+		if (split[0].equalsIgnoreCase("/ircwho") && (split[1].equalsIgnoreCase("main") || split[1].equalsIgnoreCase("admin"))) {
+			player.sendMessage(util.getIrcUserList(bot, split[1]));
+		}
+		
 		// notify/call admins in the admin IRC channel
 		if (bot.optn_notify_admins_cmd != null) {
 			if (split[0].equalsIgnoreCase(bot.optn_notify_admins_cmd)) {
@@ -96,11 +100,11 @@ public class CraftIRCListener extends PlayerListener {
 		if (split[0].equalsIgnoreCase("/me") && bot.optn_send_all_MC_chat.size() > 0) {
 			String msgtosend = "* " + player.getName() + " " + util.combineSplit(1, split, " ");
 			if (bot.optn_send_all_MC_chat.contains("main")) {
-				bot.sendMessage(bot.irc_channel, msgtosend);
+				bot.msg(bot.irc_channel, msgtosend);
 			}
 
 			if (bot.optn_send_all_MC_chat.contains("admin")) {
-				bot.sendMessage(bot.irc_admin_channel, msgtosend);
+				bot.msg(bot.irc_admin_channel, msgtosend);
 			}
 		}
 		// endif player.canUseCommand("/irc")
