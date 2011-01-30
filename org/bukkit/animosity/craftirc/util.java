@@ -1,5 +1,10 @@
 package org.bukkit.animosity.craftirc;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+
 import org.bukkit.entity.Player;
 import org.jibble.pircbot.User;
 
@@ -52,19 +57,24 @@ public class util {
 		return result.toString();
 	}
 	
+	
+	// TODO: Sort this list properly
 	public static String getIrcUserList(Minebot bot, String channel) {
 		StringBuilder sbIrcUserList = new StringBuilder();
 		try {
 			if (channel.equalsIgnoreCase("main") && bot.getChannelList().contains(bot.irc_channel)) {
-				for (int i = 0; i < bot.irc_users_main.length; i++) {
-					sbIrcUserList.append(bot.getHighestUserPrefix(bot.irc_users_main[i]) + bot.irc_users_main[i].getNick()).append(" ");
+				ArrayList<User> users = new ArrayList<User>(Arrays.asList(bot.getUsers(bot.irc_channel)));
+				//bot.irc_users_main = bot.getUsers(bot.irc_channel);
+				for (int i = 0; i < users.size(); i++) {
+					sbIrcUserList.append(bot.getHighestUserPrefix(users.get(i)) + users.get(i).getNick()).append(" ");
 				}
 				return sbIrcUserList.toString();
 			}
-			else if
-			(channel.equalsIgnoreCase("admin") && bot.getChannelList().contains(bot.irc_admin_channel)) {
-				for (int i = 0; i < bot.irc_users_admin.length; i++) {
-					sbIrcUserList.append(bot.getHighestUserPrefix(bot.irc_users_admin[i]) + bot.irc_users_admin[i].getNick()).append(" ");
+			else if (channel.equalsIgnoreCase("admin") && bot.getChannelList().contains(bot.irc_admin_channel)) {
+				ArrayList<User> users = new ArrayList<User>(Arrays.asList(bot.getUsers(bot.irc_admin_channel)));
+				//bot.irc_users_admin = bot.getUsers(bot.irc_admin_channel);
+				for (int i = 0; i < users.size(); i++) {
+					sbIrcUserList.append(bot.getHighestUserPrefix(users.get(i)) + users.get(i).getNick()).append(" ");
 				}
 				return sbIrcUserList.toString();
 			}
@@ -76,6 +86,7 @@ public class util {
 			return "";
 		}
 	}
+
 	
 	public static String colorizePlayer(Player player) {
 		return player.getName();

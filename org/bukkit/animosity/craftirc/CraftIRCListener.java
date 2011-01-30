@@ -82,7 +82,8 @@ public class CraftIRCListener extends PlayerListener {
 		} // ** /ircw <user> <msg>
 		
 		// IRC user list
-		if (split[0].equalsIgnoreCase("/ircwho") && (split[1].equalsIgnoreCase("main") || split[1].equalsIgnoreCase("admin"))) {
+		if (split[0].equalsIgnoreCase("/ircwho") && split.length == 2 && (split[1].equalsIgnoreCase("main") || split[1].equalsIgnoreCase("admin"))) {
+			player.sendMessage("IRC users in " + split[1] + " channel:");
 			player.sendMessage(util.getIrcUserList(bot, split[1]));
 		}
 		
@@ -124,7 +125,7 @@ public class CraftIRCListener extends PlayerListener {
 		}
 	}
 
-	public void relayToIRC(Player player, String message) {
+	private void relayToIRC(Player player, String message) {
 		try {
 			String playername = "(" + util.colorizePlayer(player) + ") ";
 
@@ -151,10 +152,10 @@ public class CraftIRCListener extends PlayerListener {
 			Player player = event.getPlayer();
 
 			if (bot.optn_main_send_events.contains("joins")) {
-				bot.msg(bot.irc_channel, "[" + util.colorizePlayer(player) + " connected]");
+				bot.msgMainChannel("[" + util.colorizePlayer(player) + " connected]");
 			}
 			if (bot.optn_admin_send_events.contains("joins")) {
-				bot.msg(bot.irc_admin_channel, "[" + util.colorizePlayer(player) + " connected]");
+				bot.msgAdminChannel("[" + util.colorizePlayer(player) + " connected]");
 			}
 
 		} catch (Exception e) {
@@ -166,10 +167,10 @@ public class CraftIRCListener extends PlayerListener {
 		try {
 			Player player = event.getPlayer();
 			if (bot.optn_main_send_events.contains("quits")) {
-				bot.msg(bot.irc_channel, "[" + util.colorizePlayer(player) + " disconnected]");
+				bot.msgMainChannel("[" + util.colorizePlayer(player) + " disconnected]");
 			}
 			if (bot.optn_admin_send_events.contains("quits")) {
-				bot.msg(bot.irc_admin_channel, "[" + util.colorizePlayer(player) + " disconnected]");
+				bot.msgAdminChannel("[" + util.colorizePlayer(player) + " disconnected]");
 			}
 
 		} catch (Exception e) {
@@ -182,11 +183,11 @@ public class CraftIRCListener extends PlayerListener {
 			reason = "no reason given";
 		}
 		if (bot.optn_main_send_events.contains("bans")) {
-			bot.msg(bot.irc_channel, "[" + util.colorizePlayer(mod) + " BANNED " + util.colorizePlayer(player)
+			bot.msgMainChannel("[" + util.colorizePlayer(mod) + " BANNED " + util.colorizePlayer(player)
 					+ " because: " + reason + "]");
 		}
 		if (bot.optn_admin_send_events.contains("bans")) {
-			bot.msg(bot.irc_admin_channel, "[" + util.colorizePlayer(mod) + " BANNED " + util.colorizePlayer(player)
+			bot.msgAdminChannel("[" + util.colorizePlayer(mod) + " BANNED " + util.colorizePlayer(player)
 					+ " because: " + reason + "]");
 		}
 	}
@@ -196,11 +197,11 @@ public class CraftIRCListener extends PlayerListener {
 			reason = "no reason given";
 		}
 		if (bot.optn_main_send_events.contains("bans")) {
-			bot.msg(bot.irc_channel, "[" + util.colorizePlayer(mod) + " IP BANNED " + util.colorizePlayer(player)
+			bot.msgMainChannel("[" + util.colorizePlayer(mod) + " IP BANNED " + util.colorizePlayer(player)
 					+ " because: " + reason + "]");
 		}
 		if (bot.optn_admin_send_events.contains("bans")) {
-			bot.msg(bot.irc_admin_channel, "[" + util.colorizePlayer(mod) + " IP BANNED " + util.colorizePlayer(player)
+			bot.msgAdminChannel("[" + util.colorizePlayer(mod) + " IP BANNED " + util.colorizePlayer(player)
 					+ " because: " + reason + "]");
 		}
 	}
@@ -211,12 +212,12 @@ public class CraftIRCListener extends PlayerListener {
 		}
 
 		if (bot.optn_main_send_events.contains("kicks")) {
-			bot.msg(bot.irc_channel, "[" + util.colorizePlayer(mod) + " KICKED " + util.colorizePlayer(player)
+			bot.msgMainChannel("[" + util.colorizePlayer(mod) + " KICKED " + util.colorizePlayer(player)
 					+ " because: " + reason + "]");
 		}
 
 		if (bot.optn_admin_send_events.contains("kicks")) {
-			bot.msg(bot.irc_admin_channel, "[" + util.colorizePlayer(mod) + " KICKED " + util.colorizePlayer(player)
+			bot.msgAdminChannel("[" + util.colorizePlayer(mod) + " KICKED " + util.colorizePlayer(player)
 					+ " because: " + reason + "]");
 		}
 	}

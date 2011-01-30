@@ -64,7 +64,7 @@ public class CraftIRC extends JavaPlugin {
 		getServer().getPluginManager().registerEvent(Event.Type.PLAYER_CHAT, listener, Priority.Monitor, this);
 		//getServer().getPluginManager().registerEvent(Event.Type.CONSOLE_COMMAND, consoleListener, Priority.Normal, this);
 
-		/*
+		/*  hMod
 			etc.getLoader().addListener(PluginLoader.Hook.SERVERCOMMAND, listener, this, PluginListener.Priority.HIGH);
 			etc.getLoader().addListener(PluginLoader.Hook.COMMAND, listener, this, PluginListener.Priority.MEDIUM);
 			etc.getLoader().addListener(PluginLoader.Hook.LOGIN, listener, this, PluginListener.Priority.MEDIUM);

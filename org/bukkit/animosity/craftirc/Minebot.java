@@ -22,6 +22,18 @@ import org.bukkit.ChatColor;
 import org.bukkit.animosity.craftirc.CraftIRC;
 import org.bukkit.animosity.craftirc.util;
 
+/**
+ * @author Animosity
+ *
+ */
+/**
+ * @author Animosity
+ *
+ */
+/**
+ * @author Animosity
+ *
+ */
 public class Minebot extends PircBot implements Runnable {
 	public static Minebot instance = null;
 	private CraftIRC plugin = null;
@@ -74,10 +86,10 @@ public class Minebot extends PircBot implements Runnable {
 
 		this.initColorMap();
 		try {
-			ircSettings.load(new FileInputStream("plugins/"+ircSettingsFilename));
+			ircSettings.load(new FileInputStream("plugins/CraftIRC/"+ircSettingsFilename));
 			
 		} catch (FileNotFoundException e) {
-			log.warning(CraftIRC.NAME + ": CraftIRC.settings file not found in plugins/ - checking root directory.");
+			log.warning(CraftIRC.NAME + ": CraftIRC.settings file not found in plugins/CraftIRC/ - checking root directory.");
 			try {
 				ircSettings.load(new FileInputStream(ircSettingsFilename));
 			} catch (FileNotFoundException e1) {
@@ -434,17 +446,17 @@ public class Minebot extends PircBot implements Runnable {
 		if (channel.equalsIgnoreCase(this.irc_channel)) {
 			this.irc_users_main = this.getUsers(channel);
 			if (this.optn_main_send_events.contains("irc-joins")) {
-				msgToGame(sender, " joined " + channel, messageMode.MSG_IRC_JOIN, null);
+				msgToGame(sender, " joined " + channel, messageMode.IRC_JOIN, null);
 			}
 		}
 		if (channel.equalsIgnoreCase(this.irc_admin_channel)) {
 			this.irc_users_admin = this.getUsers(channel);
 			if (this.optn_admin_send_events.contains("irc-joins")) {
-				msgToGame(sender, " joined " + channel, messageMode.MSG_IRC_JOIN, null);
+				msgToGame(sender, " joined " + channel, messageMode.IRC_JOIN, null);
 			}
 		}
 
-		// if irc-joins, send event to game
+
 	}
 
 	// Update users
@@ -452,13 +464,13 @@ public class Minebot extends PircBot implements Runnable {
 		if (channel.equalsIgnoreCase(this.irc_channel)) {
 			this.irc_users_main = this.getUsers(channel);
 			if (this.optn_main_send_events.contains("irc-quits")) {
-				msgToGame(sender, " left " + channel, messageMode.MSG_IRC_QUIT, null);
+				msgToGame(sender, " left " + channel, messageMode.IRC_QUIT, null);
 			}
 		}
 		if (channel.equalsIgnoreCase(this.irc_admin_channel)) {
 			this.irc_users_admin = this.getUsers(channel);
 			if (this.optn_admin_send_events.contains("irc-quits")) {
-				msgToGame(sender, " left " + channel, messageMode.MSG_IRC_QUIT, null);
+				msgToGame(sender, " left " + channel, messageMode.IRC_QUIT, null);
 			}
 		}
 
@@ -566,9 +578,7 @@ public class Minebot extends PircBot implements Runnable {
 				if (!message.startsWith(cmd_prefix)
 						&& !this.optn_ignored_IRC_command_prefixes.contains(splitMessage[0].charAt(0))) {
 					msgToGame(sender, message, messageMode.MSG_ALL, null);
-
 				}
-
 			}
 
 			// Send all IRC chatter from admin channel - (no command prefixes or ignored command prefixes)
@@ -576,9 +586,7 @@ public class Minebot extends PircBot implements Runnable {
 				if (!message.startsWith(cmd_prefix)
 						&& !this.optn_ignored_IRC_command_prefixes.contains(splitMessage[0].charAt(0))) {
 					msgToGame(sender, message, messageMode.MSG_ALL, null);
-
 				}
-
 			}
 
 			// .say - Send single message to the game
@@ -636,9 +644,10 @@ public class Minebot extends PircBot implements Runnable {
 						
 			// may get NPE if user is disconnected
 			try {
+				this.irc_users_admin = this.getUsers(this.irc_admin_channel);
 				for (int i = 0; i < this.irc_users_admin.length; i++) {
 					User iterUser = this.irc_users_admin[i];
-					System.out.println(getHighestUserPrefix(iterUser));
+					//System.out.println(getHighestUserPrefix(iterUser));
 					if (iterUser.getNick().equalsIgnoreCase(user)
 							&& this.optn_admin_req_prefixes.contains(getHighestUserPrefix(iterUser))) {
 						return true;
@@ -731,7 +740,7 @@ public class Minebot extends PircBot implements Runnable {
 
 				break;
 				
-			case MSG_IRC_JOIN:
+			case IRC_JOIN:
 				msg_to_broadcast = (new StringBuilder()).append("[IRC] ").append(irc_relayed_user_color)
 									.append(sender).append(ChatColor.WHITE).append(message).toString();
 
@@ -742,7 +751,7 @@ public class Minebot extends PircBot implements Runnable {
 				}
 				break;
 				
-			case MSG_IRC_QUIT:
+			case IRC_QUIT:
 				msg_to_broadcast = (new StringBuilder()).append("[IRC] ").append(irc_relayed_user_color)
 									.append(sender).append(ChatColor.WHITE).append(message).toString();
 				for (Player p1 : plugin.getServer().getOnlinePlayers()) {
@@ -786,8 +795,8 @@ public class Minebot extends PircBot implements Runnable {
 		}
 	}
 
-	ArrayList<String> getChannelList() {
-
+	
+	public ArrayList<String> getChannelList() {
 		try {
 			return new ArrayList<String>(Arrays.asList(this.getChannels()));
 		} catch (Exception e) {
@@ -809,7 +818,30 @@ public class Minebot extends PircBot implements Runnable {
 		}
 
 	}
-
+	
+	/**
+	*  @param message - The message you want to relay to the 'admin'-designated IRC channel
+	*/
+	public boolean msgAdminChannel(String message) {
+		ArrayList<String> botChannels = this.getChannelList();
+		if (botChannels.contains(this.irc_admin_channel)) {
+			this.msg(this.irc_admin_channel, message);
+			return true;
+		}
+		else { return false; }
+	}
+	
+	/**
+	*  @param message - The message you want to relay to the 'main'-designated IRC channel
+	*/
+	public boolean msgMainChannel(String message) {
+		ArrayList<String> botChannels = this.getChannelList();
+		if (botChannels.contains(this.irc_channel)) {
+			this.msg(this.irc_channel, message);
+			return true;
+		}
+		else { return false; }
+	}
 	
 	/**
 	 * @param target - the IRC #channel to send the message to
@@ -823,7 +855,7 @@ public class Minebot extends PircBot implements Runnable {
 		sendMessage(target, message);
 	}
 
-	public class CheckChannelsTask extends TimerTask {
+	private class CheckChannelsTask extends TimerTask {
 		public void run() {
 			Minebot.instance.checkChannels();
 		}
@@ -835,7 +867,7 @@ public class Minebot extends PircBot implements Runnable {
 	}
 
 	private enum messageMode {
-		MSG_ALL, ACTION_ALL, MSG_PLAYER, MSG_IRC_JOIN, MSG_IRC_QUIT
+		MSG_ALL, ACTION_ALL, MSG_PLAYER, IRC_JOIN, IRC_QUIT
 	}
 
 }// EO Minebot
