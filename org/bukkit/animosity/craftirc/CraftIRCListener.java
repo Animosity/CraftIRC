@@ -117,7 +117,8 @@ public class CraftIRCListener extends PlayerListener {
 	public void onPlayerChat(PlayerChatEvent event) {
 		// String[] split = message.split(" ");
 		try {
-			if ((bot.optn_send_all_MC_chat.size() > 0) && !event.isCancelled()) {
+			if (bot.optn_send_all_MC_chat.size() > 0)  {
+				if (event.isCancelled() && !bot.optn_relay_cancelled_chat) { return; }
 				this.relayToIRC(event.getPlayer(), event.getMessage());
 			}
 		} catch (Exception e) {

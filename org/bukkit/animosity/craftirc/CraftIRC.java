@@ -18,7 +18,7 @@ import org.bukkit.animosity.craftirc.Minebot;
 
 public class CraftIRC extends JavaPlugin {
 	public static final String NAME = "CraftIRC";
-	public static final String VERSION = "1.70 BETA";
+	public static String VERSION;
 
 	private static boolean debug = false;
 	public static Minebot bot;
@@ -30,6 +30,7 @@ public class CraftIRC extends JavaPlugin {
 			ClassLoader cLoader) {
 		super(pluginLoader, instance, desc, folder, plugin, cLoader);
 		initialize();
+		VERSION = desc.getVersion();
 	}
 
 	public void onEnable() {

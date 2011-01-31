@@ -68,7 +68,7 @@ public class Minebot extends PircBot implements Runnable {
 	ArrayList<String> optn_console_commands = new ArrayList<String>(); // whitelisted console commands to execute from IRC admin channel
 	int bot_timeout = 5000; // how long to wait after joining channels to wait for the bot to check itself
 	HashMap<String, String> irc_other_relay_bots = new HashMap<String,String>(); // replace message prefix strings with custom ones for a given bot
-
+	Boolean optn_relay_cancelled_chat = false;
 	User[] irc_users_main, irc_users_admin;
 
 	protected Minebot(CraftIRC pluginInstance) {
@@ -206,7 +206,10 @@ public class Minebot extends PircBot implements Runnable {
 			if (ircSettings.containsKey("irc-ignored-users")) {
 				this.optn_ignored_IRC_users = this.getCSVArrayList(ircSettings.getProperty("irc-ignored-users").trim());
 			}
-
+			
+			if (ircSettings.containsKey("relay-cancelled-chat")) {
+				optn_relay_cancelled_chat = Boolean.parseBoolean(ircSettings.getProperty("relay-cancelled-chat", "false").trim());
+			}
 		}
 
 		catch (Exception e) {
