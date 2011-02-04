@@ -94,11 +94,9 @@ public class Minebot extends PircBot implements Runnable {
 			try {
 				ircSettings.load(new FileInputStream(ircSettingsFilename));
 			} catch (FileNotFoundException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 				log.severe(CraftIRC.NAME + " no CraftIRC.settings file found!");
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 				log.severe(CraftIRC.NAME + " could not open CraftIRC.settings file for some reason. Post trace in CraftIRC thread.");
 			}
@@ -517,14 +515,10 @@ public class Minebot extends PircBot implements Runnable {
 
 				if ((message.startsWith(cmd_prefix + "console") || message.startsWith(cmd_prefix + "c"))
 						&& splitMessage.length > 1 && this.optn_console_commands.contains(splitMessage[1])) {
-					this.sendNotice(sender, "NOT YET IMPLEMENTED IN BUKKIT");
-					/*log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: "
-							+ this.combineSplit(0, splitMessage, " "));
-					// Have to call parseConsoleCommand first if you want to use any of the hMod console commands
+					//this.sendNotice(sender, "NOT YET IMPLEMENTED IN BUKKIT");
+					this.plugin.relayToConsole(command);
+					log.info(CraftIRC.NAME + " - " + channel + " - " + sender + " used: "+ util.combineSplit(0, splitMessage, " "));
 					this.sendNotice(sender, "Executed: " + command); // send notice first, in case you're disabling/reloading the bot
-					if (!etc.getInstance().parseConsoleCommand(command, etc.getMCServer())) {
-						etc.getServer().useConsoleCommand(command);
-					}*/
 					return;
 
 				}
@@ -814,7 +808,7 @@ public class Minebot extends PircBot implements Runnable {
 
 		if (playercount > 0) {
 			//return "Online (" + playercount + "/" + maxplayers + "): " + sb.toString();
-			return "Online: " + sb.toString();
+			return "Online (" + playercount + "): " + sb.toString();
 		} else {
 			return "nobody is minecrafting right now";
 		}

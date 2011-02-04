@@ -10,6 +10,8 @@ import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.animosity.craftirc.CraftIRCListener;
 import org.bukkit.animosity.craftirc.Minebot;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.craftbukkit.CraftServer;
 
 /**
  * @author Animosity With various contributions and improvements by ricin
@@ -19,11 +21,11 @@ import org.bukkit.animosity.craftirc.Minebot;
 public class CraftIRC extends JavaPlugin {
 	public static final String NAME = "CraftIRC";
 	public static String VERSION;
-
 	private static boolean debug = false;
 	public static Minebot bot;
+	private final CraftServer craftServer = (CraftServer)this.getServer();
 	private final CraftIRCListener listener = new CraftIRCListener(this);
-	//private final CraftIRC_ServerListener consoleListener = new CraftIRC_ServerListener(this);
+	private final ConsoleCommandSender console = new ConsoleCommandSender();
 	protected static final Logger log = Logger.getLogger("Minecraft");
 
 	public CraftIRC(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder, File plugin,
@@ -87,6 +89,10 @@ public class CraftIRC extends JavaPlugin {
 
 	public static boolean isDebug() {
 		return debug;
+	}
+	
+	public void relayToConsole(String consoleCommand) {
+		craftServer.dispatchCommand(this.console, consoleCommand);		
 	}
 
 }
