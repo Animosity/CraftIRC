@@ -17,6 +17,7 @@ import java.util.TimerTask;
 import java.util.regex.*;
 
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.jibble.pircbot.*;
 import org.bukkit.ChatColor;
 import org.bukkit.animosity.craftirc.CraftIRC;
@@ -446,6 +447,9 @@ public class Minebot extends PircBot implements Runnable {
 
 	
 	public void onJoin(String channel, String sender, String login, String hostname) {
+		Event ie = new IRCEvent(IRCEvent.Mode.JOIN, this.irc_server, sender, channel, "");
+		this.plugin.getServer().getPluginManager().callEvent(ie);
+		
 		if (channel.equalsIgnoreCase(this.irc_channel)) {
 			this.irc_users_main = this.getUsers(channel);
 			if (this.optn_main_send_events.contains("irc-joins")) {
@@ -464,6 +468,8 @@ public class Minebot extends PircBot implements Runnable {
 
 	// Update users
 	public void onPart(String channel, String sender, String login, String hostname) {
+		Event ie = new IRCEvent(IRCEvent.Mode.PART, this.irc_server, sender, channel, "");
+		this.plugin.getServer().getPluginManager().callEvent(ie);
 		if (channel.equalsIgnoreCase(this.irc_channel)) {
 			this.irc_users_main = this.getUsers(channel);
 			if (this.optn_main_send_events.contains("irc-quits")) {
@@ -480,8 +486,8 @@ public class Minebot extends PircBot implements Runnable {
 		// if irc-quits, send event to game
 	}
 
-	public void onKick(String channel, String kickerNick, String kickerLogin, String kickerHostname,
-			String recipientNick, String reason) {
+	public void onKick(String channel, String kickerNick, String kickerLogin, String kickerHostname, String recipientNick, String reason) {
+		
 		if (recipientNick.equalsIgnoreCase(this.getNick())) {
 			if (channel.equalsIgnoreCase(this.irc_channel)) {
 				this.joinChannel(this.irc_channel, this.irc_channel_pass);
@@ -601,10 +607,21 @@ public class Minebot extends PircBot implements Runnable {
 					return;
 				}
 			}
+			
+			// IRCEvent callbacks
+			// TODO: Return user auth status?
+			if (message.startsWith(this.cmd_prefix)) {
+				Event ie = new IRCEvent(IRCEvent.Mode.COMMAND, this.irc_server, sender, channel, message.replaceFirst(".", ""));
+				this.plugin.getServer().getPluginManager().callEvent(ie);
+			}
+			else {
+				Event ie = new IRCEvent(IRCEvent.Mode.MSG, this.irc_server, sender, channel, message);
+				this.plugin.getServer().getPluginManager().callEvent(ie);
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			log.log(Level.SEVERE, CraftIRC.NAME + " - error while relaying IRC command: " + message);
+			log.log(Level.SEVERE, CraftIRC.NAME + " - error while relaying IRC message: " + message);
 		}
 
 	}
@@ -620,6 +637,9 @@ public class Minebot extends PircBot implements Runnable {
 							splitMessage[1]);
 					this.sendNotice(sender, "Whispered to " + splitMessage[1]);
 				}
+			} else {
+				Event ie = new IRCEvent(IRCEvent.Mode.PRIVMSG, this.irc_server, sender, "", message);
+				this.plugin.getServer().getPluginManager().callEvent(ie);
 			}
 
 			// if no 'tell' then assume whisper-target is set (hashmap)
@@ -636,6 +656,8 @@ public class Minebot extends PircBot implements Runnable {
 		if (this.optn_send_all_IRC_chat.contains("main") || this.optn_send_all_IRC_chat.contains("admin")) {
 			msgToGame(sender, action, messageMode.ACTION_ALL, null);
 		}
+		Event ie = new IRCEvent(IRCEvent.Mode.ACTION, this.irc_server, sender, target, action);
+		this.plugin.getServer().getPluginManager().callEvent(ie);
 
 	}
 
