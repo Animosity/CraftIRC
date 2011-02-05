@@ -28,12 +28,12 @@ public class CraftIRC extends JavaPlugin {
 
 	protected static final Logger log = Logger.getLogger("Minecraft");
 	
-	//private final CraftIRCListener listener = new CraftIRCListener(this);
+	private final CraftIRCListener listener = new CraftIRCListener(this);
+	private ArrayList<Minebot> instances;
 	private boolean debug;
 	
 	private ArrayList<CraftIRCConfigurationNode> bots;
 	private ArrayList<CraftIRCConfigurationNode> colormap;
-
 	
 	public CraftIRC(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder, File plugin,
 			ClassLoader cLoader) {
@@ -66,12 +66,14 @@ public class CraftIRC extends JavaPlugin {
 		}
 		
 		//Event listeners
-		//getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, listener, Priority.Monitor, this);
-		//getServer().getPluginManager().registerEvent(Event.Type.PLAYER_QUIT, listener, Priority.Monitor, this);
-		//getServer().getPluginManager().registerEvent(Event.Type.PLAYER_COMMAND, listener, Priority.Monitor, this);
-		//getServer().getPluginManager().registerEvent(Event.Type.PLAYER_CHAT, listener, Priority.Monitor, this);
+		getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, listener, Priority.Monitor, this);
+		getServer().getPluginManager().registerEvent(Event.Type.PLAYER_QUIT, listener, Priority.Monitor, this);
+		getServer().getPluginManager().registerEvent(Event.Type.PLAYER_COMMAND, listener, Priority.Monitor, this);
+		getServer().getPluginManager().registerEvent(Event.Type.PLAYER_CHAT, listener, Priority.Monitor, this);
 		
 		//Create bots
+		for (int i = 0; i < bots.size(); i++)
+			instances.add(new Minebot(this, i).init());
 		
 		log.info(NAME + " Enabled.");
 		
@@ -81,14 +83,57 @@ public class CraftIRC extends JavaPlugin {
 	public void onDisable() {
 		
 		//Disconnect bots
+		for (int i = 0; i < bots.size(); i++)
+			instances.get(i).disconnect();
 		
 		log.info(NAME + " Disabled.");
+	}
+	
+	public void sendMessage(String message, String tag, String event) {
+		for (int i = 0; i < bots.size(); i++) {
+			ArrayList<String> chans = cBotChannels(i);
+			Iterator<String> it = chans.iterator();
+			while (it.hasNext()) {
+				String chan = it.next();
+				if ((tag == null || cChanCheckTag(tag, i, chan))
+						&& (event == null || cEvents(event, i, chan)))
+					instances.get(i).sendMessage(chan, message);
+			}
+		}
+	}
+	
+	public ArrayList<String> ircUserLists (String tag) {
+		ArrayList<String> result = new ArrayList<String>();
+		if (tag == null) return result;
+		for (int i = 0; i < bots.size(); i++) {
+			ArrayList<String> chans = cBotChannels(i);
+			Iterator<String> it = chans.iterator();
+			while (it.hasNext()) {
+				String chan = it.next();
+				if (cChanCheckTag(tag, i, chan))
+					result.add(Util.getIrcUserList(instances.get(i), chan));
+			}
+		}
+		return result;
+	}
+	
+	public void noticeAdmins(String message) {
+		for (int i = 0; i < bots.size(); i++) {
+			ArrayList<String> chans = cBotChannels(i);
+			Iterator<String> it = chans.iterator();
+			while (it.hasNext()) {
+				String chan = it.next();
+				if (cChanAdmin(i, chan))
+					instances.get(i).sendNotice(chan, message);
+			}
+		}
 	}
 	
 	public void setDebug(boolean d) {
 		debug = d;
 
-		//bot.setVerbose(d);
+		for (int i = 0; i < bots.size(); i++)
+			instances.get(i).setVerbose(true);
 		
 		log.info(NAME + " DEBUG [" + (d ? "ON" : "OFF") + "]");
 	}
@@ -143,7 +188,7 @@ public class CraftIRC extends JavaPlugin {
 				? true : false);
 		if (channel != null)
 			source = getChanNode(bot, channel);
-		if (source == null || source.getProperty("events." + eventType) == null)
+		if ((source == null || source.getProperty("events." + eventType) == null) && bot > -1)
 			source = bots.get(bot);
 		if (source == null || source.getProperty("events." + eventType) == null)
 			return getConfiguration().getBoolean("settings.events." + eventType, def);
@@ -287,6 +332,14 @@ public class CraftIRC extends JavaPlugin {
 	
 	public boolean cChanNameColors(int bot, String channel) {
 		return getChanNode(bot, channel).getBoolean("name-colors", true);
+	}
+	
+	public boolean cChanCheckTag(String tag, int bot, String channel) {
+		if (tag == null || tag.equals("")) return false;
+		if (getConfiguration().getString("settings.tag", "all").equalsIgnoreCase(tag)) return true;
+		if (bots.get(bot).getString("tag", "").equalsIgnoreCase(tag)) return true;
+		if (getChanNode(bot, channel).getString("tag", "").equalsIgnoreCase(tag)) return true;
+		return false;
 	}
 	
 }

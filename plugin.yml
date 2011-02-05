@@ -1,0 +1,3 @@
+name: CraftIRC
+main: org.bukkit.animosity.craftirc.CraftIRC;
+version: DEVEL
