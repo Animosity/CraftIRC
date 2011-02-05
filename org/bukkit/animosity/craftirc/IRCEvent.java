@@ -38,7 +38,7 @@ public class IRCEvent extends Event {
 	 * 		KICK - message is empty
 	 * 		BAN - message is empty
 	 * 		MSG - no empty parameters
-	 * 		PRIVMSG - channel is empty
+	 * 		PRIVMSG - no empty parameters
 	 * 		ACTION - no empty parameters
 	 * 		COMMAND - message is command string, without the command prefix
 	 * 

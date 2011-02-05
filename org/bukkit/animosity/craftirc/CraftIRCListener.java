@@ -21,12 +21,10 @@ import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerLoginEvent;
 
 public class CraftIRCListener extends PlayerListener {
+	protected static final Logger log = CraftIRC.log;
 	private final CraftIRC plugin;
-	protected static final Logger log = Logger.getLogger("Minecraft");
-	private static ArrayList<String> logMessages = new ArrayList<String>();
-	private static Minebot bot;
-
-	// private HashMap<Player,String> IRCWhisperMemory = new HashMap<Player,String>();
+	
+	private Minebot bot;
 
 	public CraftIRCListener(CraftIRC pluginInstance) {
 		plugin = pluginInstance;
@@ -46,7 +44,7 @@ public class CraftIRCListener extends PlayerListener {
 
 			// player used command correctly
 			String player_name = "(" + player.getName() + ") ";
-			String msgtosend = util.combineSplit(1, split, " ");
+			String msgtosend = Util.combineSplit(1, split, " ");
 
 			String ircMessage = player_name + msgtosend;
 			String echoedMessage = new StringBuilder().append("<").append(bot.irc_relayed_user_color)
@@ -73,7 +71,7 @@ public class CraftIRCListener extends PlayerListener {
 			}
 
 			String player_name = "(" + player.getName() + ") ";
-			String ircMessage = player_name + util.combineSplit(2, split, " ");
+			String ircMessage = player_name + Util.combineSplit(2, split, " ");
 			bot.sendMessage(split[1], ircMessage);
 			String echoedMessage = "Whispered to IRC";
 			player.sendMessage(echoedMessage);
@@ -84,14 +82,14 @@ public class CraftIRCListener extends PlayerListener {
 		// IRC user list
 		if (split[0].equalsIgnoreCase("/ircwho") && split.length == 2 && (split[1].equalsIgnoreCase("main") || split[1].equalsIgnoreCase("admin"))) {
 			player.sendMessage("IRC users in " + split[1] + " channel:");
-			player.sendMessage(util.getIrcUserList(bot, split[1]));
+			player.sendMessage(Util.getIrcUserList(bot, split[1]));
 		}
 		
 		// notify/call admins in the admin IRC channel
 		if (bot.optn_notify_admins_cmd != null) {
 			if (split[0].equalsIgnoreCase(bot.optn_notify_admins_cmd)) {
 				bot.sendNotice(bot.irc_admin_channel,
-						"[Admin notice from " + player.getName() + "] " + util.combineSplit(1, split, " "));
+						"[Admin notice from " + player.getName() + "] " + Util.combineSplit(1, split, " "));
 				player.sendMessage("Admin notice sent.");
 				return;
 			}
@@ -99,7 +97,7 @@ public class CraftIRCListener extends PlayerListener {
 
 		// ACTION/EMOTE
 		if (split[0].equalsIgnoreCase("/me") && bot.optn_send_all_MC_chat.size() > 0) {
-			String msgtosend = "* " + player.getName() + " " + util.combineSplit(1, split, " ");
+			String msgtosend = "* " + player.getName() + " " + Util.combineSplit(1, split, " ");
 			if (bot.optn_send_all_MC_chat.contains("main")) {
 				bot.msg(bot.irc_channel, msgtosend);
 			}
@@ -128,7 +126,7 @@ public class CraftIRCListener extends PlayerListener {
 
 	private void relayToIRC(Player player, String message) {
 		try {
-			String playername = "(" + util.colorizePlayer(player) + ") ";
+			String playername = "(" + Util.colorizePlayer(player) + ") ";
 
 			if (bot.optn_send_all_MC_chat.contains("main")) {
 				//playername = "(" + playername + ") ";
@@ -153,10 +151,10 @@ public class CraftIRCListener extends PlayerListener {
 			Player player = event.getPlayer();
 
 			if (bot.optn_main_send_events.contains("joins")) {
-				bot.msgMainChannel("[" + util.colorizePlayer(player) + " connected]");
+				bot.msgMainChannel("[" + Util.colorizePlayer(player) + " connected]");
 			}
 			if (bot.optn_admin_send_events.contains("joins")) {
-				bot.msgAdminChannel("[" + util.colorizePlayer(player) + " connected]");
+				bot.msgAdminChannel("[" + Util.colorizePlayer(player) + " connected]");
 			}
 
 		} catch (Exception e) {
@@ -168,10 +166,10 @@ public class CraftIRCListener extends PlayerListener {
 		try {
 			Player player = event.getPlayer();
 			if (bot.optn_main_send_events.contains("quits")) {
-				bot.msgMainChannel("[" + util.colorizePlayer(player) + " disconnected]");
+				bot.msgMainChannel("[" + Util.colorizePlayer(player) + " disconnected]");
 			}
 			if (bot.optn_admin_send_events.contains("quits")) {
-				bot.msgAdminChannel("[" + util.colorizePlayer(player) + " disconnected]");
+				bot.msgAdminChannel("[" + Util.colorizePlayer(player) + " disconnected]");
 			}
 
 		} catch (Exception e) {
@@ -184,11 +182,11 @@ public class CraftIRCListener extends PlayerListener {
 			reason = "no reason given";
 		}
 		if (bot.optn_main_send_events.contains("bans")) {
-			bot.msgMainChannel("[" + util.colorizePlayer(mod) + " BANNED " + util.colorizePlayer(player)
+			bot.msgMainChannel("[" + Util.colorizePlayer(mod) + " BANNED " + Util.colorizePlayer(player)
 					+ " because: " + reason + "]");
 		}
 		if (bot.optn_admin_send_events.contains("bans")) {
-			bot.msgAdminChannel("[" + util.colorizePlayer(mod) + " BANNED " + util.colorizePlayer(player)
+			bot.msgAdminChannel("[" + Util.colorizePlayer(mod) + " BANNED " + Util.colorizePlayer(player)
 					+ " because: " + reason + "]");
 		}
 	}
@@ -198,11 +196,11 @@ public class CraftIRCListener extends PlayerListener {
 			reason = "no reason given";
 		}
 		if (bot.optn_main_send_events.contains("bans")) {
-			bot.msgMainChannel("[" + util.colorizePlayer(mod) + " IP BANNED " + util.colorizePlayer(player)
+			bot.msgMainChannel("[" + Util.colorizePlayer(mod) + " IP BANNED " + Util.colorizePlayer(player)
 					+ " because: " + reason + "]");
 		}
 		if (bot.optn_admin_send_events.contains("bans")) {
-			bot.msgAdminChannel("[" + util.colorizePlayer(mod) + " IP BANNED " + util.colorizePlayer(player)
+			bot.msgAdminChannel("[" + Util.colorizePlayer(mod) + " IP BANNED " + Util.colorizePlayer(player)
 					+ " because: " + reason + "]");
 		}
 	}
@@ -213,12 +211,12 @@ public class CraftIRCListener extends PlayerListener {
 		}
 
 		if (bot.optn_main_send_events.contains("kicks")) {
-			bot.msgMainChannel("[" + util.colorizePlayer(mod) + " KICKED " + util.colorizePlayer(player)
+			bot.msgMainChannel("[" + Util.colorizePlayer(mod) + " KICKED " + Util.colorizePlayer(player)
 					+ " because: " + reason + "]");
 		}
 
 		if (bot.optn_admin_send_events.contains("kicks")) {
-			bot.msgAdminChannel("[" + util.colorizePlayer(mod) + " KICKED " + util.colorizePlayer(player)
+			bot.msgAdminChannel("[" + Util.colorizePlayer(mod) + " KICKED " + Util.colorizePlayer(player)
 					+ " because: " + reason + "]");
 		}
 	}
