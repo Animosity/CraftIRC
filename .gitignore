@@ -10,3 +10,5 @@ Minebot.class
 *.class
 build.xml
 build/
+.classpath
+.project
