@@ -8,6 +8,8 @@ import org.bukkit.ChatColor;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerListener;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 
 public class CraftIRCListener extends PlayerListener {
 	
@@ -16,21 +18,32 @@ public class CraftIRCListener extends PlayerListener {
 	public CraftIRCListener(CraftIRC plugin) {
 		this.plugin = plugin;
 	}
-
+	
 	public void onPlayerCommand(PlayerChatEvent event) {
-		String[] split = event.getMessage().split(" ");
-		Player player = event.getPlayer();
+	    String[] split = event.getMessage().split(" ");
+	    Player player = event.getPlayer();
+	 // ACTION/EMOTE can't be claimed, so use onPlayerCommand
+        if (split[0].equalsIgnoreCase("/me")) {
+            String msgtosend = "* " + player.getName() + " " + Util.combineSplit(1, split, " ");
+            this.plugin.sendMessage(msgtosend, null, "game-to-irc.all-chat");
+        }
+	}
+	
+	public void onCommand(CommandSender sender, Command command, String commandLabel, String[] args) {
+		//String[] split = event.getMessage().split(" ");
+		Player player = (Player) sender;
+		String commandName = command.getName().toLowerCase();
 
-		if (split[0].equalsIgnoreCase("/irc")) {
+		if (commandName.equalsIgnoreCase("/irc")) {
 
-			if (split.length < 2) {
+			/*if (args.length < 2) {
 				player.sendMessage("\247cCorrect usage is: /irc [message]");
 				return;
-			}
+			}*/
 
 			// player used command correctly
 			String player_name = "(" + player.getName() + ") ";
-			String msgtosend = Util.combineSplit(1, split, " ");
+			String msgtosend = Util.combineSplit(0, args, " ");
 
 			String ircMessage = player_name + msgtosend;
 			String echoedMessage = new StringBuilder().append("<")
@@ -44,33 +57,31 @@ public class CraftIRCListener extends PlayerListener {
 					p.sendMessage(echoedMessage);
 				}
 			}
-			event.setCancelled(true);
 			return;
 		} // *** /irc <msg> 
 		
-		if (split[0].equalsIgnoreCase("/ircm")) {
+		if (commandName.equalsIgnoreCase("/ircm")) {
 
-			if (split.length < 3) {
+			if (args.length < 2) {
 				player.sendMessage("\247cCorrect usage is: /ircm [tag] [message]");
 				return;
 			}
 			
 			String player_name = "(" + player.getName() + ") ";
-			String msgtosend = Util.combineSplit(2, split, " ");
+			String msgtosend = Util.combineSplit(1, args, " ");
 
 			String ircMessage = player_name + msgtosend;
 			String echoedMessage = new StringBuilder().append("<")
 					.append(player.getName()).append(ChatColor.WHITE.toString()).append(" to IRC> ").append(msgtosend)
 					.toString();
 
-			this.plugin.sendMessage(ircMessage, split[1], null);
+			this.plugin.sendMessage(ircMessage, args[0], null);
 			// echo -> IRC msg locally in game
 			for (Player p : this.plugin.getServer().getOnlinePlayers()) {
 				if (p != null) {
 					p.sendMessage(echoedMessage);
 				}
 			}
-			event.setCancelled(true);
 			return;
 			
 		}
@@ -95,29 +106,21 @@ public class CraftIRCListener extends PlayerListener {
 		*/
 		
 		// IRC user list
-		if (split[0].equalsIgnoreCase("/ircwho") && split.length == 2) {
-			player.sendMessage("IRC users in " + split[1] + " channel(s):");
-			ArrayList<String> userlists = this.plugin.ircUserLists(split[1]);
+		if (commandName.equalsIgnoreCase("/ircwho") && args.length == 1) {
+			player.sendMessage("IRC users in " + args[0] + " channel(s):");
+			ArrayList<String> userlists = this.plugin.ircUserLists(args[1]);
 			for (Iterator<String> it = userlists.iterator(); it.hasNext(); )
 				player.sendMessage(it.next());
 		}
 		
 		// notify/call admins in the admin IRC channel
-		if (split[0].equalsIgnoreCase("/admins!")) {
-			this.plugin.noticeAdmins("[Admin notice from " + player.getName() + "] " + Util.combineSplit(1, split, " "));
+		if (commandName.equalsIgnoreCase("/admins!")) {
+			this.plugin.noticeAdmins("[Admin notice from " + player.getName() + "] " + Util.combineSplit(0, args, " "));
 			player.sendMessage("Admin notice sent.");
 			return;
 		}
 
-		// ACTION/EMOTE
-		if (split[0].equalsIgnoreCase("/me")) {
-			String msgtosend = "* " + player.getName() + " " + Util.combineSplit(1, split, " ");
-			this.plugin.sendMessage(msgtosend, null, "game-to-irc.all-chat");
-		}
-		// endif player.canUseCommand("/irc")
-
-		return;
-
+		
 	}
 
 	public void onPlayerChat(PlayerChatEvent event) {
