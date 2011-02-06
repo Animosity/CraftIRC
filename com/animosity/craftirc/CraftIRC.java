@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.logging.Logger;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.HashMap;
 
 import org.bukkit.Server;
 import org.bukkit.event.Event.Priority;
@@ -15,8 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.animosity.craftirc.CraftIRCListener;
 import com.animosity.craftirc.Minebot;
 import com.animosity.craftirc.Util;
-import org.bukkit.util.config.CraftIRCConfigurationNode;
-import org.bukkit.util.config.Configuration;
+import org.bukkit.util.config.ConfigurationNode;
 
 /**
  * @author Animosity
@@ -34,9 +33,9 @@ public class CraftIRC extends JavaPlugin {
     private ArrayList<Minebot> instances;
     private boolean debug;
 
-    private ArrayList<CraftIRCConfigurationNode> bots;
-    private ArrayList<CraftIRCConfigurationNode> colormap;
-    private Configuration config;
+    private ArrayList<ConfigurationNode> bots;
+    private ArrayList<ConfigurationNode> colormap;
+    private HashMap<Integer, ArrayList<ConfigurationNode>> channodes;
 
     public CraftIRC(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder, File plugin,
             ClassLoader cLoader) {
@@ -44,30 +43,13 @@ public class CraftIRC extends JavaPlugin {
         VERSION = desc.getVersion();
     }
 
-    @SuppressWarnings("unchecked")
     public void onEnable() {
-        //Parsing node lists, because Bukkit doesn't do it yet.
         try {
-            ArrayList<Object> botList = new ArrayList<Object>(getConfiguration().getList("bots"));
-            for (Iterator<Object> it = botList.iterator(); it.hasNext();) {
-                Map<String, Object> bot = (Map<String, Object>) it.next();
-                CraftIRCConfigurationNode botnode = new CraftIRCConfigurationNode(bot);
-                bots.add(botnode);
-                ArrayList<CraftIRCConfigurationNode> chans = new ArrayList<CraftIRCConfigurationNode>();
-                ArrayList<String> chanNames = new ArrayList<String>();
-                ArrayList<Object> chanList = new ArrayList<Object>(botnode.getList("channels"));
-                for (Iterator<Object> iti = chanList.iterator(); iti.hasNext();) {
-                    CraftIRCConfigurationNode chanNode = new CraftIRCConfigurationNode((Map<String, Object>) iti.next());
-                    chans.add(chanNode);
-                    chanNames.add(chanNode.getString("name"));
-                }
-                bot.put("chanlist", chans);
-                bot.put("channames", chanNames);
-            }
-            ArrayList<Object> colorList = new ArrayList<Object>(getConfiguration().getList("colormap"));
-            for (Iterator<Object> it = colorList.iterator(); it.hasNext();) {
-                colormap.add(new CraftIRCConfigurationNode((Map<String, Object>) it.next()));
-            }
+        	//Load node lists. Bukkit does it now, hurray!
+        	bots = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("bots", null));
+        	colormap = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("colormap", null));
+        	for (int i = 0; i < bots.size(); i++)
+        		channodes.put(i, new ArrayList<ConfigurationNode>(bots.get(i).getNodeList("channels", null)));
 
             //Event listeners
             getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, listener, Priority.Monitor, this);
@@ -149,12 +131,10 @@ public class CraftIRC extends JavaPlugin {
         return debug;
     }
 
-    @SuppressWarnings("unchecked")
-    private CraftIRCConfigurationNode getChanNode(int bot, String channel) {
-        ArrayList<CraftIRCConfigurationNode> botChans = (ArrayList<CraftIRCConfigurationNode>) bots.get(bot)
-                .getProperty("chanlist");
-        for (Iterator<CraftIRCConfigurationNode> it = botChans.iterator(); it.hasNext();) {
-            CraftIRCConfigurationNode chan = it.next();
+    private ConfigurationNode getChanNode(int bot, String channel) {
+        ArrayList<ConfigurationNode> botChans = channodes.get(bot);
+        for (Iterator<ConfigurationNode> it = botChans.iterator(); it.hasNext();) {
+            ConfigurationNode chan = it.next();
             if (chan.getString("name").equalsIgnoreCase(channel))
                 return chan;
         }
@@ -182,7 +162,7 @@ public class CraftIRC extends JavaPlugin {
     }
 
     public String cFormatting(String eventType, int bot, String channel) {
-        CraftIRCConfigurationNode source = getChanNode(bot, channel);
+        ConfigurationNode source = getChanNode(bot, channel);
         if (source == null || source.getString("formatting." + eventType) == null)
             source = bots.get(bot);
         if (source == null || source.getString("formatting." + eventType) == null)
@@ -192,7 +172,7 @@ public class CraftIRC extends JavaPlugin {
     }
 
     public boolean cEvents(String eventType, int bot, String channel) {
-        CraftIRCConfigurationNode source = null;
+        ConfigurationNode source = null;
         boolean def = (eventType.equalsIgnoreCase("game-to-irc.all-chat")
                 || eventType.equalsIgnoreCase("irc-to-game.all-chat") ? true : false);
         if (channel != null)
@@ -206,8 +186,8 @@ public class CraftIRC extends JavaPlugin {
     }
 
     public int cColorIrcFromGame(String game) {
-        CraftIRCConfigurationNode color;
-        Iterator<CraftIRCConfigurationNode> it = colormap.iterator();
+        ConfigurationNode color;
+        Iterator<ConfigurationNode> it = colormap.iterator();
         while (it.hasNext()) {
             color = it.next();
             if (color.getString("game").equals(game))
@@ -217,8 +197,8 @@ public class CraftIRC extends JavaPlugin {
     }
 
     public int cColorIrcFromName(String name) {
-        CraftIRCConfigurationNode color;
-        Iterator<CraftIRCConfigurationNode> it = colormap.iterator();
+        ConfigurationNode color;
+        Iterator<ConfigurationNode> it = colormap.iterator();
         while (it.hasNext()) {
             color = it.next();
             if (color.getString("name").equalsIgnoreCase(name) && color.getProperty("irc") != null)
@@ -231,8 +211,8 @@ public class CraftIRC extends JavaPlugin {
     }
 
     public String cColorGameFromIrc(int irc) {
-        CraftIRCConfigurationNode color;
-        Iterator<CraftIRCConfigurationNode> it = colormap.iterator();
+        ConfigurationNode color;
+        Iterator<ConfigurationNode> it = colormap.iterator();
         while (it.hasNext()) {
             color = it.next();
             if (color.getInt("irc", -1) == irc)
@@ -242,8 +222,8 @@ public class CraftIRC extends JavaPlugin {
     }
 
     public String cColorGameFromName(String name) {
-        CraftIRCConfigurationNode color;
-        Iterator<CraftIRCConfigurationNode> it = colormap.iterator();
+        ConfigurationNode color;
+        Iterator<ConfigurationNode> it = colormap.iterator();
         while (it.hasNext()) {
             color = it.next();
             if (color.getString("name").equalsIgnoreCase(name) && color.getProperty("game") != null)
