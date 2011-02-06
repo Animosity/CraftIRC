@@ -14,7 +14,7 @@ public class CraftIRCListener extends PlayerListener {
 	private CraftIRC plugin = null;
 	
 	public CraftIRCListener(CraftIRC plugin) {
-		this. plugin = plugin;
+		this.plugin = plugin;
 	}
 
 	public void onPlayerCommand(PlayerChatEvent event) {
