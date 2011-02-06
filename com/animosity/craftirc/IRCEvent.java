@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.bukkit.animosity.craftirc;
+package com.animosity.craftirc;
 
 import org.bukkit.event.Event;
 

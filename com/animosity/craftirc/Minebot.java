@@ -1,4 +1,4 @@
-package org.bukkit.animosity.craftirc;
+package com.animosity.craftirc;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,8 +13,8 @@ import java.util.regex.*;
 import org.bukkit.entity.Player;
 import org.jibble.pircbot.*;
 import org.bukkit.ChatColor;
-import org.bukkit.animosity.craftirc.CraftIRC;
-import org.bukkit.animosity.craftirc.Util;
+import com.animosity.craftirc.CraftIRC;
+import com.animosity.craftirc.Util;
 
 /**
  * @author Animosity

@@ -1,6 +1,7 @@
 package org.bukkit.util.config;
 
 import java.util.Map;
+import org.bukkit.util.config.ConfigurationNode;
 
 public class CraftIRCConfigurationNode extends ConfigurationNode {
 

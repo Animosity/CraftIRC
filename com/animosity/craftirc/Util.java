@@ -1,4 +1,4 @@
-package org.bukkit.animosity.craftirc;
+package com.animosity.craftirc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
