@@ -122,14 +122,14 @@ public class CraftIRC extends JavaPlugin {
         log.info(NAME + " Disabled.");
     }
 
-    public void sendMessage(String message, String tag, String event) {
+    public void sendMessage(Minebot source, String message, String tag, String event) {
         for (int i = 0; i < bots.size(); i++) {
             ArrayList<String> chans = cBotChannels(i);
             Iterator<String> it = chans.iterator();
             while (it.hasNext()) {
                 String chan = it.next();
                 if ((tag == null || cChanCheckTag(tag, i, chan)) && (event == null || cEvents(event, i, chan)))
-                    instances.get(i).sendMessage(chan, message);
+               		instances.get(i).sendMessage(chan, message);
             }
         }
     }
@@ -218,7 +218,7 @@ public class CraftIRC extends JavaPlugin {
     public boolean cEvents(String eventType, int bot, String channel) {
         ConfigurationNode source = null;
         boolean def = (eventType.equalsIgnoreCase("game-to-irc.all-chat")
-                || eventType.equalsIgnoreCase("irc-to-game.all-chat") ? true : false);
+                || eventType.equalsIgnoreCase("irc-to-game.all-chat") ? false : true);
         if (channel != null)
             source = getChanNode(bot, channel);
         if ((source == null || source.getProperty("events." + eventType) == null) && bot > -1)

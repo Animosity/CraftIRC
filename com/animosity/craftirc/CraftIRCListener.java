@@ -25,7 +25,7 @@ public class CraftIRCListener extends PlayerListener {
 	 // ACTION/EMOTE can't be claimed, so use onPlayerCommand
         if (split[0].equalsIgnoreCase("/me")) {
             String msgtosend = "* " + player.getName() + " " + Util.combineSplit(1, split, " ");
-            this.plugin.sendMessage(msgtosend, null, "game-to-irc.all-chat");
+            this.plugin.sendMessage(null, msgtosend, null, "game-to-irc.all-chat");
         }
 	}
 	
@@ -50,7 +50,7 @@ public class CraftIRCListener extends PlayerListener {
 					.append(player.getName()).append(ChatColor.WHITE.toString()).append(" to IRC> ").append(msgtosend)
 					.toString();
 
-			this.plugin.sendMessage(ircMessage, null, null);
+			this.plugin.sendMessage(null, ircMessage, null, null);
 			// echo -> IRC msg locally in game
 			for (Player p : this.plugin.getServer().getOnlinePlayers()) {
 				if (p != null) {
@@ -75,7 +75,7 @@ public class CraftIRCListener extends PlayerListener {
 					.append(player.getName()).append(ChatColor.WHITE.toString()).append(" to IRC> ").append(msgtosend)
 					.toString();
 
-			this.plugin.sendMessage(ircMessage, args[0], null);
+			this.plugin.sendMessage(null, ircMessage, args[0], null);
 			// echo -> IRC msg locally in game
 			for (Player p : this.plugin.getServer().getOnlinePlayers()) {
 				if (p != null) {
@@ -128,7 +128,7 @@ public class CraftIRCListener extends PlayerListener {
 		// String[] split = message.split(" ");
 		try {
 			if (event.isCancelled() && !this.plugin.cEvents("game-to-irc.cancelled-chat", -1, null)) return;
-			this.plugin.sendMessage("(" + event.getPlayer().getDisplayName() + ") " + event.getMessage(), null, "game-to-irc.all-chat");
+			this.plugin.sendMessage(null, "(" + event.getPlayer().getDisplayName() + ") " + event.getMessage(), null, "game-to-irc.all-chat");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -138,7 +138,7 @@ public class CraftIRCListener extends PlayerListener {
 		if (this.plugin.isHeld(CraftIRC.HoldType.JOINS)) return;
 		try {
 			Player player = event.getPlayer();
-			this.plugin.sendMessage("[" + player.getDisplayName() + " connected]", null, "game-to-irc.joins");
+			this.plugin.sendMessage(null, "[" + player.getDisplayName() + " connected]", null, "game-to-irc.joins");
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -149,7 +149,7 @@ public class CraftIRCListener extends PlayerListener {
 		if (this.plugin.isHeld(CraftIRC.HoldType.QUITS)) return;
 		try {
 			Player player = event.getPlayer();
-			this.plugin.sendMessage("[" + player.getDisplayName() + " disconnected]", null, "game-to-irc.quits");
+			this.plugin.sendMessage(null, "[" + player.getDisplayName() + " disconnected]", null, "game-to-irc.quits");
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -159,19 +159,19 @@ public class CraftIRCListener extends PlayerListener {
 	public void onBan(Player mod, Player player, String reason) {
 		if (this.plugin.isHeld(CraftIRC.HoldType.BANS)) return;
 		if (reason.length() == 0) reason = "no reason given";
-		this.plugin.sendMessage("[" + mod + " BANNED " + player.getDisplayName() + " because: " + reason + "]", null, "game-to-irc.bans");
+		this.plugin.sendMessage(null, "[" + mod + " BANNED " + player.getDisplayName() + " because: " + reason + "]", null, "game-to-irc.bans");
 	}
 
 	public void onIpBan(Player mod, Player player, String reason) {
 		if (this.plugin.isHeld(CraftIRC.HoldType.BANS)) return;
 		if (reason.length() == 0) reason = "no reason given";
-		this.plugin.sendMessage("[" + mod + " IP BANNED " + player.getDisplayName() + " because: " + reason + "]", null, "game-to-irc.bans");
+		this.plugin.sendMessage(null, "[" + mod + " IP BANNED " + player.getDisplayName() + " because: " + reason + "]", null, "game-to-irc.bans");
 	}
 
 	public void onKick(Player mod, Player player, String reason) {
 		if (this.plugin.isHeld(CraftIRC.HoldType.KICKS)) return;
 		if (reason.length() == 0) reason = "no reason given";
-		this.plugin.sendMessage("[" + mod + " KICKED " + player.getDisplayName() + " because: " + reason + "]", null, "game-to-irc.kicks");
+		this.plugin.sendMessage(null, "[" + mod + " KICKED " + player.getDisplayName() + " because: " + reason + "]", null, "game-to-irc.kicks");
 	}
 
 	// 
