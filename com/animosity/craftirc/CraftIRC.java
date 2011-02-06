@@ -36,6 +36,7 @@ public class CraftIRC extends JavaPlugin {
     private ArrayList<ConfigurationNode> bots;
     private ArrayList<ConfigurationNode> colormap;
     private HashMap<Integer, ArrayList<ConfigurationNode>> channodes;
+    private HashMap<Integer, ArrayList<String>> channames;
 
     public CraftIRC(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder, File plugin,
             ClassLoader cLoader) {
@@ -48,8 +49,15 @@ public class CraftIRC extends JavaPlugin {
         	//Load node lists. Bukkit does it now, hurray!
         	bots = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("bots", null));
         	colormap = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("colormap", null));
-        	for (int i = 0; i < bots.size(); i++)
+        	channodes = new HashMap<Integer, ArrayList<ConfigurationNode>>();
+        	channames = new HashMap<Integer, ArrayList<String>>();
+        	for (int i = 0; i < bots.size(); i++) {
         		channodes.put(i, new ArrayList<ConfigurationNode>(bots.get(i).getNodeList("channels", null)));
+        		ArrayList<String> cn = new ArrayList<String>();
+        		for (Iterator<ConfigurationNode> it = channodes.get(i).iterator(); it.hasNext(); )
+        			cn.add(it.next().getString("name"));
+        		channames.put(i, cn);
+        	}
 
             //Event listeners
             getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, listener, Priority.Monitor, this);
@@ -58,6 +66,7 @@ public class CraftIRC extends JavaPlugin {
             getServer().getPluginManager().registerEvent(Event.Type.PLAYER_CHAT, listener, Priority.Monitor, this);
 
             //Create bots
+            instances = new ArrayList<Minebot>();
             for (int i = 0; i < bots.size(); i++)
                 instances.add(new Minebot(this, i).init());
 
@@ -236,7 +245,7 @@ public class CraftIRC extends JavaPlugin {
     }
 
     public ArrayList<String> cBotChannels(int bot) {
-        return new ArrayList<String>(bots.get(bot).getStringList("channames", null));
+        return channames.get(bot);
     }
 
     public String cBotNickname(int bot) {
