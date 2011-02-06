@@ -124,20 +124,21 @@ public class CraftIRCListener extends PlayerListener {
 	}
 
 	public void onPlayerChat(PlayerChatEvent event) {
+		if (this.plugin.isHeld(CraftIRC.HoldType.CHAT)) return;
 		// String[] split = message.split(" ");
 		try {
 			if (event.isCancelled() && !this.plugin.cEvents("game-to-irc.cancelled-chat", -1, null)) return;
-			this.plugin.sendMessage("(" + event.getPlayer() + ") " + event.getMessage(), null, "game-to-irc.all-chat");
+			this.plugin.sendMessage("(" + event.getPlayer().getDisplayName() + ") " + event.getMessage(), null, "game-to-irc.all-chat");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
 	public void onPlayerJoin(PlayerEvent event) {
-
+		if (this.plugin.isHeld(CraftIRC.HoldType.JOINS)) return;
 		try {
 			Player player = event.getPlayer();
-			this.plugin.sendMessage("[" + player + " connected]", null, "game-to-irc.joins");
+			this.plugin.sendMessage("[" + player.getDisplayName() + " connected]", null, "game-to-irc.joins");
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -145,9 +146,10 @@ public class CraftIRCListener extends PlayerListener {
 	}
 
 	public void onPlayerQuit(PlayerEvent event) {
+		if (this.plugin.isHeld(CraftIRC.HoldType.QUITS)) return;
 		try {
 			Player player = event.getPlayer();
-			this.plugin.sendMessage("[" + player + " disconnected]", null, "game-to-irc.quits");
+			this.plugin.sendMessage("[" + player.getDisplayName() + " disconnected]", null, "game-to-irc.quits");
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -155,18 +157,21 @@ public class CraftIRCListener extends PlayerListener {
 	}
 
 	public void onBan(Player mod, Player player, String reason) {
+		if (this.plugin.isHeld(CraftIRC.HoldType.BANS)) return;
 		if (reason.length() == 0) reason = "no reason given";
-		this.plugin.sendMessage("[" + mod + " BANNED " + player + " because: " + reason + "]", null, "game-to-irc.bans");
+		this.plugin.sendMessage("[" + mod + " BANNED " + player.getDisplayName() + " because: " + reason + "]", null, "game-to-irc.bans");
 	}
 
 	public void onIpBan(Player mod, Player player, String reason) {
+		if (this.plugin.isHeld(CraftIRC.HoldType.BANS)) return;
 		if (reason.length() == 0) reason = "no reason given";
-		this.plugin.sendMessage("[" + mod + " IP BANNED " + player + " because: " + reason + "]", null, "game-to-irc.bans");
+		this.plugin.sendMessage("[" + mod + " IP BANNED " + player.getDisplayName() + " because: " + reason + "]", null, "game-to-irc.bans");
 	}
 
 	public void onKick(Player mod, Player player, String reason) {
+		if (this.plugin.isHeld(CraftIRC.HoldType.KICKS)) return;
 		if (reason.length() == 0) reason = "no reason given";
-		this.plugin.sendMessage("[" + mod + " KICKED " + player + " because: " + reason + "]", null, "game-to-irc.kicks");
+		this.plugin.sendMessage("[" + mod + " KICKED " + player.getDisplayName() + " because: " + reason + "]", null, "game-to-irc.kicks");
 	}
 
 	// 

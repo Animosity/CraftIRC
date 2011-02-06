@@ -3,8 +3,11 @@ package com.animosity.craftirc;
 import java.io.File;
 import java.util.logging.Logger;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.bukkit.Server;
 import org.bukkit.event.Event.Priority;
@@ -15,6 +18,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.animosity.craftirc.CraftIRCListener;
 import com.animosity.craftirc.Minebot;
 import com.animosity.craftirc.Util;
+
 import org.bukkit.util.config.ConfigurationNode;
 
 /**
@@ -29,15 +33,19 @@ public class CraftIRC extends JavaPlugin {
 
     protected static final Logger log = Logger.getLogger("Minecraft");
 
+    //Misc class attributes
     private final CraftIRCListener listener = new CraftIRCListener(this);
     private ArrayList<Minebot> instances;
     private boolean debug;
+    private Timer holdTimer;
+    protected HashMap<HoldType, Boolean> hold;
 
+    //Bots and channels config storage
     private ArrayList<ConfigurationNode> bots;
     private ArrayList<ConfigurationNode> colormap;
     private HashMap<Integer, ArrayList<ConfigurationNode>> channodes;
     private HashMap<Integer, ArrayList<String>> channames;
-
+    
     public CraftIRC(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder, File plugin,
             ClassLoader cLoader) {
         super(pluginLoader, instance, desc, folder, plugin, cLoader);
@@ -71,6 +79,31 @@ public class CraftIRC extends JavaPlugin {
                 instances.add(new Minebot(this, i).init());
 
             log.info(NAME + " Enabled.");
+            
+            //Hold timers
+            hold = new HashMap<HoldType, Boolean>();
+            holdTimer = new Timer();
+			Date now = new Date();
+			if (cHold("chat") > 0) {
+				hold.put(HoldType.CHAT, true);
+				holdTimer.schedule(new RemoveHoldTask(this, HoldType.CHAT), now.getTime() + cHold("chat"));
+			} else hold.put(HoldType.CHAT, false);
+			if (cHold("joins") > 0) {
+				hold.put(HoldType.JOINS, true);
+				holdTimer.schedule(new RemoveHoldTask(this, HoldType.JOINS), now.getTime() + cHold("joins"));
+			} else hold.put(HoldType.JOINS, false);
+			if (cHold("quits") > 0) {
+				hold.put(HoldType.QUITS, true);
+				holdTimer.schedule(new RemoveHoldTask(this, HoldType.QUITS), now.getTime() + cHold("quits"));
+			} else hold.put(HoldType.QUITS, false);
+			if (cHold("kicks") > 0) {
+				hold.put(HoldType.KICKS, true);
+				holdTimer.schedule(new RemoveHoldTask(this, HoldType.KICKS), now.getTime() + cHold("kicks"));
+			} else hold.put(HoldType.KICKS, false);
+			if (cHold("bans") > 0) {
+				hold.put(HoldType.BANS, true);
+				holdTimer.schedule(new RemoveHoldTask(this, HoldType.BANS), now.getTime() + cHold("bans"));
+			} else hold.put(HoldType.BANS, false);
 
             setDebug(cDebug());
         } catch (Exception e) {
@@ -80,6 +113,8 @@ public class CraftIRC extends JavaPlugin {
 
     public void onDisable() {
 
+    	holdTimer.cancel();
+    	
         //Disconnect bots
         for (int i = 0; i < bots.size(); i++)
             instances.get(i).disconnect();
@@ -131,7 +166,7 @@ public class CraftIRC extends JavaPlugin {
         debug = d;
 
         for (int i = 0; i < bots.size(); i++)
-            instances.get(i).setVerbose(true);
+            instances.get(i).setVerbose(d);
 
         log.info(NAME + " DEBUG [" + (d ? "ON" : "OFF") + "]");
     }
@@ -343,5 +378,26 @@ public class CraftIRC extends JavaPlugin {
             return true;
         return false;
     }
+    
+    protected enum HoldType {
+    	CHAT, JOINS, QUITS, KICKS, BANS
+    }
+    
+	protected class RemoveHoldTask extends TimerTask {
+		private CraftIRC plugin;
+		private HoldType ht;
+		protected RemoveHoldTask(CraftIRC plugin, HoldType ht) {
+			super();
+			this.plugin = plugin;
+			this.ht = ht;
+		}
+		public void run() {
+			this.plugin.hold.put(ht, false);
+		}
+	}
+	
+	public boolean isHeld(HoldType ht) {
+		return hold.get(ht);
+	}
 
 }
