@@ -13,6 +13,7 @@ import java.util.regex.*;
 import org.bukkit.entity.Player;
 import org.jibble.pircbot.*;
 import org.bukkit.ChatColor;
+import org.bukkit.event.Event;
 import com.animosity.craftirc.CraftIRC;
 import com.animosity.craftirc.Util;
 
@@ -195,6 +196,7 @@ public class Minebot extends PircBot implements Runnable {
 
 	public void onKick(String channel, String kickerNick, String kickerLogin, String kickerHostname,
 			String recipientNick, String reason) {
+	 // IRCEvent - AUTHED_COMMAND
 		if (recipientNick.equalsIgnoreCase(this.getNick())) {
 			if (this.channels.contains(channel)) {
 				this.joinChannel(channel, this.plugin.cChanPassword(botId, channel));
@@ -216,7 +218,11 @@ public class Minebot extends PircBot implements Runnable {
 
 			// Parse admin commands here
 			if (userAuthorized(channel, sender)) {
-
+			    
+			    // IRCEvent - AUTHED_COMMAND
+			    Event ie = new IRCEvent(this, IRCEvent.Mode.AUTHED_COMMAND, this.ircServer, channel, sender, message.replaceFirst(this.cmdPrefix, ""));
+			    this.plugin.getServer().getPluginManager().callEvent(ie);
+			    
 				if ((message.startsWith(cmdPrefix + "console ") || message.startsWith(cmdPrefix + "c "))
 						&& splitMessage.length > 1 && this.plugin.cConsoleCommands().contains(splitMessage[1])) {
 					this.sendNotice(sender, "NOT YET IMPLEMENTED IN BUKKIT");
@@ -244,10 +250,12 @@ public class Minebot extends PircBot implements Runnable {
 					return;
 				}
 
-			} // end admin commands
+			} // End admin commands
 
-			// begin public commands
-
+			// Begin public commands
+			 Event ie = new IRCEvent(this, IRCEvent.Mode.COMMAND, this.ircServer, channel, sender, message.replaceFirst(this.cmdPrefix, ""));
+             this.plugin.getServer().getPluginManager().callEvent(ie);
+			
 			// .players - list players
 			if (message.equals(cmdPrefix + "players")) {
 				String playerlist = this.getPlayerList();
@@ -298,6 +306,10 @@ public class Minebot extends PircBot implements Runnable {
 	}
 
 	public void onAction(String sender, String login, String hostname, String target, String action) {
+	    // IRCEvent - ACTION
+	    Event ie = new IRCEvent(this, IRCEvent.Mode.ACTION, this.ircServer, target, sender, action);
+        this.plugin.getServer().getPluginManager().callEvent(ie);
+        
 		if (this.plugin.cEvents("irc-to-game.all-chat", botId, target))
 			msgToGame(target, sender, action, messageMode.ACTION_ALL, null);
 	}
@@ -316,8 +328,8 @@ public class Minebot extends PircBot implements Runnable {
 	}
 
 	
-	/*
-	 * Form and broadcast messages to Minecraft
+	/**
+     * NEED TO CHANGE TO PASS THROUGH FORMATTER FIRST
 	 * @param sender - The originating source/user of the IRC event
 	 * @param message - The message to be relayed to the game
 	 * @param mm - The message type (see messageMode)
