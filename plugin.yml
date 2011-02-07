@@ -7,9 +7,7 @@ commands:
     usage: /<command> [msg]
   ircw:
     description: PM an IRC user
-    usage: |
-           /<command> [player] [msg]
-           Example: /<command> Animosity Heya
+    usage: /<command> [player] [msg]
   ircwho:
     description: Lists users in an IRC channel
-    usage: |/<command> [channel]
+    usage: /<command> [channel]

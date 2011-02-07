@@ -124,6 +124,7 @@ public class CraftIRC extends JavaPlugin {
         log.info(NAME + " Disabled.");
     }
 
+    
     public HashMap<String,String> initFormatParams() {
         HashMap<String,String> formatParams = new HashMap<String,String>();
         formatParams.put("player", "");
@@ -143,11 +144,16 @@ public class CraftIRC extends JavaPlugin {
             Iterator<String> it = chans.iterator();
             while (it.hasNext()) {
                 String chan = it.next();
-                // Intra-relay between bots
-                if (source == null || instances.get(i) != source) { instances.get(i).sendMessage(chan, formatParams.get("channel")); }
+                // Intra-relay between bots -- currently not formatted!
+                if (source == null || instances.get(i) != source) { instances.get(i).sendMessage(chan, formatParams.get("message")); }
                 // Send to all bots, channels with event enabled
                 if ((tag == null || cChanCheckTag(tag, i, chan)) && (event == null || cEvents(event, i, chan))) {
-                    String message = this.cFormatting(event, i, formatParams.get("channel"));
+                    //String message = this.cFormatting(event, i, formatParams.get("channel"));
+                    
+                    // Need to determine which formatter to use... please find a better way!
+                    String message = (event.substring(0,event.lastIndexOf(".")).equalsIgnoreCase("game-to-irc")) 
+                        ? this.formatGameToIRC(this.cFormatting(event, i, formatParams.get("channel")), formatParams)
+                        : this.formatIRCToGame(this.cFormatting(event, i, formatParams.get("channel")), formatParams);
                     instances.get(i).sendMessage(chan, message);
                 }
             }
