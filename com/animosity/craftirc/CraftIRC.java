@@ -8,6 +8,8 @@ import java.util.Iterator;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bukkit.Server;
 import org.bukkit.event.Event.Priority;
@@ -122,16 +124,52 @@ public class CraftIRC extends JavaPlugin {
         log.info(NAME + " Disabled.");
     }
 
-    public void sendMessage(Minebot source, String message, String tag, String event) {
+    public HashMap<String,String> initFormatParams() {
+        HashMap<String,String> formatParams = new HashMap<String,String>();
+        formatParams.put("player", "");
+        formatParams.put("message", "");
+        formatParams.put("server", "");
+        formatParams.put("nickname", "");
+        formatParams.put("moderator", "");
+        formatParams.put("channel", "");
+        
+        return formatParams;
+        
+    }
+    
+    public void sendMessage(Minebot source, HashMap<String,String> formatParams, String tag, String event) {
         for (int i = 0; i < bots.size(); i++) {
             ArrayList<String> chans = cBotChannels(i);
             Iterator<String> it = chans.iterator();
             while (it.hasNext()) {
                 String chan = it.next();
-                if ((tag == null || cChanCheckTag(tag, i, chan)) && (event == null || cEvents(event, i, chan)))
-               		instances.get(i).sendMessage(chan, message);
+                // Intra-relay between bots
+                if (source == null || instances.get(i) != source) { instances.get(i).sendMessage(chan, formatParams.get("channel")); }
+                // Send to all bots, channels with event enabled
+                if ((tag == null || cChanCheckTag(tag, i, chan)) && (event == null || cEvents(event, i, chan))) {
+                    String message = this.cFormatting(event, i, formatParams.get("channel"));
+                    instances.get(i).sendMessage(chan, message);
+                }
             }
         }
+    }
+    
+    public String formatGameToIRC(String formatStyle, HashMap<String,String> params) {
+        String formattedMsg = formatStyle;
+        formattedMsg = formattedMsg.replaceAll("%player%", params.get("player"));
+        formattedMsg = formattedMsg.replaceAll("%moderator%", params.get("moderator"));
+        formattedMsg = formattedMsg.replaceAll("%message%", params.get("message"));
+        return formattedMsg;
+    }
+    
+
+    public String formatIRCToGame(String formatStyle, HashMap<String,String> params) {
+        String formattedMsg = formatStyle;
+        formattedMsg = formattedMsg.replaceAll("%server%", params.get("server"));
+        formattedMsg = formattedMsg.replaceAll("%channel%", params.get("channel"));
+        formattedMsg = formattedMsg.replaceAll("%nickname%", params.get("nickname"));
+        formattedMsg = formattedMsg.replaceAll("%message%", params.get("message"));
+        return formattedMsg;
     }
 
     public ArrayList<String> ircUserLists(String tag) {
@@ -206,6 +244,7 @@ public class CraftIRC extends JavaPlugin {
     }
 
     public String cFormatting(String eventType, int bot, String channel) {
+        eventType = (eventType.equals("game-to-irc.all-chat") ? "formatting.chat" : eventType);
         ConfigurationNode source = getChanNode(bot, channel);
         if (source == null || source.getString("formatting." + eventType) == null)
             source = bots.get(bot);

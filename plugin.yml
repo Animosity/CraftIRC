@@ -1,3 +1,15 @@
 name: CraftIRC
 main: com.animosity.craftirc.CraftIRC
 version: 2.0 BETA
+commands:
+  irc:
+    description: Sends a message to all IRC channels
+    usage: /<command> [msg]
+  ircw:
+    description: PM an IRC user
+    usage: |
+           /<command> [player] [msg]
+           Example: /<command> Animosity Heya
+  ircwho:
+    description: Lists users in an IRC channel
+    usage: |/<command> [channel]

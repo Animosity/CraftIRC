@@ -2,6 +2,7 @@ package com.animosity.craftirc;
 
 import java.lang.Exception;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import org.bukkit.entity.Player;
 import org.bukkit.ChatColor;
@@ -22,35 +23,47 @@ public class CraftIRCListener extends PlayerListener {
 	public void onPlayerCommand(PlayerChatEvent event) {
 	    String[] split = event.getMessage().split(" ");
 	    Player player = event.getPlayer();
-	 // ACTION/EMOTE can't be claimed, so use onPlayerCommand
+	    // ACTION/EMOTE can't be claimed, so use onPlayerCommand
         if (split[0].equalsIgnoreCase("/me")) {
-            String msgtosend = "* " + player.getName() + " " + Util.combineSplit(1, split, " ");
-            this.plugin.sendMessage(null, msgtosend, null, "game-to-irc.all-chat");
+            HashMap<String,String> formatParams = this.plugin.initFormatParams();
+            formatParams.put("player", event.getPlayer().getName());
+            formatParams.put("message", Util.combineSplit(1, split, " "));
+            this.plugin.sendMessage(null, formatParams, null, "game-to-irc.action");
         }
 	}
 	
 	public void onCommand(CommandSender sender, Command command, String commandLabel, String[] args) {
 		//String[] split = event.getMessage().split(" ");
-		Player player = (Player) sender;
+	    Player commandSender;
+	    String commandSenderName;
+	    HashMap<String,String> formatParams = this.plugin.initFormatParams();
+	    if (sender instanceof Player) { 
+            commandSender = (Player)sender;
+            commandSenderName = commandSender.getName();
+            formatParams.put("player", commandSender.getName());
+        } else {
+            commandSenderName = "SERVER";
+            formatParams.put("player",commandSenderName);
+        }
 		String commandName = command.getName().toLowerCase();
-
+		
 		if (commandName.equalsIgnoreCase("/irc")) {
-
+		  
 			/*if (args.length < 2) {
 				player.sendMessage("\247cCorrect usage is: /irc [message]");
 				return;
-			}*/
+			}
+		    String player_name = "(" + player.getName() + ") ";
+            String ircMessage = player_name + msgtosend;*/
 
-			// player used command correctly
-			String player_name = "(" + player.getName() + ") ";
-			String msgtosend = Util.combineSplit(0, args, " ");
+		   
+		    String msgToSend= Util.combineSplit(0, args, " ");
+		    formatParams.put("message",msgToSend);
+		    String echoedMessage = new StringBuilder().append("<")
+                .append(commandSenderName).append(ChatColor.WHITE.toString()).append(" to IRC> ").append(msgToSend)
+                .toString();
 
-			String ircMessage = player_name + msgtosend;
-			String echoedMessage = new StringBuilder().append("<")
-					.append(player.getName()).append(ChatColor.WHITE.toString()).append(" to IRC> ").append(msgtosend)
-					.toString();
-
-			this.plugin.sendMessage(null, ircMessage, null, null);
+			this.plugin.sendMessage(null, formatParams, null, "game-to-irc.all-chat");
 			// echo -> IRC msg locally in game
 			for (Player p : this.plugin.getServer().getOnlinePlayers()) {
 				if (p != null) {
@@ -58,25 +71,21 @@ public class CraftIRCListener extends PlayerListener {
 				}
 			}
 			return;
-		} // *** /irc <msg> 
-		
-		if (commandName.equalsIgnoreCase("/ircm")) {
-
+		} else if (commandName.equalsIgnoreCase("/ircm") && sender instanceof Player) {
+		    
 			if (args.length < 2) {
-				player.sendMessage("\247cCorrect usage is: /ircm [tag] [message]");
+				if (sender instanceof Player) { sender.sendMessage("\247cCorrect usage is: /ircm [tag] [message]"); }
 				return;
 			}
 			
-			String player_name = "(" + player.getName() + ") ";
-			String msgtosend = Util.combineSplit(1, args, " ");
-
-			String ircMessage = player_name + msgtosend;
+			String msgToSend = Util.combineSplit(1, args, " ");
+			formatParams.put("message", msgToSend);
+			
 			String echoedMessage = new StringBuilder().append("<")
-					.append(player.getName()).append(ChatColor.WHITE.toString()).append(" to IRC> ").append(msgtosend)
+					.append(commandSenderName).append(ChatColor.WHITE.toString()).append(" to IRC> ").append(msgToSend)
 					.toString();
 
-			this.plugin.sendMessage(null, ircMessage, args[0], null);
-			// echo -> IRC msg locally in game
+			this.plugin.sendMessage(null, formatParams, args[0], "game-to-irc.chat");
 			for (Player p : this.plugin.getServer().getOnlinePlayers()) {
 				if (p != null) {
 					p.sendMessage(echoedMessage);
@@ -88,6 +97,7 @@ public class CraftIRCListener extends PlayerListener {
 
 		// Whispering to IRC users
 		/* ***** MULTIPLE USERS MAY HAVE SAME NICKNAME IN DIFFERENT NETWORKS - Come back here later and figure out how to tell them apart
+		
 		if (split[0].equalsIgnoreCase("/ircw")) {
 
 			if (split.length < 3) {
@@ -106,19 +116,20 @@ public class CraftIRCListener extends PlayerListener {
 		*/
 		
 		// IRC user list
-		if (commandName.equalsIgnoreCase("/ircwho") && args.length == 1) {
-			player.sendMessage("IRC users in " + args[0] + " channel(s):");
+		else if (commandName.equalsIgnoreCase("/ircwho") && args.length == 1 && sender instanceof Player) {
+			sender.sendMessage("IRC users in " + args[0] + " channel(s):");
 			ArrayList<String> userlists = this.plugin.ircUserLists(args[1]);
 			for (Iterator<String> it = userlists.iterator(); it.hasNext(); )
-				player.sendMessage(it.next());
+				sender.sendMessage(it.next());
 		}
 		
 		// notify/call admins in the admin IRC channel
-		if (commandName.equalsIgnoreCase("/admins!")) {
-			this.plugin.noticeAdmins("[Admin notice from " + player.getName() + "] " + Util.combineSplit(0, args, " "));
-			player.sendMessage("Admin notice sent.");
+		else if (commandName.equalsIgnoreCase("/admins!") && sender instanceof Player) {
+			this.plugin.noticeAdmins("[Admin notice from " + commandSenderName + "] " + Util.combineSplit(0, args, " "));
+			sender.sendMessage("Admin notice sent.");
 			return;
 		}
+		else {}
 
 		
 	}
@@ -128,7 +139,11 @@ public class CraftIRCListener extends PlayerListener {
 		// String[] split = message.split(" ");
 		try {
 			if (event.isCancelled() && !this.plugin.cEvents("game-to-irc.cancelled-chat", -1, null)) return;
-			this.plugin.sendMessage(null, "(" + event.getPlayer().getDisplayName() + ") " + event.getMessage(), null, "game-to-irc.all-chat");
+			HashMap<String,String> formatParams = this.plugin.initFormatParams();
+			formatParams.put("player",event.getPlayer().getDisplayName());
+			formatParams.put("message",event.getMessage());
+			this.plugin.sendMessage(null, formatParams, null, "game-to-irc.all-chat");
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -137,9 +152,9 @@ public class CraftIRCListener extends PlayerListener {
 	public void onPlayerJoin(PlayerEvent event) {
 		if (this.plugin.isHeld(CraftIRC.HoldType.JOINS)) return;
 		try {
-			Player player = event.getPlayer();
-			this.plugin.sendMessage(null, "[" + player.getDisplayName() + " connected]", null, "game-to-irc.joins");
-
+			HashMap<String,String> formatParams = this.plugin.initFormatParams();
+            formatParams.put("player",event.getPlayer().getDisplayName());
+			this.plugin.sendMessage(null, formatParams, null, "game-to-irc.joins");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -148,32 +163,34 @@ public class CraftIRCListener extends PlayerListener {
 	public void onPlayerQuit(PlayerEvent event) {
 		if (this.plugin.isHeld(CraftIRC.HoldType.QUITS)) return;
 		try {
-			Player player = event.getPlayer();
-			this.plugin.sendMessage(null, "[" + player.getDisplayName() + " disconnected]", null, "game-to-irc.quits");
-
+			HashMap<String,String> formatParams = this.plugin.initFormatParams();
+            formatParams.put("player",event.getPlayer().getDisplayName());
+			this.plugin.sendMessage(null, formatParams, null, "game-to-irc.quits");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	public void onBan(Player mod, Player player, String reason) {
-		if (this.plugin.isHeld(CraftIRC.HoldType.BANS)) return;
+
+	/*public void onBan(Player mod, Player player, String reason) {
 		if (reason.length() == 0) reason = "no reason given";
-		this.plugin.sendMessage(null, "[" + mod + " BANNED " + player.getDisplayName() + " because: " + reason + "]", null, "game-to-irc.bans");
+	      HashMap<String,String> formatParams = this.plugin.initFormatParams();
+          formatParams.put("player",event.getPlayer().getDisplayName());
+		this.plugin.sendMessage("[" + mod + " BANNED " + player.getName() + " because: " + reason + "]", null, "game-to-irc.bans");
 	}
 
 	public void onIpBan(Player mod, Player player, String reason) {
 		if (this.plugin.isHeld(CraftIRC.HoldType.BANS)) return;
 		if (reason.length() == 0) reason = "no reason given";
-		this.plugin.sendMessage(null, "[" + mod + " IP BANNED " + player.getDisplayName() + " because: " + reason + "]", null, "game-to-irc.bans");
+		this.plugin.sendMessage("[" + mod + " IP BANNED " + player.getName() + " because: " + reason + "]", null, "game-to-irc.bans");
 	}
 
 	public void onKick(Player mod, Player player, String reason) {
 		if (this.plugin.isHeld(CraftIRC.HoldType.KICKS)) return;
 		if (reason.length() == 0) reason = "no reason given";
-		this.plugin.sendMessage(null, "[" + mod + " KICKED " + player.getDisplayName() + " because: " + reason + "]", null, "game-to-irc.kicks");
+		this.plugin.sendMessage("[" + mod + " KICKED " + player.getName() + " because: " + reason + "]", null, "game-to-irc.kicks");
 	}
-
+    */
 	// 
 
 }
