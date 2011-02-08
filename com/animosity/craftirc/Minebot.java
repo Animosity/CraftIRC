@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.jibble.pircbot.*;
 import org.bukkit.ChatColor;
 import org.bukkit.event.Event;
+import org.bukkit.craftbukkit.CraftServer;
 import com.animosity.craftirc.CraftIRC;
 import com.animosity.craftirc.Util;
 
@@ -368,7 +369,7 @@ public class Minebot extends PircBot implements Runnable {
 
 	
 	/**
-     * NEED TO CHANGE TO PASS THROUGH FORMATTER FIRST
+     * TODO: NEED TO CHANGE TO PASS THROUGH FORMATTER FIRST
 	 * @param sender - The originating source/user of the IRC event
 	 * @param message - The message to be relayed to the game
 	 * @param mm - The message type (see messageMode)
@@ -404,25 +405,31 @@ public class Minebot extends PircBot implements Runnable {
 
 	// Return the # of players and player names on the Minecraft server
 	private String getPlayerList() {
-		Player onlinePlayers[] = plugin.getServer().getOnlinePlayers();
-		Integer playercount = 0;
-
-		//Integer maxplayers;
-		StringBuilder sb = new StringBuilder();
-
-		for (int i = 0; i < onlinePlayers.length; i++) {
-			if (onlinePlayers[i] != null) {
-				playercount++;			
-				sb.append(" ").append(onlinePlayers[i].getName());
-			}
-		}
-
-		if (playercount > 0) {
-			//return "Online (" + playercount + "/" + maxplayers + "): " + sb.toString();
-			return "Online: " + sb.toString();
-		} else {
-			return "Nobody is minecrafting right now.";
-		}
+	    try {
+    		Player onlinePlayers[] = plugin.getServer().getOnlinePlayers();
+    		int playerCount = 0;
+    		int maxPlayers = ((CraftServer)this.plugin.getServer()).getMaxPlayers(); // CraftBukkit-only, need generic check for server type.
+    
+    		//Integer maxplayers;
+    		StringBuilder sb = new StringBuilder();
+    
+    		for (int i = 0; i < onlinePlayers.length; i++) {
+    			if (onlinePlayers[i] != null) {
+    				playerCount++;			
+    				sb.append(" ").append(onlinePlayers[i].getName());
+    			}
+    		}
+    
+    		if (playerCount > 0) {
+    			//return "Online (" + playercount + "/" + maxplayers + "): " + sb.toString();
+    			return "Online ("+playerCount+"/"+maxPlayers+"): " + sb.toString();
+    		} else {
+    			return "Nobody is minecrafting right now.";
+    		}
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return "Could not retrieve player list!";
+	    }
 	}
 
 	
