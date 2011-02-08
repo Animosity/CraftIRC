@@ -10,7 +10,6 @@ import org.bukkit.entity.Player;
 import org.jibble.pircbot.*;
 import org.bukkit.ChatColor;
 import org.bukkit.event.Event;
-import org.bukkit.craftbukkit.CraftServer;
 import com.animosity.craftirc.CraftIRC;
 import com.animosity.craftirc.Util;
 
@@ -166,48 +165,40 @@ public class Minebot extends PircBot implements Runnable {
 					sendRawLineViaQueue(it.next());
 				
 			} else {
-				RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.GAME);
-			    msg.formatting = "irc-to-game.joins";
+				RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
+			    msg.formatting = "joins";
 			    msg.sender = sender;
 			    msg.srcBot = botId;
 			    msg.srcChannel = channel;
-			    this.plugin.sendMessage(msg, null, "irc-to-game.joins");
-			    
-			    msg.target = EndPoint.IRC;
-			    msg.formatting = "irc-to-irc.joins";
-			    this.plugin.sendMessage(msg, null, "irc-to-irc.joins");
-				
+			    this.plugin.sendMessage(msg, null, "joins");
+			    				
 			}
 		}
 	}
 
 	public void onPart(String channel, String sender, String login, String hostname, String reason) {
 		if (this.channels.contains(channel)) {
-			RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.GAME);
-		    msg.formatting = "irc-to-game.parts";
+			RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
+		    msg.formatting = "parts";
 		    msg.sender = sender;
 		    msg.srcBot = botId;
 		    msg.srcChannel = channel;
 		    msg.message = reason;
-		    this.plugin.sendMessage(msg, null, "irc-to-game.parts");
+		    this.plugin.sendMessage(msg, null, "parts");
 		    
-		    msg.target = EndPoint.IRC;
-		    msg.formatting = "irc-to-irc.parts";
-		    this.plugin.sendMessage(msg, null, "irc-to-irc.parts");
 		}
 	}
 	
-	public void onQuit(String sender, String login, String hostname, String reason) {
-		RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.GAME);
-	    msg.formatting = "irc-to-game.quits";
-	    msg.sender = sender;
-	    msg.srcBot = botId;
-	    msg.message = reason;
-	    this.plugin.sendMessage(msg, null, "irc-to-game.quits");
-	    
-	    msg.target = EndPoint.IRC;
-	    msg.formatting = "irc-to-irc.quits";
-	    this.plugin.sendMessage(msg, null, "irc-to-irc.quits");
+	public void onChannelQuit(String channel, String sender, String login, String hostname, String reason) {
+		if (this.channels.contains(channel)) {
+			RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
+		    msg.formatting = "quits";
+		    msg.sender = sender;
+		    msg.srcBot = botId;
+		    msg.srcChannel = channel;
+		    msg.message = reason;
+		    this.plugin.sendMessage(msg, null, "quits");
+		}
 	}
 
 	public void onKick(String channel, String kickerNick, String kickerLogin, String kickerHostname,
@@ -281,17 +272,14 @@ public class Minebot extends PircBot implements Runnable {
 
 			// Send all IRC chatter (no command prefixes or ignored command prefixes)
 			if (!ircCmdPrefixes.contains(message.substring(0,0))) {
-					RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.GAME);
-				    msg.formatting = "irc-to-game.chat";
+					RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
+				    msg.formatting = "chat";
 				    msg.sender = sender;
 				    msg.srcBot = botId;
 				    msg.srcChannel = channel;
 				    msg.message = message;
-				    this.plugin.sendMessage(msg, null, "irc-to-game.all-chat");
+				    this.plugin.sendMessage(msg, null, "all-chat");
 				    
-				    msg.target = EndPoint.IRC;
-				    msg.formatting = "irc-to-irc.chat";
-				    this.plugin.sendMessage(msg, null, "irc-to-irc.all-chat");
 					return;
 			}
 
@@ -299,7 +287,7 @@ public class Minebot extends PircBot implements Runnable {
 			if (message.startsWith(cmdPrefix + "say ") || message.startsWith(cmdPrefix + "mc ")) {
 				if (splitMessage.length > 1) {
 					RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.GAME);
-				    msg.formatting = "irc-to-game.chat";
+				    msg.formatting = "chat";
 				    msg.sender = sender;
 				    msg.srcBot = botId;
 				    msg.srcChannel = channel;
@@ -340,18 +328,14 @@ public class Minebot extends PircBot implements Runnable {
 	    Event ie = new IRCEvent(this, IRCEvent.Mode.ACTION, this.ircServer, target, sender, action);
         this.plugin.getServer().getPluginManager().callEvent(ie);
         
-		RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.GAME);
-	    msg.formatting = "irc-to-game.action";
+		RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
+	    msg.formatting = "action";
 	    msg.sender = sender;
 	    msg.srcBot = botId;
 	    msg.srcChannel = target;
 	    msg.message = action;
-	    this.plugin.sendMessage(msg, null, "irc-to-game.all-chat");
-	    
-	    msg.target = EndPoint.IRC;
-	    msg.formatting = "irc-to-irc.action";
-	    this.plugin.sendMessage(msg, null, "irc-to-irc.all-chat");
-		
+	    this.plugin.sendMessage(msg, null, "all-chat");
+	    		
 	}
 
 	// IRC user authorization check against prefixes
@@ -408,7 +392,7 @@ public class Minebot extends PircBot implements Runnable {
 	    try {
     		Player onlinePlayers[] = plugin.getServer().getOnlinePlayers();
     		int playerCount = 0;
-    		int maxPlayers = ((CraftServer)this.plugin.getServer()).getMaxPlayers(); // CraftBukkit-only, need generic check for server type.
+    		int maxPlayers = this.plugin.getServer().getMaxPlayers(); // CraftBukkit-only, need generic check for server type.
     
     		//Integer maxplayers;
     		StringBuilder sb = new StringBuilder();

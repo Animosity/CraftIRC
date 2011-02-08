@@ -2,6 +2,8 @@ package com.animosity.craftirc;
 
 import java.io.File;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -13,6 +15,7 @@ import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -21,6 +24,9 @@ import com.animosity.craftirc.Minebot;
 import com.animosity.craftirc.Util;
 
 import org.bukkit.util.config.ConfigurationNode;
+
+import com.nijikokun.bukkit.Permissions.*;
+import com.nijiko.permissions.PermissionHandler;
 
 /**
  * @author Animosity
@@ -36,6 +42,7 @@ public class CraftIRC extends JavaPlugin {
 
     //Misc class attributes
     private final CraftIRCListener listener = new CraftIRCListener(this);
+    private PermissionHandler perms  = null;
     private ArrayList<Minebot> instances;
     private boolean debug;
     private Timer holdTimer;
@@ -66,6 +73,15 @@ public class CraftIRC extends JavaPlugin {
         		for (Iterator<ConfigurationNode> it = channodes.get(i).iterator(); it.hasNext(); )
         			cn.add(it.next().getString("name"));
         		channames.put(i, cn);
+        	}
+        	
+        	//Permissions
+        	Plugin check = this.getServer().getPluginManager().getPlugin("Permissions");
+       	    if(check != null) {
+        		perms = ((Permissions)check).getHandler();
+        		log.info("Permissions detected by CraftIRC.");
+       	    } else {
+       	    	log.info("Permissions not detected.");
         	}
 
             //Event listeners
@@ -128,28 +144,39 @@ public class CraftIRC extends JavaPlugin {
     }
     
     public void sendMessage(RelayedMessage msg, String tag, String event) {
-    	if (msg.target == EndPoint.IRC) {
+    	String realEvent = event;
+    	//Send to IRC
+    	if (msg.getTarget() == EndPoint.IRC || msg.getTarget() == EndPoint.BOTH) {
+    		if (msg.getSource() == EndPoint.IRC) realEvent = "irc-to-irc." + event;
+    		if (msg.getSource() == EndPoint.GAME) realEvent = "game-to-irc." + event;
 	        for (int i = 0; i < bots.size(); i++) {
 	            ArrayList<String> chans = cBotChannels(i);
 	            Iterator<String> it = chans.iterator();
 	            while (it.hasNext()) {
 	                String chan = it.next();
 	                // Don't echo back to sending channel
-	                if (msg.source == EndPoint.IRC && msg.srcBot == i && msg.srcChannel.equals(chan)) continue;
+	                if (msg.getSource() == EndPoint.IRC && msg.srcBot == i && msg.srcChannel.equals(chan)) continue;
 	                // Send to all bots, channels with event enabled
-	                if ((tag == null || cChanCheckTag(tag, i, chan)) && (event == null || cEvents(event, i, chan))) {
+	                if ((tag == null || cChanCheckTag(tag, i, chan)) && (event == null || cEvents(realEvent, i, chan))) {
 	                	msg.trgBot = i;
 	                	msg.trgChannel = chan;
-	                    instances.get(i).sendMessage(chan, msg.toString());
+	                	if (msg.getTarget() == EndPoint.BOTH)
+	                		instances.get(i).sendMessage(chan, msg.asString(EndPoint.IRC));
+	                	else instances.get(i).sendMessage(chan, msg.asString());
 	                }
 	            }
 	        }
     	}
-    	if (msg.target == EndPoint.GAME && msg.source == EndPoint.IRC) {
-    		if ((tag == null || cChanCheckTag(tag, msg.srcBot, msg.srcChannel)) && (event == null || cEvents(event, msg.srcBot, msg.srcChannel))) {
+    	//Send to game (doesn't allow game to game)
+    	if ((msg.getTarget() == EndPoint.GAME || msg.getTarget() == EndPoint.BOTH) && msg.getSource() == EndPoint.IRC) {
+    		realEvent = "irc-to-game." + event;
+    		if ((tag == null || cChanCheckTag(tag, msg.srcBot, msg.srcChannel)) && (event == null || cEvents(realEvent, msg.srcBot, msg.srcChannel))) {
     			for (Player pl: getServer().getOnlinePlayers()) {
-    				if (pl != null)
-    					pl.sendMessage(msg.toString());
+    				if (pl != null) {
+    					if (msg.getTarget() == EndPoint.BOTH)
+    						pl.sendMessage(msg.asString(EndPoint.GAME));
+    					else pl.sendMessage(msg.asString());
+    				}
     			}
     		}
     	}
@@ -229,12 +256,14 @@ public class CraftIRC extends JavaPlugin {
     public String cFormatting(String eventType, int bot, String channel) {
         eventType = (eventType.equals("game-to-irc.all-chat") ? "formatting.chat" : eventType);
         ConfigurationNode source = getChanNode(bot, channel);
+        String result;
         if (source == null || source.getString("formatting." + eventType) == null)
             source = bots.get(bot);
         if (source == null || source.getString("formatting." + eventType) == null)
-            return getConfiguration().getString("settings.formatting." + eventType, "MESSAGE FORMATTING MISSING");
+            result = getConfiguration().getString("settings.formatting." + eventType, "MESSAGE FORMATTING MISSING");
         else
-            return source.getString("formatting." + eventType);
+            result = source.getString("formatting." + eventType);
+        return result.replaceAll("%k([0-9]{1,2})%", Character.toString((char) 3) + "$1").replaceAll("%o%", Character.toString((char) 15));
     }
 
     public boolean cEvents(String eventType, int bot, String channel) {
@@ -420,6 +449,51 @@ public class CraftIRC extends JavaPlugin {
 	
 	public boolean isHeld(HoldType ht) {
 		return hold.get(ht);
+	}
+	
+	public boolean hasPerms() {
+		return perms != null;
+	}
+	
+	public boolean checkPerms(Player pl, String path) {
+		if (perms == null) return true;
+		if (pl != null) return perms.has(pl, path);
+		return false;
+	}
+	
+	public boolean checkPerms(String pl, String path) {
+		if (perms == null) return true;
+		Player pit = getServer().getPlayer(pl);
+		if (pit != null) return perms.has(pit, path);
+		return false;
+	}
+	
+	public String colorizeName(String name) {
+		Pattern color_codes = Pattern.compile("§[0-9a-f]");
+		Matcher find_colors = color_codes.matcher(name);
+		while (find_colors.find()) {
+			name = find_colors.replaceFirst(Character.toString((char) 3) + String.format("%02d", cColorIrcFromGame(find_colors.group())));
+			find_colors = color_codes.matcher(name);
+		}
+		return name;
+	}
+		
+	public String getPermPrefix(String pl) {
+		if (perms == null) return "";
+		String group = perms.getGroup(pl);
+		if (group == null) return "";
+		String result = perms.getGroupPrefix(group);
+		if (result == null) return "";
+		return colorizeName(result.replaceAll("&([0-9a-f])", "§$1"));
+	}
+	
+	public String getPermSuffix(String pl) {
+		if (perms == null) return "";
+		String group = perms.getGroup(pl);
+		if (group == null) return "";
+		String result = perms.getGroupSuffix(group);
+		if (result == null) return "";
+		return colorizeName(result.replaceAll("&([0-9a-f])", "§$1"));
 	}
 
 }

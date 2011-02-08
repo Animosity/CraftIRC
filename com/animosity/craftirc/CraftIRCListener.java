@@ -25,24 +25,29 @@ public class CraftIRCListener extends PlayerListener {
 	    // ACTION/EMOTE can't be claimed, so use onPlayerCommand
         if (split[0].equalsIgnoreCase("/me")) {
             RelayedMessage msg = this.plugin.newMsg(EndPoint.GAME, EndPoint.IRC);
-            msg.formatting = "game-to-irc.action";
+            msg.formatting = "action";
             msg.sender = event.getPlayer().getName();
             msg.message = Util.combineSplit(1, split, " ");
-            this.plugin.sendMessage(msg, null, "game-to-irc.all-chat");
+            this.plugin.sendMessage(msg, null, "all-chat");
         }
 	}
 	
 
 	public boolean onCommand(CommandSender sender, Command command, String commandLabel, String[] args) {
 		String commandName = command.getName().toLowerCase();
-
+		boolean permCheck = sender instanceof Player;
+		
 		if (commandName.equals("irc")) {
+			if (permCheck && !this.plugin.checkPerms((Player)sender, "craftirc.irc")) return true; 
 		    return this.cmdMsgToAll(sender, args);
 		} else if (commandName.equals("ircm")) {
+			if (permCheck && !this.plugin.checkPerms((Player)sender, "craftirc.ircm")) return true;
 		    return this.cmdMsgToTag(sender, args);
 	    } else if (commandName.equals("ircwho")) {
+	    	if (permCheck && !this.plugin.checkPerms((Player)sender, "craftirc.ircwho")) return true;
 			return this.cmdGetIrcUserList(sender, args);
 		} else if (commandName.equals("admins!")) {
+			if (permCheck && !this.plugin.checkPerms((Player)sender, "craftirc.admins!")) return true;
 		    return this.cmdNotifyIrcAdmins(sender, args);
 		} else return false;
 		
@@ -74,7 +79,7 @@ public class CraftIRCListener extends PlayerListener {
     	    RelayedMessage msg = this.plugin.newMsg(EndPoint.GAME, EndPoint.IRC);
     	    if (sender instanceof Player) msg.sender = ((Player)sender).getName();
             else msg.sender = "SERVER";  
-            msg.formatting = "game-to-irc.chat";
+            msg.formatting = "chat";
             msg.message = msgToSend;
             this.plugin.sendMessage(msg, null, null);
             
@@ -97,12 +102,11 @@ public class CraftIRCListener extends PlayerListener {
 	private boolean cmdMsgToTag(CommandSender sender, String[] args) {
 	    try {
     	    if (args.length < 2) return false;
-    	    String tag = args[0];
             String msgToSend = Util.combineSplit(1, args, " ");
             RelayedMessage msg = this.plugin.newMsg(EndPoint.GAME, EndPoint.IRC);
             if (sender instanceof Player) msg.sender = ((Player)sender).getName();
             else msg.sender = "SERVER";  
-            msg.formatting = "game-to-irc.chat";
+            msg.formatting = "chat";
             msg.message = msgToSend;
             this.plugin.sendMessage(msg, args[0], null);
     
@@ -125,7 +129,6 @@ public class CraftIRCListener extends PlayerListener {
 	private boolean cmdGetIrcUserList(CommandSender sender, String[] args) {
 	    try {
 	        if (args.length == 0) return false;
-	        String tag = args[0];
     	    sender.sendMessage("IRC users in " + args[0] + " channel(s):");
             ArrayList<String> userlists = this.plugin.ircUserLists(args[1]);
             for (Iterator<String> it = userlists.iterator(); it.hasNext(); )
@@ -156,10 +159,10 @@ public class CraftIRCListener extends PlayerListener {
 			if (event.isCancelled() && !this.plugin.cEvents("game-to-irc.cancelled-chat", -1, null)) return;
 			
 			RelayedMessage msg = this.plugin.newMsg(EndPoint.GAME, EndPoint.IRC);
-		    msg.formatting = "game-to-irc.chat";
+		    msg.formatting = "chat";
 		    msg.sender = event.getPlayer().getName();
 		    msg.message = event.getMessage();
-		    this.plugin.sendMessage(msg, null, "game-to-irc.all-chat");
+		    this.plugin.sendMessage(msg, null, "all-chat");
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -170,9 +173,9 @@ public class CraftIRCListener extends PlayerListener {
 		if (this.plugin.isHeld(CraftIRC.HoldType.JOINS)) return;
 		try {
 			RelayedMessage msg = this.plugin.newMsg(EndPoint.GAME, EndPoint.IRC);
-		    msg.formatting = "game-to-irc.joins";
+		    msg.formatting = "joins";
 		    msg.sender = event.getPlayer().getName();
-		    this.plugin.sendMessage(msg, null, "game-to-irc.joins");
+		    this.plugin.sendMessage(msg, null, "joins");
 		    
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -184,9 +187,9 @@ public class CraftIRCListener extends PlayerListener {
 		try {
 		    
 			RelayedMessage msg = this.plugin.newMsg(EndPoint.GAME, EndPoint.IRC);
-		    msg.formatting = "game-to-irc.quits";
+		    msg.formatting = "quits";
 		    msg.sender = event.getPlayer().getName();
-		    this.plugin.sendMessage(msg, null, "game-to-irc.quits");
+		    this.plugin.sendMessage(msg, null, "quits");
 		    
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -196,12 +199,12 @@ public class CraftIRCListener extends PlayerListener {
 	public void onPlayerKick(PlayerKickEvent event) {
 	    if (this.plugin.isHeld(CraftIRC.HoldType.KICKS)) return;
         RelayedMessage msg = this.plugin.newMsg(EndPoint.GAME, EndPoint.IRC);
-        msg.formatting = "game-to-irc.kicks";
+        msg.formatting = "kicks";
         msg.sender = event.getPlayer().getName();
         msg.message = (event.getReason().length() == 0) ? "no reason given" : event.getReason();
         msg.moderator = "Admin"; //there is no moderator context in CBukkit, oh no.
         if (this.plugin.isHeld(CraftIRC.HoldType.KICKS)) return;
-        this.plugin.sendMessage(msg, null, "game-to-irc.kicks");
+        this.plugin.sendMessage(msg, null, "kicks");
     }
 	
 	/* THESE ARE HMOD-signature EVENTS

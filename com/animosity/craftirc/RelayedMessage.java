@@ -4,18 +4,21 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 enum EndPoint {
-	UNKNOWN, GAME, IRC
+	UNKNOWN,	//Can be used as placeholder for an unknown endpoint
+	GAME,		//The game server
+	IRC,		//An IRC channel; Further information provided by srcBot/Channel (if source) or trgBot/Channel (if target)
+	BOTH		//Message to be delivered to both the game server and IRC channels (don't use as source, target only)
 }
 
 class RelayedMessage {
 	
-	public CraftIRC plugin;
+	private CraftIRC plugin;
+	private EndPoint source;		//Origin endpoint of the message
+	private EndPoint target;		//Target endpoint of the message
 	public String formatting;		//Formatting string ID; Mandatory before toString
 	public String sender;			//Sender of the message/Main subject
 	public String message;			//Message or reason
 	public String moderator;		//Person who kicked or banned, if applicable
-	public EndPoint source;			//Origin endpoint of the message
-	public EndPoint target;			//Target endpoint of the message
 	public String srcChannel;		//Source channel; Mandatory before toString if the origin is IRC
 	public int srcBot;				//Source bot ID; Mandatory before toString if the origin is IRC
 	public String trgChannel;		//Target channel; Mandatory before toString if the target is IRC
@@ -24,8 +27,8 @@ class RelayedMessage {
 	protected RelayedMessage(CraftIRC plugin, EndPoint source, EndPoint target) {
 		this.plugin = plugin;
 		formatting = null;
-		this.source = source;
-		this.target = target;
+		setSource(source);
+		setTarget(target);
 		sender = "";
 		message = "";
 		moderator = "";
@@ -35,26 +38,44 @@ class RelayedMessage {
 		trgBot = -1;
 	}
 	
-	public String toString() {
+	public EndPoint getSource() {
+		return source;
+	}
+	public EndPoint getTarget() {
+		return target;
+	}
+	public void setSource(EndPoint ep) {
+		if (ep == EndPoint.BOTH) source = EndPoint.UNKNOWN;
+		else source = ep;
+	}
+	public void setTarget(EndPoint ep) {
+		target = ep;
+	}
+	
+	public String asString() {
+		if (target != EndPoint.BOTH) return asString(target);
+		else return asString(EndPoint.UNKNOWN);
+	}
+	public String asString(EndPoint realTarget) {
 		String result = "";
 		String msgout = message;
 		if (formatting == null) return "NO FORMATTING SPECIFIED.";
 		if (source == EndPoint.GAME && target == EndPoint.IRC)
-			result = this.plugin.cFormatting(formatting, trgBot, trgChannel);
-		if (source == EndPoint.IRC && target == EndPoint.IRC)
-			result = this.plugin.cFormatting(formatting, trgBot, trgChannel);
-		if (source == EndPoint.IRC && target == EndPoint.GAME) {
+			result = this.plugin.cFormatting("game-to-irc." + formatting, trgBot, trgChannel);
+		if (source == EndPoint.IRC && (target == EndPoint.IRC || target == EndPoint.BOTH && realTarget == EndPoint.IRC))
+			result = this.plugin.cFormatting("irc-to-irc." + formatting, trgBot, trgChannel);
+		if (source == EndPoint.IRC && (target == EndPoint.GAME || target == EndPoint.BOTH && realTarget == EndPoint.GAME)) {
 			//Colors in chat
 			if (this.plugin.cChanChatColors(srcBot, srcChannel)) {
 				msgout = msgout.replaceAll("(" + Character.toString((char) 2) + "|" + Character.toString((char) 22)
 						+ "|" + Character.toString((char) 31) + ")", "");
-				msgout = msgout.replaceAll(Character.toString((char) 15), this.plugin.cColorGameFromName("foreground"));
 				Pattern color_codes = Pattern.compile(Character.toString((char) 3) + "([01]?[0-9])(,[0-9]{0,2})?");
 				Matcher find_colors = color_codes.matcher(msgout);
 				while (find_colors.find()) {
 					msgout = find_colors.replaceFirst(this.plugin.cColorGameFromIrc(Integer.parseInt(find_colors.group(1))));
 					find_colors = color_codes.matcher(msgout);
 				}
+				msgout = msgout.replaceAll(Character.toString((char) 15) + "|" + Character.toString((char) 3), this.plugin.cColorGameFromName("foreground"));
 			} else {
 				msgout = msgout.replaceAll(
 						"(" + Character.toString((char) 2) + "|" + Character.toString((char) 15) + "|"
@@ -62,13 +83,29 @@ class RelayedMessage {
 								+ Character.toString((char) 3) + "[0-9]{0,2}(,[0-9]{0,2})?)", "");
 			}
 			msgout = msgout + " ";
-			result = this.plugin.cFormatting(formatting, srcBot, srcChannel);
+			result = this.plugin.cFormatting("irc-to-game." + formatting, srcBot, srcChannel);
 		}
 		result = result.replaceAll("%sender%", sender);
 		result = result.replaceAll("%message%", msgout);
 		result = result.replaceAll("%moderator%", moderator);
 		result = result.replaceAll("%srcChannel%", srcChannel);
 		result = result.replaceAll("%trgChannel%", trgChannel);
+		if (source == EndPoint.GAME && this.plugin.hasPerms() && this.plugin.cChanNameColors(trgBot, trgChannel)) {
+			result = result.replaceAll("%prefix%", this.plugin.getPermPrefix(sender));
+			result = result.replaceAll("%suffix%", this.plugin.getPermSuffix(sender));
+			if (!moderator.equals("")) {
+				result = result.replaceAll("%modPrefix%", this.plugin.getPermPrefix(moderator));
+				result = result.replaceAll("%modSuffix%", this.plugin.getPermSuffix(moderator));
+			} else {
+				result = result.replaceAll("%modPrefix%", "");
+				result = result.replaceAll("%modSuffix%", "");
+			}
+		} else {
+			result = result.replaceAll("%prefix%", "");
+			result = result.replaceAll("%suffix%", "");
+			result = result.replaceAll("%modPrefix%", "");
+			result = result.replaceAll("%modSuffix%", "");
+		}
 		return result;
 	}
 	
