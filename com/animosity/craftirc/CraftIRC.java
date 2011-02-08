@@ -263,7 +263,7 @@ public class CraftIRC extends JavaPlugin {
             result = getConfiguration().getString("settings.formatting." + eventType, "MESSAGE FORMATTING MISSING");
         else
             result = source.getString("formatting." + eventType);
-        return result.replaceAll("%k([0-9]{1,2})%", Character.toString((char) 3) + "$1").replaceAll("%o%", Character.toString((char) 15));
+        return result;
     }
 
     public boolean cEvents(String eventType, int bot, String channel) {

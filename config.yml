@@ -27,7 +27,8 @@ settings:
     ####  scope (within a formatting: block). In irc-to-irc, the target channel controls the format strings.
     game-to-irc:
       #NOTE: If you have Permissions, you can use %suffix% and %prefix% here! For the moderator's suffix and prefix, use
-      #        %modSuffix% and %modPrefix%.
+      #        %modSuffix% and %modPrefix%. You can also simulate IRC color codes using %kNUM% where NUM is 0 to 15 or
+      #        %o% to go back to the user's default color.
       chat: '(%player%) %message%'
       action: '* %player% %message%'
       joins: '[%player% connected]'

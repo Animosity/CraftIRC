@@ -85,6 +85,13 @@ class RelayedMessage {
 			msgout = msgout + " ";
 			result = this.plugin.cFormatting("irc-to-game." + formatting, srcBot, srcChannel);
 		}
+		result = result.replaceAll("%k([0-9]{1,2})%", Character.toString((char) 3) + "$1");
+		result = result.replaceAll("%k([0-9]{1,2}),([0-9]{1,2})%", Character.toString((char) 3) + "$1,$2");
+		result = result.replaceAll("%k%", Character.toString((char) 3));
+		result = result.replaceAll("%o%", Character.toString((char) 15));
+		result = result.replaceAll("%b%", Character.toString((char) 2));
+		result = result.replaceAll("%u%", Character.toString((char) 31));
+		result = result.replaceAll("%r%", Character.toString((char) 22));
 		result = result.replaceAll("%sender%", sender);
 		result = result.replaceAll("%message%", msgout);
 		result = result.replaceAll("%moderator%", moderator);
@@ -105,6 +112,15 @@ class RelayedMessage {
 			result = result.replaceAll("%suffix%", "");
 			result = result.replaceAll("%modPrefix%", "");
 			result = result.replaceAll("%modSuffix%", "");
+		}
+		Pattern other_vars = Pattern.compile("%([A-Za-z0-9]+)%");
+		Matcher find_vars = other_vars.matcher(result);
+		while (find_vars.find()) {
+			if (target == EndPoint.IRC || target == EndPoint.BOTH && realTarget == EndPoint.IRC)
+				result = find_vars.replaceFirst(Character.toString((char) 3) + String.format("%02d", this.plugin.cColorIrcFromName(find_vars.group(1))));
+			if (target == EndPoint.GAME || target == EndPoint.BOTH && realTarget == EndPoint.GAME)
+				result = find_vars.replaceFirst(this.plugin.cColorGameFromName(find_vars.group(1)));
+			find_vars = other_vars.matcher(result);
 		}
 		return result;
 	}
