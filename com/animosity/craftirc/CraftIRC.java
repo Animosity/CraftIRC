@@ -8,10 +8,9 @@ import java.util.Iterator;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.bukkit.Server;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -123,59 +122,37 @@ public class CraftIRC extends JavaPlugin {
 
         log.info(NAME + " Disabled.");
     }
-
     
-    public HashMap<String,String> initFormatParams() {
-        HashMap<String,String> formatParams = new HashMap<String,String>();
-        formatParams.put("player", "");
-        formatParams.put("message", "");
-        formatParams.put("server", "");
-        formatParams.put("nickname", "");
-        formatParams.put("moderator", "");
-        formatParams.put("channel", "");
-        
-        return formatParams;
-        
+    public RelayedMessage newMsg(EndPoint source, EndPoint target) {
+    	return new RelayedMessage(this, source, target);
     }
     
-    public void sendMessage(Minebot source, HashMap<String,String> formatParams, String tag, String event) {
-        for (int i = 0; i < bots.size(); i++) {
-            ArrayList<String> chans = cBotChannels(i);
-            Iterator<String> it = chans.iterator();
-            while (it.hasNext()) {
-                String chan = it.next();
-                // Intra-relay between bots -- currently not formatted!
-                if (source == null || instances.get(i) != source) { instances.get(i).sendMessage(chan, formatParams.get("message")); }
-                // Send to all bots, channels with event enabled
-                if ((tag == null || cChanCheckTag(tag, i, chan)) && (event == null || cEvents(event, i, chan))) {
-                    //String message = this.cFormatting(event, i, formatParams.get("channel"));
-                    
-                    // Need to determine which formatter to use... please find a better way!
-                    String message = (event.substring(0,event.lastIndexOf(".")).equalsIgnoreCase("game-to-irc")) 
-                        ? this.formatGameToIRC(this.cFormatting(event, i, formatParams.get("channel")), formatParams)
-                        : this.formatIRCToGame(this.cFormatting(event, i, formatParams.get("channel")), formatParams);
-                    instances.get(i).sendMessage(chan, message);
-                }
-            }
-        }
-    }
-    
-    public String formatGameToIRC(String formatStyle, HashMap<String,String> params) {
-        String formattedMsg = formatStyle;
-        formattedMsg = formattedMsg.replaceAll("%player%", params.get("player"));
-        formattedMsg = formattedMsg.replaceAll("%moderator%", params.get("moderator"));
-        formattedMsg = formattedMsg.replaceAll("%message%", params.get("message"));
-        return formattedMsg;
-    }
-    
-
-    public String formatIRCToGame(String formatStyle, HashMap<String,String> params) {
-        String formattedMsg = formatStyle;
-        formattedMsg = formattedMsg.replaceAll("%server%", params.get("server"));
-        formattedMsg = formattedMsg.replaceAll("%channel%", params.get("channel"));
-        formattedMsg = formattedMsg.replaceAll("%nickname%", params.get("nickname"));
-        formattedMsg = formattedMsg.replaceAll("%message%", params.get("message"));
-        return formattedMsg;
+    public void sendMessage(RelayedMessage msg, String tag, String event) {
+    	if (msg.target == EndPoint.IRC) {
+	        for (int i = 0; i < bots.size(); i++) {
+	            ArrayList<String> chans = cBotChannels(i);
+	            Iterator<String> it = chans.iterator();
+	            while (it.hasNext()) {
+	                String chan = it.next();
+	                // Don't echo back to sending channel
+	                if (msg.source == EndPoint.IRC && msg.srcBot == i && msg.srcChannel.equals(chan)) continue;
+	                // Send to all bots, channels with event enabled
+	                if ((tag == null || cChanCheckTag(tag, i, chan)) && (event == null || cEvents(event, i, chan))) {
+	                	msg.trgBot = i;
+	                	msg.trgChannel = chan;
+	                    instances.get(i).sendMessage(chan, msg.toString());
+	                }
+	            }
+	        }
+    	}
+    	if (msg.target == EndPoint.GAME && msg.source == EndPoint.IRC) {
+    		if ((tag == null || cChanCheckTag(tag, msg.srcBot, msg.srcChannel)) && (event == null || cEvents(event, msg.srcBot, msg.srcChannel))) {
+    			for (Player pl: getServer().getOnlinePlayers()) {
+    				if (pl != null)
+    					pl.sendMessage(msg.toString());
+    			}
+    		}
+    	}
     }
 
     public ArrayList<String> ircUserLists(String tag) {
