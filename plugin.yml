@@ -5,9 +5,15 @@ commands:
   irc:
     description: Sends a message to all IRC channels
     usage: /<command> [msg]
+  ircm:
+    description: Send IRC message to tag (use command '/irctags' for listing)
+    usage: /<command> [tag] [msg]
   ircw:
     description: PM an IRC user
     usage: /<command> [player] [msg]
   ircwho:
     description: Lists users in an IRC channel
     usage: /<command> [channel]
+  admins!:
+    description: Sends notice to admins on IRC
+    usage: /<command> [msg]
