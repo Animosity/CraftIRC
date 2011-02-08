@@ -1109,6 +1109,12 @@ public abstract class PircBot implements ReplyConstants, PircBotLogger {
 			// Someone is sending a notice.
 			this.onNotice(sourceNick, sourceLogin, sourceHostname, target, line.substring(line.indexOf(" :") + 2));
 		} else if (command.equals("QUIT")) {
+			// ADDED BY Protected FOR CraftIRC
+			Enumeration enumeration = _channels.keys();
+			while (enumeration.hasMoreElements()) {
+				String channel = (String) enumeration.nextElement();
+				this.onChannelQuit(channel, sourceNick, sourceLogin, sourceHostname, line.substring(line.indexOf(" :") + 2));				
+			}
 			// Someone has quit from the IRC server.
 			if (sourceNick.equals(this.getNick())) {
 				this.removeAllChannels();
@@ -1573,6 +1579,9 @@ public abstract class PircBot implements ReplyConstants, PircBotLogger {
 	 *            The reason given for quitting the server.
 	 */
 	protected void onQuit(String sourceNick, String sourceLogin, String sourceHostname, String reason) {
+	}
+	// ADDED BY Protected FOR CraftIRC
+	protected void onChannelQuit(String channel, String sourceNick, String sourceLogin, String sourceHostname, String reason) {
 	}
 
 	/**
