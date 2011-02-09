@@ -25,28 +25,30 @@ settings:
   formatting:
     #### Formatting for the messages relayed by the plugin. You can override all formatting strings in the bot or channel
     ####  scope (within a formatting: block). In irc-to-irc, the target channel controls the format strings.
+    ####     VARIABLES (may be blank depending on the context): %sender% %message% %moderator% %srcChannel% %trgChannel%
+    ####     IF YOU'RE RUNNING Permissions: %prefix% %suffix% %modPredix% %modSuffix% (game-to-irc only)
+    ####     IRC FORMATTING: %b% %u% %r% %o% %k% %kNUM% (NUM is 0 to 15); Do the same as CTRL+key in mIRC
+    ####     GAME COLORS: §NUM (NUM is 1 to f); Do not use in the end of a line
+    ####     EASY COLORS: Use the names defined in the colormap: block, such as %blue% %foreground% %yellow% etc.
     game-to-irc:
-      #NOTE: If you have Permissions, you can use %suffix% and %prefix% here! For the moderator's suffix and prefix, use
-      #        %modSuffix% and %modPrefix%. You can also simulate IRC color codes using %kNUM% where NUM is 0 to 15 or
-      #        %o% to go back to the user's default color.
-      chat: '(%player%) %message%'
-      action: '* %player% %message%'
-      joins: '[%player% connected]'
-      quits: '[%player% disconnected]'
-      kicks: '[%moderator% KICKED %player%]'
-      bans: '[%moderator% BANNED %player%]'
+      chat: '(%sender%) %message%'
+      action: '* %sender% %message%'
+      joins: '[%sender% connected]'
+      quits: '[%sender% disconnected]'
+      kicks: '[%moderator% KICKED %sender% (%message%)]'
+      bans: '[%moderator% BANNED %sender% (%message%)]'
     irc-to-game:
-      chat: '[IRC] <%nickname%@%channel%> %message%'
-      action: '[IRC] * %player% %message%'
-      joins: '[IRC] %player% joined %channel%'
-      parts: '[IRC] %player% left %channel%'
-      quits: '[IRC] %player% quit'
+      chat: '[%srcChannel%] <%sender%> %message%'
+      action: '[%srcChannel%] * %sender% %message%'
+      joins: '[%srcChannel%] * Joins: %sender%'
+      parts: '[%srcChannel%] * Parts: %sender%'
+      quits: '[%srcChannel%] * Quits: %sender%'
     irc-to-irc:
-      chat: '[IRC] <%nickname%@%channel%> %message%'
-      action: '[IRC] * %player% %message%'
-      joins: '[IRC] %player% joined %channel%'
-      parts: '[IRC] %player% left %channel%'
-      quits: '[IRC] %player% quit'
+      chat: '[%srcChannel%] <%sender%> %message%'
+      action: '[%srcChannel%] * %sender% %message%'
+      joins: '[%srcChannel%] * Joins: %sender%'
+      parts: '[%srcChannel%] * Parts: %sender%'
+      quits: '[%srcChannel%] * Quits: %sender% (%message%)'
       
   events:
     #### Turn different types of messages on and off here. cancelled-chat only exists in the global scope; The remaining
