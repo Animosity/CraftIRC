@@ -59,7 +59,8 @@ class RelayedMessage {
 	public String asString(EndPoint realTarget) {
 		String result = "";
 		String msgout = message;
-		if (formatting == null) return "NO FORMATTING SPECIFIED.";
+		// Unfriendly to events which do not want full formatting
+		// if (formatting == null) return "NO FORMATTING SPECIFIED."; 
 		if (source == EndPoint.GAME && target == EndPoint.IRC)
 			result = this.plugin.cFormatting("game-to-irc." + formatting, trgBot, trgChannel);
 		if (source == EndPoint.IRC && (target == EndPoint.IRC || target == EndPoint.BOTH && realTarget == EndPoint.IRC))

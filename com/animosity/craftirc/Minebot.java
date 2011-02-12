@@ -260,6 +260,8 @@ public class Minebot extends PircBot implements Runnable {
 			} // End admin commands
 
 			// Begin public commands
+			
+			// IRCEvent - COMMAND
 			 Event ie = new IRCEvent(this, IRCEvent.Mode.COMMAND, this.ircServer, channel, sender, message.replaceFirst(this.cmdPrefix, ""));
              this.plugin.getServer().getPluginManager().callEvent(ie);
 			

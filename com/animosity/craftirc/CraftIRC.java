@@ -139,16 +139,16 @@ public class CraftIRC extends JavaPlugin {
         log.info(NAME + " Disabled.");
     }
     
-    public RelayedMessage newMsg(EndPoint source, EndPoint target) {
+    protected RelayedMessage newMsg(EndPoint source, EndPoint target) {
     	return new RelayedMessage(this, source, target);
     }
     
-    public void sendMessage(RelayedMessage msg, String tag, String event) {
+    protected void sendMessage(RelayedMessage msg, String tag, String event) {
     	String realEvent = event;
     	//Send to IRC
     	if (msg.getTarget() == EndPoint.IRC || msg.getTarget() == EndPoint.BOTH) {
     		if (msg.getSource() == EndPoint.IRC) realEvent = "irc-to-irc." + event;
-    		if (msg.getSource() == EndPoint.GAME) realEvent = "game-to-irc." + event;
+    	    if (msg.getSource() == EndPoint.GAME) realEvent = "game-to-irc." + event;
 	        for (int i = 0; i < bots.size(); i++) {
 	            ArrayList<String> chans = cBotChannels(i);
 	            Iterator<String> it = chans.iterator();
@@ -158,15 +158,16 @@ public class CraftIRC extends JavaPlugin {
 	                if (msg.getSource() == EndPoint.IRC && msg.srcBot == i && msg.srcChannel.equals(chan)) continue;
 	                // Send to all bots, channels with event enabled
 	                if ((tag == null || cChanCheckTag(tag, i, chan)) && (event == null || cEvents(realEvent, i, chan))) {
-	                	msg.trgBot = i;
-	                	msg.trgChannel = chan;
-	                	if (msg.getTarget() == EndPoint.BOTH)
-	                		instances.get(i).sendMessage(chan, msg.asString(EndPoint.IRC));
-	                	else instances.get(i).sendMessage(chan, msg.asString());
+	                    msg.trgBot = i;
+	                    msg.trgChannel = chan;
+	                    if (msg.getTarget() == EndPoint.BOTH)
+	                            instances.get(i).sendMessage(chan, msg.asString(EndPoint.IRC));
+	                    else instances.get(i).sendMessage(chan, msg.asString());
 	                }
 	            }
 	        }
     	}
+    	
     	//Send to game (doesn't allow game to game)
     	if ((msg.getTarget() == EndPoint.GAME || msg.getTarget() == EndPoint.BOTH) && msg.getSource() == EndPoint.IRC) {
     		realEvent = "irc-to-game." + event;
@@ -182,6 +183,11 @@ public class CraftIRC extends JavaPlugin {
     	}
     }
 
+    public void sendMessageToTag(String message, String tag) {
+        RelayedMessage rm = newMsg(EndPoint.UNKNOWN, EndPoint.IRC);
+        this.sendMessage(rm, tag, null);
+    }
+    
     public ArrayList<String> ircUserLists(String tag) {
         ArrayList<String> result = new ArrayList<String>();
         if (tag == null)
@@ -233,27 +239,27 @@ public class CraftIRC extends JavaPlugin {
         return null;
     }
 
-    public boolean cDebug() {
+    protected boolean cDebug() {
         return getConfiguration().getBoolean("settings.debug", false);
     }
 
-    public String cAdminsCmd() {
+    protected String cAdminsCmd() {
         return getConfiguration().getString("settings.admins-cmd", "/admins!");
     }
 
-    public ArrayList<String> cConsoleCommands() {
+    protected ArrayList<String> cConsoleCommands() {
         return new ArrayList<String>(getConfiguration().getStringList("settings.console-commands", null));
     }
 
-    public ArrayList<String> cIgnoredPrefixes(String source) {
+    protected ArrayList<String> cIgnoredPrefixes(String source) {
         return new ArrayList<String>(getConfiguration().getStringList("settings.ignored-prefixes." + source, null));
     }
 
-    public int cHold(String eventType) {
+    protected int cHold(String eventType) {
         return getConfiguration().getInt("settings.hold-after-enable." + eventType, 0);
     }
 
-    public String cFormatting(String eventType, int bot, String channel) {
+    protected String cFormatting(String eventType, int bot, String channel) {
         eventType = (eventType.equals("game-to-irc.all-chat") ? "formatting.chat" : eventType);
         ConfigurationNode source = getChanNode(bot, channel);
         String result;
@@ -266,7 +272,7 @@ public class CraftIRC extends JavaPlugin {
         return result;
     }
 
-    public boolean cEvents(String eventType, int bot, String channel) {
+    protected boolean cEvents(String eventType, int bot, String channel) {
         ConfigurationNode source = null;
         boolean def = (eventType.equalsIgnoreCase("game-to-irc.all-chat")
                 || eventType.equalsIgnoreCase("irc-to-game.all-chat") ? false : true);
@@ -280,7 +286,7 @@ public class CraftIRC extends JavaPlugin {
             return source.getBoolean("events." + eventType, false);
     }
 
-    public int cColorIrcFromGame(String game) {
+    protected int cColorIrcFromGame(String game) {
         ConfigurationNode color;
         Iterator<ConfigurationNode> it = colormap.iterator();
         while (it.hasNext()) {
@@ -291,7 +297,7 @@ public class CraftIRC extends JavaPlugin {
         return cColorIrcFromName("foreground");
     }
 
-    public int cColorIrcFromName(String name) {
+    protected int cColorIrcFromName(String name) {
         ConfigurationNode color;
         Iterator<ConfigurationNode> it = colormap.iterator();
         while (it.hasNext()) {
@@ -305,7 +311,7 @@ public class CraftIRC extends JavaPlugin {
             return cColorIrcFromName("foreground");
     }
 
-    public String cColorGameFromIrc(int irc) {
+    protected String cColorGameFromIrc(int irc) {
         ConfigurationNode color;
         Iterator<ConfigurationNode> it = colormap.iterator();
         while (it.hasNext()) {
@@ -316,7 +322,7 @@ public class CraftIRC extends JavaPlugin {
         return cColorGameFromName("foreground");
     }
 
-    public String cColorGameFromName(String name) {
+    protected String cColorGameFromName(String name) {
         ConfigurationNode color;
         Iterator<ConfigurationNode> it = colormap.iterator();
         while (it.hasNext()) {
@@ -330,95 +336,96 @@ public class CraftIRC extends JavaPlugin {
             return cColorGameFromName("foreground");
     }
 
-    public ArrayList<String> cBotChannels(int bot) {
+    protected ArrayList<String> cBotChannels(int bot) {
         return channames.get(bot);
     }
 
-    public String cBotNickname(int bot) {
+    protected String cBotNickname(int bot) {
         return bots.get(bot).getString("nickname", "CraftIRCbot");
     }
 
-    public String cBotServer(int bot) {
+    protected String cBotServer(int bot) {
         return bots.get(bot).getString("server", "irc.esper.net");
     }
 
-    public int cBotPort(int bot) {
+    protected int cBotPort(int bot) {
         return bots.get(bot).getInt("port", 6667);
     }
 
-    public String cBotLogin(int bot) {
+    protected String cBotLogin(int bot) {
         return bots.get(bot).getString("userident", "");
     }
 
-    public String cBotPassword(int bot) {
+    protected String cBotPassword(int bot) {
         return bots.get(bot).getString("serverpass", "");
     }
 
-    public boolean cBotSsl(int bot) {
+    protected boolean cBotSsl(int bot) {
         return bots.get(bot).getBoolean("ssl", false);
     }
 
-    public int cBotTimeout(int bot) {
+    protected int cBotTimeout(int bot) {
         return bots.get(bot).getInt("timeout", 5000);
     }
 
-    public int cBotMessageDelay(int bot) {
+    protected int cBotMessageDelay(int bot) {
         return bots.get(bot).getInt("message-delay", 1000);
     }
 
-    public String cCommandPrefix(int bot) {
+    protected String cCommandPrefix(int bot) {
         return bots.get(bot).getString("command-prefix", getConfiguration().getString("settings.command-prefix", "."));
     }
 
-    public ArrayList<String> cBotAdminPrefixes(int bot) {
+    protected ArrayList<String> cBotAdminPrefixes(int bot) {
         return new ArrayList<String>(bots.get(bot).getStringList("admin-prefixes", null));
     }
 
-    public ArrayList<String> cBotIgnoredUsers(int bot) {
+    protected ArrayList<String> cBotIgnoredUsers(int bot) {
         return new ArrayList<String>(bots.get(bot).getStringList("ignored-users", null));
     }
 
-    public String cBotAuthMethod(int bot) {
+    protected String cBotAuthMethod(int bot) {
         return bots.get(bot).getString("auth.method", "nickserv");
     }
 
-    public String cBotAuthUsername(int bot) {
+    protected String cBotAuthUsername(int bot) {
         return bots.get(bot).getString("auth.username", "");
     }
 
-    public String cBotAuthPassword(int bot) {
+    protected String cBotAuthPassword(int bot) {
         return bots.get(bot).getString("auth.password", "");
     }
 
-    public ArrayList<String> cBotOnConnect(int bot) {
+    protected ArrayList<String> cBotOnConnect(int bot) {
         return new ArrayList<String>(bots.get(bot).getStringList("on-connect", null));
     }
 
-    public String cChanName(int bot, String channel) {
+    protected String cChanName(int bot, String channel) {
         return getChanNode(bot, channel).getString("name", "#changeme");
     }
 
-    public String cChanPassword(int bot, String channel) {
+    protected String cChanPassword(int bot, String channel) {
         return getChanNode(bot, channel).getString("password", "");
     }
 
-    public boolean cChanAdmin(int bot, String channel) {
+    protected boolean cChanAdmin(int bot, String channel) {
         return getChanNode(bot, channel).getBoolean("admin", false);
     }
 
-    public ArrayList<String> cChanOnJoin(int bot, String channel) {
+    protected ArrayList<String> cChanOnJoin(int bot, String channel) {
         return new ArrayList<String>(getChanNode(bot, channel).getStringList("on-join", null));
     }
 
-    public boolean cChanChatColors(int bot, String channel) {
+    protected boolean cChanChatColors(int bot, String channel) {
         return getChanNode(bot, channel).getBoolean("chat-colors", true);
     }
 
-    public boolean cChanNameColors(int bot, String channel) {
+    protected boolean cChanNameColors(int bot, String channel) {
         return getChanNode(bot, channel).getBoolean("name-colors", true);
     }
 
-    public boolean cChanCheckTag(String tag, int bot, String channel) {
+    // Check to see if channel tag exists on a bot
+    protected boolean cChanCheckTag(String tag, int bot, String channel) {
         if (tag == null || tag.equals(""))
             return false;
         if (getConfiguration().getString("settings.tag", "all").equalsIgnoreCase(tag))
@@ -447,28 +454,28 @@ public class CraftIRC extends JavaPlugin {
 		}
 	}
 	
-	public boolean isHeld(HoldType ht) {
+	protected boolean isHeld(HoldType ht) {
 		return hold.get(ht);
 	}
 	
-	public boolean hasPerms() {
+	protected boolean hasPerms() {
 		return perms != null;
 	}
 	
-	public boolean checkPerms(Player pl, String path) {
+	protected boolean checkPerms(Player pl, String path) {
 		if (perms == null) return true;
 		if (pl != null) return perms.has(pl, path);
 		return false;
 	}
 	
-	public boolean checkPerms(String pl, String path) {
+	protected boolean checkPerms(String pl, String path) {
 		if (perms == null) return true;
 		Player pit = getServer().getPlayer(pl);
 		if (pit != null) return perms.has(pit, path);
 		return false;
 	}
 	
-	public String colorizeName(String name) {
+	protected String colorizeName(String name) {
 		Pattern color_codes = Pattern.compile("§[0-9a-f]");
 		Matcher find_colors = color_codes.matcher(name);
 		while (find_colors.find()) {
@@ -478,7 +485,7 @@ public class CraftIRC extends JavaPlugin {
 		return name;
 	}
 		
-	public String getPermPrefix(String pl) {
+	protected String getPermPrefix(String pl) {
 		if (perms == null) return "";
 		String group = perms.getGroup(pl);
 		if (group == null) return "";
@@ -487,7 +494,7 @@ public class CraftIRC extends JavaPlugin {
 		return colorizeName(result.replaceAll("&([0-9a-f])", "§$1"));
 	}
 	
-	public String getPermSuffix(String pl) {
+	protected String getPermSuffix(String pl) {
 		if (perms == null) return "";
 		String group = perms.getGroup(pl);
 		if (group == null) return "";
