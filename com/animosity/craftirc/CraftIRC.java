@@ -34,6 +34,10 @@ import com.nijiko.permissions.PermissionHandler;
  * @author Protected
  */
 
+/**
+ * @author Animosity
+ *
+ */
 public class CraftIRC extends JavaPlugin {
     public static final String NAME = "CraftIRC";
     public static String VERSION;
@@ -183,12 +187,19 @@ public class CraftIRC extends JavaPlugin {
     	}
     }
 
-    public void sendMessageToTag(String message, String tag) {
-        RelayedMessage rm = newMsg(EndPoint.UNKNOWN, EndPoint.IRC);
+    
+    /** CraftIRC API call - plgn_sendMessageToTag()
+     * Sends a message to an IRC tag
+     * @param message (String) - The message string to send to IRC, this will pass through CraftIRC formatter
+     * 
+     * @param tag (String) - The IRC target tag to receive the message
+     */
+    public void plgn_sendMessageToTag(String message, String tag) {
+        RelayedMessage rm = newMsg(EndPoint.PLUGIN, EndPoint.IRC);
         this.sendMessage(rm, tag, null);
     }
     
-    public ArrayList<String> ircUserLists(String tag) {
+    protected ArrayList<String> ircUserLists(String tag) {
         ArrayList<String> result = new ArrayList<String>();
         if (tag == null)
             return result;
@@ -204,7 +215,7 @@ public class CraftIRC extends JavaPlugin {
         return result;
     }
 
-    public void noticeAdmins(String message) {
+    protected void noticeAdmins(String message) {
         for (int i = 0; i < bots.size(); i++) {
             ArrayList<String> chans = cBotChannels(i);
             Iterator<String> it = chans.iterator();

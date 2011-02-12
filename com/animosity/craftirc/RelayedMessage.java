@@ -7,7 +7,8 @@ enum EndPoint {
 	UNKNOWN,	//Can be used as placeholder for an unknown endpoint
 	GAME,		//The game server
 	IRC,		//An IRC channel; Further information provided by srcBot/Channel (if source) or trgBot/Channel (if target)
-	BOTH		//Message to be delivered to both the game server and IRC channels (don't use as source, target only)
+	BOTH,       //TARGET only: Message to be delivered to both the game server and IRC channels (don't use as source, target only)
+	PLUGIN      //SOURCE only: 
 }
 
 class RelayedMessage {
@@ -61,6 +62,7 @@ class RelayedMessage {
 		String msgout = message;
 		// Unfriendly to events which do not want full formatting
 		// if (formatting == null) return "NO FORMATTING SPECIFIED."; 
+		if (source == EndPoint.PLUGIN) result = this.message;
 		if (source == EndPoint.GAME && target == EndPoint.IRC)
 			result = this.plugin.cFormatting("game-to-irc." + formatting, trgBot, trgChannel);
 		if (source == EndPoint.IRC && (target == EndPoint.IRC || target == EndPoint.BOTH && realTarget == EndPoint.IRC))
