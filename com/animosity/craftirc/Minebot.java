@@ -11,7 +11,9 @@ import org.jibble.pircbot.*;
 import org.bukkit.ChatColor;
 import org.bukkit.event.Event;
 import com.animosity.craftirc.CraftIRC;
+import com.animosity.craftirc.IRCEvent.Mode;
 import com.animosity.craftirc.Util;
+import com.animosity.craftirc.IRCEvent;
 
 /**
  * @author Animosity
@@ -171,6 +173,11 @@ public class Minebot extends PircBot implements Runnable {
 			    msg.srcBot = botId;
 			    msg.srcChannel = channel;
 			    this.plugin.sendMessage(msg, null, "joins");
+			    // PLUGIN INTEROP
+			    msg.setSource(EndPoint.IRC);
+			    msg.setTarget(EndPoint.PLUGIN);
+			    Event ie = new IRCEvent(Mode.JOIN, msg);
+	            this.plugin.getServer().getPluginManager().callEvent(ie);
 			    				
 			}
 		}
@@ -186,6 +193,12 @@ public class Minebot extends PircBot implements Runnable {
 		    msg.message = reason;
 		    this.plugin.sendMessage(msg, null, "parts");
 		    
+            // PLUGIN INTEROP
+            msg.setSource(EndPoint.IRC);
+            msg.setTarget(EndPoint.PLUGIN);
+            Event ie = new IRCEvent(Mode.PART, msg);
+            this.plugin.getServer().getPluginManager().callEvent(ie);
+		    
 		}
 	}
 	
@@ -198,17 +211,34 @@ public class Minebot extends PircBot implements Runnable {
 		    msg.srcChannel = channel;
 		    msg.message = reason;
 		    this.plugin.sendMessage(msg, null, "quits");
+		    
+            // PLUGIN INTEROP
+            msg.setSource(EndPoint.IRC);
+            msg.setTarget(EndPoint.PLUGIN);
+            Event ie = new IRCEvent(Mode.QUIT, msg);
+            this.plugin.getServer().getPluginManager().callEvent(ie);
 		}
 	}
 
 	public void onKick(String channel, String kickerNick, String kickerLogin, String kickerHostname,
 			String recipientNick, String reason) {
-	 // IRCEvent - AUTHED_COMMAND
 		if (recipientNick.equalsIgnoreCase(this.getNick())) {
 			if (this.channels.contains(channel)) {
 				this.joinChannel(channel, this.plugin.cChanPassword(botId, channel));
 			}
 		}
+		RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
+        msg.formatting = "quits";
+        msg.sender = recipientNick;
+        msg.srcBot = botId;
+        msg.srcChannel = channel;
+        msg.message = reason;
+        this.plugin.sendMessage(msg, null, "kicks");
+		// PLUGIN INTEROP
+        msg.setSource(EndPoint.IRC);
+        msg.setTarget(EndPoint.PLUGIN);
+        Event ie = new IRCEvent(Mode.QUIT, msg);
+        this.plugin.getServer().getPluginManager().callEvent(ie);
 	}
 
 	/* (non-Javadoc)
@@ -224,11 +254,21 @@ public class Minebot extends PircBot implements Runnable {
 		try {
 
 			// Parse admin commands here
-			if (userAuthorized(channel, sender)) {
+			if (userAuthorized(channel, sender) && !ircCmdPrefixes.contains(message.substring(0,0))) {
 			    
 			    // IRCEvent - AUTHED_COMMAND
-			    Event ie = new IRCEvent(this, IRCEvent.Mode.AUTHED_COMMAND, this.ircServer, channel, sender, message.replaceFirst(this.cmdPrefix, ""));
-			    this.plugin.getServer().getPluginManager().callEvent(ie);
+                RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
+                msg.formatting = "";
+                msg.sender = sender;
+                msg.srcBot = botId;
+                msg.srcChannel = channel;
+                msg.message = message;
+                // PLUGIN INTEROP
+                msg.setSource(EndPoint.IRC);
+                msg.setTarget(EndPoint.PLUGIN);
+                Event ie = new IRCEvent(Mode.AUTHED_COMMAND, msg);
+                this.plugin.getServer().getPluginManager().callEvent(ie);
+			    
 			    
 				if ((message.startsWith(cmdPrefix + "console ") || message.startsWith(cmdPrefix + "c "))
 						&& splitMessage.length > 1 && this.plugin.cConsoleCommands().contains(splitMessage[1])) {
@@ -237,7 +277,7 @@ public class Minebot extends PircBot implements Runnable {
 
 				}
 
-				if (message.startsWith(cmdPrefix + "botsay ") && splitMessage.length > 1) {
+				else if (message.startsWith(cmdPrefix + "botsay ") && splitMessage.length > 1) {
 					if (this.channels.contains(splitMessage[1])) {
 						command = Util.combineSplit(2, splitMessage, " ");
 						this.sendMessage(splitMessage[1], command);
@@ -251,7 +291,7 @@ public class Minebot extends PircBot implements Runnable {
 					return;
 				}
 
-				if (message.startsWith(cmdPrefix + "raw ") && splitMessage.length > 1) {
+				else if (message.startsWith(cmdPrefix + "raw ") && splitMessage.length > 1) {
 					this.sendRawLine(command);
 					this.sendNotice(sender, "Raw IRC string sent");
 					return;
@@ -261,17 +301,6 @@ public class Minebot extends PircBot implements Runnable {
 
 			// Begin public commands
 			
-			// IRCEvent - COMMAND
-			 Event ie = new IRCEvent(this, IRCEvent.Mode.COMMAND, this.ircServer, channel, sender, message.replaceFirst(this.cmdPrefix, ""));
-             this.plugin.getServer().getPluginManager().callEvent(ie);
-			
-			// .players - list players
-			if (message.equals(cmdPrefix + "players")) {
-				String playerlist = this.getPlayerList();
-				this.sendMessage(channel, playerlist);
-				return;
-			}
-
 			// Send all IRC chatter (no command prefixes or ignored command prefixes)
 			if (!ircCmdPrefixes.contains(message.substring(0,0))) {
 					RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
@@ -281,10 +310,10 @@ public class Minebot extends PircBot implements Runnable {
 				    msg.srcChannel = channel;
 				    msg.message = message;
 				    this.plugin.sendMessage(msg, null, "all-chat");
-				    
 					return;
 			}
 
+			
 			// .say - Send single message to the game
 			if (message.startsWith(cmdPrefix + "say ") || message.startsWith(cmdPrefix + "mc ")) {
 				if (splitMessage.length > 1) {
@@ -298,6 +327,19 @@ public class Minebot extends PircBot implements Runnable {
 					this.sendNotice(sender, "Message sent to game");
 					return;
 				}
+			} else {
+			    // IRCEvent - COMMAND
+                RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
+                msg.formatting = "";
+                msg.sender = sender;
+                msg.srcBot = botId;
+                msg.srcChannel = channel;
+                msg.message = message;
+                // PLUGIN INTEROP
+                msg.setSource(EndPoint.IRC);
+                msg.setTarget(EndPoint.PLUGIN);
+                Event ie = new IRCEvent(Mode.COMMAND, msg);
+                this.plugin.getServer().getPluginManager().callEvent(ie);
 			}
 
 		} catch (Exception e) {
@@ -314,12 +356,24 @@ public class Minebot extends PircBot implements Runnable {
 		String[] splitMessage = message.split(" ");
 		
 		try {
-
 			if (splitMessage.length > 1 && splitMessage[0].equalsIgnoreCase("tell")) {
 				if (plugin.getServer().getPlayer(splitMessage[1]) != null) {
 					this.msgToGame(null, sender, Util.combineSplit(2, splitMessage, " "), messageMode.MSG_PLAYER, splitMessage[1]);
 					this.sendNotice(sender, "Whispered to " + splitMessage[1]);
 				}
+			} else {
+			    // IRCEvent - PRIVMSG
+			    RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
+		        msg.formatting = "quits";
+		        msg.sender = sender;
+		        msg.srcBot = botId;
+		        msg.srcChannel = "";
+		        msg.message = message;
+		        // PLUGIN INTEROP
+		        msg.setSource(EndPoint.IRC);
+		        msg.setTarget(EndPoint.PLUGIN);
+		        Event ie = new IRCEvent(Mode.PRIVMSG, msg);
+		        this.plugin.getServer().getPluginManager().callEvent(ie);
 			}
 
 		} catch (Exception e) {}
@@ -327,16 +381,19 @@ public class Minebot extends PircBot implements Runnable {
 
 	public void onAction(String sender, String login, String hostname, String target, String action) {
 	    // IRCEvent - ACTION
-	    Event ie = new IRCEvent(this, IRCEvent.Mode.ACTION, this.ircServer, target, sender, action);
-        this.plugin.getServer().getPluginManager().callEvent(ie);
-        
-		RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
+	  	RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
 	    msg.formatting = "action";
 	    msg.sender = sender;
 	    msg.srcBot = botId;
 	    msg.srcChannel = target;
 	    msg.message = action;
 	    this.plugin.sendMessage(msg, null, "all-chat");
+
+	    //PLUGIN INTEROP
+        msg.setSource(EndPoint.IRC);
+        msg.setTarget(EndPoint.PLUGIN);
+        Event ie = new IRCEvent(Mode.ACTION, msg);
+        this.plugin.getServer().getPluginManager().callEvent(ie);
 	    		
 	}
 

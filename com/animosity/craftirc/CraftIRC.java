@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -57,6 +59,9 @@ public class CraftIRC extends JavaPlugin {
     private ArrayList<ConfigurationNode> colormap;
     private HashMap<Integer, ArrayList<ConfigurationNode>> channodes;
     private HashMap<Integer, ArrayList<String>> channames;
+    private HashMap<String, Map.Entry<Integer, String>> tagMap;
+    private HashMap<String, Map.Entry<Integer, String>> tagMap;
+    
     
     public CraftIRC(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder, File plugin,
             ClassLoader cLoader) {
@@ -194,10 +199,11 @@ public class CraftIRC extends JavaPlugin {
      * 
      * @param tag (String) - The IRC target tag to receive the message
      */
-    public void plgn_sendMessageToTag(String message, String tag) {
+    public void plgnSendMessageToTag(String message, String tag) {
         RelayedMessage rm = newMsg(EndPoint.PLUGIN, EndPoint.IRC);
         this.sendMessage(rm, tag, null);
     }
+    
     
     protected ArrayList<String> ircUserLists(String tag) {
         ArrayList<String> result = new ArrayList<String>();
