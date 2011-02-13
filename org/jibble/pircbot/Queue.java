@@ -140,6 +140,6 @@ public class Queue {
     }
     
 
-    private Vector _queue = new Vector();
+    private Vector<Object> _queue = new Vector<Object>();
     
 }

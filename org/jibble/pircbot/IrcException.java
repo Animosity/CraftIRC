@@ -24,6 +24,11 @@ package org.jibble.pircbot;
 public class IrcException extends Exception {
     
     /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
      * Constructs a new IrcException.
      *
      * @param e The error message to report.

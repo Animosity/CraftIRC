@@ -144,6 +144,6 @@ public class DccManager {
     
     
     private PircBot _bot;
-    private Vector _awaitingResume = new Vector();
+    private Vector<DccFileTransfer> _awaitingResume = new Vector<DccFileTransfer>();
     
 }

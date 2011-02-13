@@ -1,6 +1,7 @@
 package com.animosity.craftirc;
 
 import java.io.File;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,10 +22,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
-import com.animosity.craftirc.CraftIRCListener;
-import com.animosity.craftirc.Minebot;
-import com.animosity.craftirc.Util;
-
+import org.bukkit.util.config.Configuration;
 import org.bukkit.util.config.ConfigurationNode;
 
 import com.nijikokun.bukkit.Permissions.*;
@@ -59,9 +57,7 @@ public class CraftIRC extends JavaPlugin {
     private ArrayList<ConfigurationNode> colormap;
     private HashMap<Integer, ArrayList<ConfigurationNode>> channodes;
     private HashMap<Integer, ArrayList<String>> channames;
-    private HashMap<String, Map.Entry<Integer, String>> tagMap;
-    private HashMap<String, Map.Entry<Integer, String>> tagMap;
-    
+    private HashMap<String, Map.Entry<Integer, String>> tagMap;    
     
     public CraftIRC(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder, File plugin,
             ClassLoader cLoader) {
@@ -102,7 +98,7 @@ public class CraftIRC extends JavaPlugin {
             //Create bots
             instances = new ArrayList<Minebot>();
             for (int i = 0; i < bots.size(); i++)
-                instances.add(new Minebot(this, i).init());
+                instances.add(new Minebot(this, i).init(cDebug()));
 
             log.info(NAME + " Enabled.");
             
@@ -153,45 +149,54 @@ public class CraftIRC extends JavaPlugin {
     }
     
     protected void sendMessage(RelayedMessage msg, String tag, String event) {
-    	String realEvent = event;
-    	//Send to IRC
-    	if (msg.getTarget() == EndPoint.IRC || msg.getTarget() == EndPoint.BOTH) {
-    		if (msg.getSource() == EndPoint.IRC) realEvent = "irc-to-irc." + event;
-    	    if (msg.getSource() == EndPoint.GAME) realEvent = "game-to-irc." + event;
-	        for (int i = 0; i < bots.size(); i++) {
-	            ArrayList<String> chans = cBotChannels(i);
-	            Iterator<String> it = chans.iterator();
-	            while (it.hasNext()) {
-	                String chan = it.next();
-	                // Don't echo back to sending channel
-	                if (msg.getSource() == EndPoint.IRC && msg.srcBot == i && msg.srcChannel.equals(chan)) continue;
-	                // Send to all bots, channels with event enabled
-	                if ((tag == null || cChanCheckTag(tag, i, chan)) && (event == null || cEvents(realEvent, i, chan))) {
-	                    msg.trgBot = i;
-	                    msg.trgChannel = chan;
-	                    if (msg.getTarget() == EndPoint.BOTH)
-	                            instances.get(i).sendMessage(chan, msg.asString(EndPoint.IRC));
-	                    else instances.get(i).sendMessage(chan, msg.asString());
-	                }
-	            }
-	        }
-    	}
-    	
-    	//Send to game (doesn't allow game to game)
-    	if ((msg.getTarget() == EndPoint.GAME || msg.getTarget() == EndPoint.BOTH) && msg.getSource() == EndPoint.IRC) {
-    		realEvent = "irc-to-game." + event;
-    		if ((tag == null || cChanCheckTag(tag, msg.srcBot, msg.srcChannel)) && (event == null || cEvents(realEvent, msg.srcBot, msg.srcChannel))) {
-    			for (Player pl: getServer().getOnlinePlayers()) {
-    				if (pl != null) {
-    					if (msg.getTarget() == EndPoint.BOTH)
-    						pl.sendMessage(msg.asString(EndPoint.GAME));
-    					else pl.sendMessage(msg.asString());
-    				}
-    			}
-    		}
+    	try {
+	    	String realEvent = event;
+	    	//Send to IRC
+	    	if (msg.getTarget() == EndPoint.IRC || msg.getTarget() == EndPoint.BOTH) {
+	    		if (msg.getSource() == EndPoint.IRC) realEvent = "irc-to-irc." + event;
+	    	    if (msg.getSource() == EndPoint.GAME) realEvent = "game-to-irc." + event;
+		        for (int i = 0; i < bots.size(); i++) {
+		            ArrayList<String> chans = cBotChannels(i);
+		            Iterator<String> it = chans.iterator();
+		            while (it.hasNext()) {
+		                String chan = it.next();
+		                // Don't echo back to sending channel
+		                if (msg.getSource() == EndPoint.IRC && msg.srcBot == i && msg.srcChannel.equals(chan)) continue;
+		                // Send to all bots, channels with event enabled
+		                if ((tag == null || cChanCheckTag(tag, i, chan)) && (event == null || cEvents(realEvent, i, chan))) {
+		                    msg.trgBot = i;
+		                    msg.trgChannel = chan;
+		                    if (msg.getTarget() == EndPoint.BOTH)
+		                            instances.get(i).sendMessage(chan, msg.asString(EndPoint.IRC));
+		                    else instances.get(i).sendMessage(chan, msg.asString());
+		                }
+		            }
+		        }
+	    	}
+	    	
+	    	//Send to game (doesn't allow game to game)
+	    	if ((msg.getTarget() == EndPoint.GAME || msg.getTarget() == EndPoint.BOTH) && msg.getSource() == EndPoint.IRC) {
+	    		realEvent = "irc-to-game." + event;
+	    		if ((tag == null || cChanCheckTag(tag, msg.srcBot, msg.srcChannel)) && (event == null || cEvents(realEvent, msg.srcBot, msg.srcChannel))) {
+	    			for (Player pl: getServer().getOnlinePlayers()) {
+	    				if (pl != null) {
+	    					if (msg.getTarget() == EndPoint.BOTH)
+	    						pl.sendMessage(msg.asString(EndPoint.GAME));
+	    					else pl.sendMessage(msg.asString());
+	    				}
+	    			}
+	    		}
+	    	}
+    	} catch (RelayedMessageException rme) {
+    		log.log(Level.SEVERE, rme.toString());
+    		rme.printStackTrace();
     	}
     }
-
+    
+    protected void sendRawToBot(int bot, String message) {
+    	Minebot target = instances.get(bot);
+    	target.sendRawLineViaQueue(message);
+    }
     
     /** CraftIRC API call - plgn_sendMessageToTag()
      * Sends a message to an IRC tag
@@ -253,7 +258,7 @@ public class CraftIRC extends JavaPlugin {
             if (chan.getString("name").equalsIgnoreCase(channel))
                 return chan;
         }
-        return null;
+        return Configuration.getEmptyNode();
     }
 
     protected boolean cDebug() {
@@ -283,16 +288,16 @@ public class CraftIRC extends JavaPlugin {
         if (source == null || source.getString("formatting." + eventType) == null)
             source = bots.get(bot);
         if (source == null || source.getString("formatting." + eventType) == null)
-            result = getConfiguration().getString("settings.formatting." + eventType, "MESSAGE FORMATTING MISSING");
+            result = getConfiguration().getString("settings.formatting." + eventType, null);
         else
-            result = source.getString("formatting." + eventType);
+            result = source.getString("formatting." + eventType, null);
         return result;
     }
 
     protected boolean cEvents(String eventType, int bot, String channel) {
         ConfigurationNode source = null;
-        boolean def = (eventType.equalsIgnoreCase("game-to-irc.all-chat")
-                || eventType.equalsIgnoreCase("irc-to-game.all-chat") ? false : true);
+        boolean def = eventType.equalsIgnoreCase("game-to-irc.all-chat")
+                || eventType.equalsIgnoreCase("irc-to-game.all-chat");
         if (channel != null)
             source = getChanNode(bot, channel);
         if ((source == null || source.getProperty("events." + eventType) == null) && bot > -1)

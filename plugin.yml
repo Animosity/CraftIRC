@@ -15,5 +15,8 @@ commands:
     description: Lists users in an IRC channel
     usage: /<command> [channel]
   admins!:
-    description: Sends notice to admins on IRC
+    description: Sends a notice to admins on IRC
     usage: /<command> [msg]
+  ircraw:
+    description: Sends a raw line to IRC
+    usage: /<command> [botid] [rawirc]

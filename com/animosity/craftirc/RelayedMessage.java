@@ -18,7 +18,7 @@ class RelayedMessage {
 	private EndPoint target;		//Target endpoint of the message
 	public String formatting;		//Formatting string ID; Mandatory before toString
 	public String sender;			//Sender of the message/Main subject
-	public String message;			//Message or reason
+	public String message;			//Message, reason, target nickname
 	public String moderator;		//Person who kicked or banned, if applicable
 	public String srcChannel;		//Source channel; Mandatory before toString if the origin is IRC
 	public int srcBot;				//Source bot ID; Mandatory before toString if the origin is IRC
@@ -54,15 +54,15 @@ class RelayedMessage {
 		target = ep;
 	}
 	
-	public String asString() {
+	public String asString() throws RelayedMessageException {
 		if (target != EndPoint.BOTH) return asString(target);
 		else return asString(EndPoint.UNKNOWN);
 	}
-	public String asString(EndPoint realTarget) {
+	public String asString(EndPoint realTarget) throws RelayedMessageException {
 		String result = "";
 		String msgout = message;
-		// Unfriendly to events which do not want full formatting
-		// if (formatting == null) return "NO FORMATTING SPECIFIED."; 
+		int formattingBot = trgBot;
+		String formattingChannel = trgChannel;
 		if (source == EndPoint.PLUGIN || target == EndPoint.PLUGIN) 
 		    result = this.message;
 		if (source == EndPoint.GAME && target == EndPoint.IRC)
@@ -88,8 +88,11 @@ class RelayedMessage {
 								+ Character.toString((char) 3) + "[0-9]{0,2}(,[0-9]{0,2})?)", "");
 			}
 			msgout = msgout + " ";
+			formattingBot = srcBot;
+			formattingChannel = srcChannel;
 			result = this.plugin.cFormatting("irc-to-game." + formatting, srcBot, srcChannel);
 		}
+		if (result == null) throw new RelayedMessageException(this);
 		result = result.replaceAll("%k([0-9]{1,2})%", Character.toString((char) 3) + "$1");
 		result = result.replaceAll("%k([0-9]{1,2}),([0-9]{1,2})%", Character.toString((char) 3) + "$1,$2");
 		result = result.replaceAll("%k%", Character.toString((char) 3));
@@ -118,12 +121,16 @@ class RelayedMessage {
 			result = result.replaceAll("%modPrefix%", "");
 			result = result.replaceAll("%modSuffix%", "");
 		}
+		String aux;
 		Pattern other_vars = Pattern.compile("%([A-Za-z0-9]+)%");
 		Matcher find_vars = other_vars.matcher(result);
 		while (find_vars.find()) {
-			if (target == EndPoint.IRC || target == EndPoint.BOTH && realTarget == EndPoint.IRC)
+			aux = this.plugin.cFormatting("custom." + find_vars.group(1), formattingBot, formattingChannel);
+			if (aux != null)
+				result = find_vars.replaceFirst(aux);
+			else if (target == EndPoint.IRC || target == EndPoint.BOTH && realTarget == EndPoint.IRC)
 				result = find_vars.replaceFirst(Character.toString((char) 3) + String.format("%02d", this.plugin.cColorIrcFromName(find_vars.group(1))));
-			if (target == EndPoint.GAME || target == EndPoint.BOTH && realTarget == EndPoint.GAME)
+			else if (target == EndPoint.GAME || target == EndPoint.BOTH && realTarget == EndPoint.GAME)
 				result = find_vars.replaceFirst(this.plugin.cColorGameFromName(find_vars.group(1)));
 			find_vars = other_vars.matcher(result);
 		}

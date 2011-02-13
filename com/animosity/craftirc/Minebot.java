@@ -10,10 +10,8 @@ import org.bukkit.entity.Player;
 import org.jibble.pircbot.*;
 import org.bukkit.ChatColor;
 import org.bukkit.event.Event;
-import com.animosity.craftirc.CraftIRC;
+
 import com.animosity.craftirc.IRCEvent.Mode;
-import com.animosity.craftirc.Util;
-import com.animosity.craftirc.IRCEvent;
 
 /**
  * @author Animosity
@@ -50,7 +48,8 @@ public class Minebot extends PircBot implements Runnable {
 		this.botId = botId;
 	}
 
-	public synchronized Minebot init() {
+	public synchronized Minebot init(boolean debug) {
+		this.setVerbose(debug);
 		this.setMessageDelay(plugin.cBotMessageDelay(botId));
 		this.setName(plugin.cBotNickname(botId));
 		this.setFinger(CraftIRC.NAME + " v" + CraftIRC.VERSION);
@@ -228,17 +227,30 @@ public class Minebot extends PircBot implements Runnable {
 			}
 		}
 		RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
-        msg.formatting = "quits";
+        msg.formatting = "kicks";
         msg.sender = recipientNick;
         msg.srcBot = botId;
         msg.srcChannel = channel;
         msg.message = reason;
+        msg.moderator = kickerNick;
         this.plugin.sendMessage(msg, null, "kicks");
 		// PLUGIN INTEROP
         msg.setSource(EndPoint.IRC);
         msg.setTarget(EndPoint.PLUGIN);
         Event ie = new IRCEvent(Mode.QUIT, msg);
         this.plugin.getServer().getPluginManager().callEvent(ie);
+	}
+	
+	public void onChannelNickChange(String channel, String oldNick, String login, String hostname, String newNick) {
+		if (this.channels.contains(channel)) {
+			RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
+		    msg.formatting = "nicks";
+		    msg.sender = oldNick;
+		    msg.srcBot = botId;
+		    msg.srcChannel = channel;
+		    msg.message = newNick;
+		    this.plugin.sendMessage(msg, null, "nicks");
+		}
 	}
 
 	/* (non-Javadoc)
@@ -514,7 +526,7 @@ public class Minebot extends PircBot implements Runnable {
 
 	@Override
 	public void run() {
-		this.init();
+		this.init(false);
 	}
 
 	private enum messageMode {

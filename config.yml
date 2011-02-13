@@ -43,12 +43,20 @@ settings:
       joins: '[%srcChannel%] * Joins: %sender%'
       parts: '[%srcChannel%] * Parts: %sender%'
       quits: '[%srcChannel%] * Quits: %sender%'
+      kicks: '[%srcChannel%] * %sender% was kicked by %moderator%'
+      nicks: '[%srcChannel%] * %sender% is now known as %message%'
     irc-to-irc:
       chat: '[%srcChannel%] <%sender%> %message%'
       action: '[%srcChannel%] * %sender% %message%'
       joins: '[%srcChannel%] * Joins: %sender%'
       parts: '[%srcChannel%] * Parts: %sender%'
       quits: '[%srcChannel%] * Quits: %sender% (%message%)'
+      kicks: '[%srcChannel%] * %sender% was kicked by %moderator% (%message%)'
+      nicks: '[%srcChannel%] * %sender% is now known as %message%'
+    custom:
+      #Custom blocks define custom variables you can use within formatting strings
+      botname: ''
+      network: ''
       
   events:
     #### Turn different types of messages on and off here. cancelled-chat only exists in the global scope; The remaining
@@ -66,11 +74,15 @@ settings:
       joins: false
       parts: false
       quits: false
+      kicks: false
+      nicks: false
     irc-to-irc:
       all-chat: true
       joins: false
       parts: false
       quits: false
+      kicks: false
+      nicks: false
       
   #Tags allow you to target messages to all the channels within a scope. The global scope contains all channels.
   tag: 'all'
@@ -99,8 +111,13 @@ bots:
     #Tags allow you to target messages to all the channels within a scope.
     tag: 'esper'
     
+    formatting:
+      custom:
+        botname: 'CraftIRCbot'
+        network: 'Esper'
+    
     #Services authentication of the bot's nickname goes here. The username may not be required.
-    #Available methods: 'nickserv', 'gamesurge' and 'quakenet'
+    #Available methods: 'none', 'nickserv', 'gamesurge', 'quakenet'
     auth:
       method: 'nickserv'
       username: ''

@@ -49,6 +49,9 @@ public class CraftIRCListener extends PlayerListener {
 		} else if (commandName.equals("admins!")) {
 			if (permCheck && !this.plugin.checkPerms((Player)sender, "craftirc.admins!")) return true;
 		    return this.cmdNotifyIrcAdmins(sender, args);
+		} else if (commandName.equals("ircraw")) {
+			if (permCheck && !this.plugin.checkPerms((Player)sender, "craftirc.ircraw")) return true;
+			return this.cmdRawIrcCommand(sender, args);
 		} else return false;
 		
 		// Whispering to IRC users
@@ -150,6 +153,12 @@ public class CraftIRCListener extends PlayerListener {
 	        e.printStackTrace();
 	        return false;
 	    }
+	}
+	
+	private boolean cmdRawIrcCommand(CommandSender sender, String[] args) {
+		if (args.length < 2) return false;
+		this.plugin.sendRawToBot(Integer.parseInt(args[0]), Util.combineSplit(1, args, " "));
+		return true;
 	}
 
 	public void onPlayerChat(PlayerChatEvent event) {
