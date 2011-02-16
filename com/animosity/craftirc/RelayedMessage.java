@@ -24,7 +24,7 @@ public class RelayedMessage {
 	public int srcBot;				//Source bot ID; Mandatory before toString if the origin is IRC
 	public String trgChannel;		//Target channel; Mandatory before toString if the target is IRC
 	public int trgBot;				//Target bot ID; Mandatory before toString if the origin is IRC
-	public String srcTag;           //Source tag; Contains the tag of the source, if there is one.
+	public String srcChannelTag;    //Source tag; Contains the tag of the source channel
 	
 	protected RelayedMessage(CraftIRC plugin, EndPoint source, EndPoint target) {
 		this.plugin = plugin;
@@ -38,6 +38,9 @@ public class RelayedMessage {
 		trgChannel = "";
 		srcBot = -1;
 		trgBot = -1;
+		srcChannelTag = plugin.chanTagMap.get(new DualKey(srcBot, srcChannel));
+		if (srcChannelTag == null) srcChannelTag = String.valueOf(this.srcBot) + "_" + srcChannel;
+		
 	}
 	
 	public EndPoint getSource() {

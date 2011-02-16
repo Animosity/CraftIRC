@@ -57,8 +57,8 @@ public class CraftIRC extends JavaPlugin {
     private ArrayList<ConfigurationNode> colormap;
     private HashMap<Integer, ArrayList<ConfigurationNode>> channodes;
     private HashMap<Integer, ArrayList<String>> channames;
-    private HashMap<String, Map.Entry<Integer, String>> tagMap;    
-    
+    protected HashMap<DualKey, String> chanTagMap;
+
     public CraftIRC(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder, File plugin,
             ClassLoader cLoader) {
         super(pluginLoader, instance, desc, folder, plugin, cLoader);
@@ -72,13 +72,18 @@ public class CraftIRC extends JavaPlugin {
         	colormap = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("colormap", null));
         	channodes = new HashMap<Integer, ArrayList<ConfigurationNode>>();
         	channames = new HashMap<Integer, ArrayList<String>>();
-        	//chantags = new HashMap<DualKey, String>();
-        	for (int i = 0; i < bots.size(); i++) {
-        		channodes.put(i, new ArrayList<ConfigurationNode>(bots.get(i).getNodeList("channels", null)));
+        	chanTagMap = new HashMap<DualKey, String>();
+        	for (int botID = 0; botID < bots.size(); botID++) {
+        		channodes.put(botID, new ArrayList<ConfigurationNode>(bots.get(botID).getNodeList("channels", null)));
         		ArrayList<String> cn = new ArrayList<String>();
-        		for (Iterator<ConfigurationNode> it = channodes.get(i).iterator(); it.hasNext(); )
-        			cn.add(it.next().getString("name"));
-        		channames.put(i, cn);
+        		for (Iterator<ConfigurationNode> it = channodes.get(botID).iterator(); it.hasNext(); ) {
+        		    String channelName = it.next().getString("name");
+        		    String channelTag = it.next().getString("tag");
+        		    if (channelTag != null) chanTagMap.put(new DualKey(botID, channelName), channelTag);
+        			cn.add(channelName);
+        			
+        		}
+        		channames.put(botID, cn);
         	}
         	
         	//Permissions
