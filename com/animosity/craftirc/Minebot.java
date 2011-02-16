@@ -173,7 +173,6 @@ public class Minebot extends PircBot implements Runnable {
 			    msg.srcChannel = channel;
 			    this.plugin.sendMessage(msg, null, "joins");
 			    // PLUGIN INTEROP
-			    msg.setSource(EndPoint.IRC);
 			    msg.setTarget(EndPoint.PLUGIN);
 			    Event ie = new IRCEvent(Mode.JOIN, msg);
 	            this.plugin.getServer().getPluginManager().callEvent(ie);
@@ -193,7 +192,6 @@ public class Minebot extends PircBot implements Runnable {
 		    this.plugin.sendMessage(msg, null, "parts");
 		    
             // PLUGIN INTEROP
-            msg.setSource(EndPoint.IRC);
             msg.setTarget(EndPoint.PLUGIN);
             Event ie = new IRCEvent(Mode.PART, msg);
             this.plugin.getServer().getPluginManager().callEvent(ie);
@@ -212,7 +210,6 @@ public class Minebot extends PircBot implements Runnable {
 		    this.plugin.sendMessage(msg, null, "quits");
 		    
             // PLUGIN INTEROP
-            msg.setSource(EndPoint.IRC);
             msg.setTarget(EndPoint.PLUGIN);
             Event ie = new IRCEvent(Mode.QUIT, msg);
             this.plugin.getServer().getPluginManager().callEvent(ie);
@@ -235,7 +232,6 @@ public class Minebot extends PircBot implements Runnable {
         msg.moderator = kickerNick;
         this.plugin.sendMessage(msg, null, "kicks");
 		// PLUGIN INTEROP
-        msg.setSource(EndPoint.IRC);
         msg.setTarget(EndPoint.PLUGIN);
         Event ie = new IRCEvent(Mode.QUIT, msg);
         this.plugin.getServer().getPluginManager().callEvent(ie);
@@ -250,6 +246,8 @@ public class Minebot extends PircBot implements Runnable {
 		    msg.srcChannel = channel;
 		    msg.message = newNick;
 		    this.plugin.sendMessage(msg, null, "nicks");
+		    msg.setTarget(EndPoint.PLUGIN);
+		    
 		}
 	}
 
@@ -339,6 +337,13 @@ public class Minebot extends PircBot implements Runnable {
 					this.sendNotice(sender, "Message sent to game");
 					return;
 				}
+				
+				
+			} else if (message.startsWith(cmdPrefix + "players")) {
+			    String playerListing = this.getPlayerList();
+			    this.sendMessage(channel, playerListing);
+			    return;
+			    
 			} else {
 			    // IRCEvent - COMMAND
                 RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
@@ -348,7 +353,6 @@ public class Minebot extends PircBot implements Runnable {
                 msg.srcChannel = channel;
                 msg.message = message;
                 // PLUGIN INTEROP
-                msg.setSource(EndPoint.IRC);
                 msg.setTarget(EndPoint.PLUGIN);
                 Event ie = new IRCEvent(Mode.COMMAND, msg);
                 this.plugin.getServer().getPluginManager().callEvent(ie);
@@ -382,7 +386,6 @@ public class Minebot extends PircBot implements Runnable {
 		        msg.srcChannel = "";
 		        msg.message = message;
 		        // PLUGIN INTEROP
-		        msg.setSource(EndPoint.IRC);
 		        msg.setTarget(EndPoint.PLUGIN);
 		        Event ie = new IRCEvent(Mode.PRIVMSG, msg);
 		        this.plugin.getServer().getPluginManager().callEvent(ie);
@@ -402,7 +405,6 @@ public class Minebot extends PircBot implements Runnable {
 	    this.plugin.sendMessage(msg, null, "all-chat");
 
 	    //PLUGIN INTEROP
-        msg.setSource(EndPoint.IRC);
         msg.setTarget(EndPoint.PLUGIN);
         Event ie = new IRCEvent(Mode.ACTION, msg);
         this.plugin.getServer().getPluginManager().callEvent(ie);

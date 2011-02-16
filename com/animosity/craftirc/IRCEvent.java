@@ -8,7 +8,8 @@ import org.bukkit.event.Event;
 
 public class IRCEvent extends Event {
     Minebot bot;
-	Mode eventMode;
+	public Mode eventMode;
+	public RelayedMessage msgData;
 	//String server, sender, channel, recipient, message;
 	
 	
@@ -22,20 +23,24 @@ public class IRCEvent extends Event {
 	 * @param message String the message
 	 
 	 */
+	/*
 	protected IRCEvent(Minebot bot, Mode eventMode, String server, String channel, String sender, String message) {
 		super("IRCEvent"); // sets Bukkit event type as CUSTOM_EVENT and name to "IRCEvent"
-		/*
+		
 		this.bot = bot;
 		this.eventMode = eventMode;
 		this.server = server;
 	    this.channel = channel;
 		this.sender = sender;
 		this.message = message;
-		*/
+		
 	}
+	*/
 	
 	protected IRCEvent(Mode mode, RelayedMessage message) {
 	    super("IRCEvent");
+	    this.eventMode = mode;
+	    this.msgData = message;
 	    
 	}
 	

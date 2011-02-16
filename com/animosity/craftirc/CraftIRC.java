@@ -72,6 +72,7 @@ public class CraftIRC extends JavaPlugin {
         	colormap = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("colormap", null));
         	channodes = new HashMap<Integer, ArrayList<ConfigurationNode>>();
         	channames = new HashMap<Integer, ArrayList<String>>();
+        	//chantags = new HashMap<DualKey, String>();
         	for (int i = 0; i < bots.size(); i++) {
         		channodes.put(i, new ArrayList<ConfigurationNode>(bots.get(i).getNodeList("channels", null)));
         		ArrayList<String> cn = new ArrayList<String>();
@@ -198,7 +199,7 @@ public class CraftIRC extends JavaPlugin {
     	target.sendRawLineViaQueue(message);
     }
     
-    /** CraftIRC API call - plgn_sendMessageToTag()
+    /** CraftIRC API call - plgnSendMessageToTag()
      * Sends a message to an IRC tag
      * @param message (String) - The message string to send to IRC, this will pass through CraftIRC formatter
      * 

@@ -11,7 +11,7 @@ enum EndPoint {
 	PLUGIN      //For plugin interop
 }
 
-class RelayedMessage {
+public class RelayedMessage {
 	
 	private CraftIRC plugin;
 	private EndPoint source;		//Origin endpoint of the message
