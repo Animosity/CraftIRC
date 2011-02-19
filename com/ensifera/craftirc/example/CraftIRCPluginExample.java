@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.ensifera.craftirc.CraftIRCPluginExample;
+package com.ensifera.craftirc.example;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -40,6 +40,7 @@ public class CraftIRCPluginExample extends JavaPlugin {
             getServer().getPluginManager().disablePlugin(((org.bukkit.plugin.Plugin) (this)));
         } else {
             try {
+               log.info("CraftIRCPluginExample loading...");
                // Get handle to CraftIRC, add&register your custom listener
                craftircHandle = (CraftIRC)checkplugin;
                ircListener = new CraftIRCPluginExampleListener(craftircHandle);

@@ -39,7 +39,7 @@ public class RelayedMessage {
 		srcBot = -1;
 		trgBot = -1;
 		srcChannelTag = plugin.chanTagMap.get(new DualKey(srcBot, srcChannel));
-		if (srcChannelTag == null) srcChannelTag = String.valueOf(this.srcBot) + "_" + srcChannel;
+		//if (srcChannelTag == null) srcChannelTag = String.valueOf(this.srcBot) + "_" + srcChannel; 
 		
 	}
 	

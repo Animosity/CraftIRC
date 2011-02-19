@@ -1,7 +1,8 @@
 /**
  * 
  */
-package com.ensifera.craftirc.CraftIRCPluginExample;
+package com.ensifera.craftirc.example;
+
 
 
 import org.bukkit.event.Event.Type;
@@ -16,7 +17,7 @@ import com.animosity.craftirc.IRCEvent;
  * @author Animosity
  *
  */
-public class CraftIRCPluginExampleListener implements Listener {
+public class CraftIRCPluginExampleListener extends CustomEventListener implements Listener {
     private CraftIRC plugin = null;
     
     public CraftIRCPluginExampleListener(CraftIRC plugin) {
@@ -27,11 +28,14 @@ public class CraftIRCPluginExampleListener implements Listener {
         if (!(event instanceof IRCEvent)) return;
         else {
             IRCEvent ircEvent = (IRCEvent) event;
-            
+            System.out.println("Event listener received IRCEvent event");
             switch (ircEvent.eventMode) {
+                
                 case COMMAND:
+                    System.out.println("Event listener received IRCEvent.COMMAND");
                     if (ircEvent.msgData.message.startsWith("example ")) {
-                      this.plugin.plgnSendMessageToTag("This is an example custom CraftIRC command.", ircEvent.msgData.srcTag);
+                        
+                      this.plugin.sendMessageToTag("This is an example custom CraftIRC command.", ircEvent.msgData.srcChannelTag);
                       ircEvent.setHandled(true);
                     }
                 

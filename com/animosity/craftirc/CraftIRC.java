@@ -78,8 +78,7 @@ public class CraftIRC extends JavaPlugin {
         		ArrayList<String> cn = new ArrayList<String>();
         		for (Iterator<ConfigurationNode> it = channodes.get(botID).iterator(); it.hasNext(); ) {
         		    String channelName = it.next().getString("name");
-        		    String channelTag = it.next().getString("tag");
-        		    if (channelTag != null) chanTagMap.put(new DualKey(botID, channelName), channelTag);
+        		    chanTagMap.put(new DualKey(botID, channelName), this.cChanTag(botID, channelName));
         			cn.add(channelName);
         			
         		}
@@ -204,13 +203,13 @@ public class CraftIRC extends JavaPlugin {
     	target.sendRawLineViaQueue(message);
     }
     
-    /** CraftIRC API call - plgnSendMessageToTag()
+    /** CraftIRC API call - SendMessageToTag()
      * Sends a message to an IRC tag
      * @param message (String) - The message string to send to IRC, this will pass through CraftIRC formatter
      * 
      * @param tag (String) - The IRC target tag to receive the message
      */
-    public void plgnSendMessageToTag(String message, String tag) {
+    public void sendMessageToTag(String message, String tag) {
         RelayedMessage rm = newMsg(EndPoint.PLUGIN, EndPoint.IRC);
         this.sendMessage(rm, tag, null);
     }
@@ -431,7 +430,11 @@ public class CraftIRC extends JavaPlugin {
     protected String cChanName(int bot, String channel) {
         return getChanNode(bot, channel).getString("name", "#changeme");
     }
-
+    
+    protected String cChanTag(int bot, String channel) {
+        return getChanNode(bot, channel).getString("tag", String.valueOf(bot) + "_" + channel);
+    }
+    
     protected String cChanPassword(int bot, String channel) {
         return getChanNode(bot, channel).getString("password", "");
     }
