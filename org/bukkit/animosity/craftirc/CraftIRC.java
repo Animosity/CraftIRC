@@ -28,24 +28,17 @@ public class CraftIRC extends JavaPlugin {
 	private final ConsoleCommandSender console = new ConsoleCommandSender();
 	protected static final Logger log = Logger.getLogger("Minecraft");
 
-	public CraftIRC(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder, File plugin,
-			ClassLoader cLoader) {
-		super(pluginLoader, instance, desc, folder, plugin, cLoader);
-		initialize();
-		VERSION = desc.getVersion();
-	}
-
 	public void onEnable() {
+	    PluginDescriptionFile desc = this.getDescription();
+        VERSION = desc.getVersion();
+        getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, listener, Priority.Monitor, this);
+        getServer().getPluginManager().registerEvent(Event.Type.PLAYER_QUIT, listener, Priority.Monitor, this);
+        getServer().getPluginManager().registerEvent(Event.Type.PLAYER_COMMAND, listener, Priority.Monitor, this);
+        getServer().getPluginManager().registerEvent(Event.Type.PLAYER_CHAT, listener, Priority.Monitor, this);
 		log.info(NAME + " Enabled.");
 		// instantiate bot w/ settings
 		bot = Minebot.getInstance(this);
 		bot.init();
-
-		/*etc.getInstance().addCommand("/irc [msg]", "Sends message to " + bot.irc_channel);
-		if (bot.optn_notify_admins_cmd != null) {
-			etc.getInstance().addCommand(bot.optn_notify_admins_cmd + " [msg]",
-					"Sends your message to the admins on IRC");
-		}*/
 	}
 
 	public void onDisable() {
@@ -58,25 +51,6 @@ public class CraftIRC extends JavaPlugin {
 	// Use the first instance of bot to do the auto-reconnection/recovery
 	public void recover() {
 		bot.init();
-	}
-
-	public void initialize() {
-		getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, listener, Priority.Monitor, this);
-		getServer().getPluginManager().registerEvent(Event.Type.PLAYER_QUIT, listener, Priority.Monitor, this);
-		getServer().getPluginManager().registerEvent(Event.Type.PLAYER_COMMAND, listener, Priority.Monitor, this);
-		getServer().getPluginManager().registerEvent(Event.Type.PLAYER_CHAT, listener, Priority.Monitor, this);
-		//getServer().getPluginManager().registerEvent(Event.Type.CONSOLE_COMMAND, consoleListener, Priority.Normal, this);
-
-		/*  hMod
-			etc.getLoader().addListener(PluginLoader.Hook.SERVERCOMMAND, listener, this, PluginListener.Priority.HIGH);
-			etc.getLoader().addListener(PluginLoader.Hook.COMMAND, listener, this, PluginListener.Priority.MEDIUM);
-			etc.getLoader().addListener(PluginLoader.Hook.LOGIN, listener, this, PluginListener.Priority.MEDIUM);
-			etc.getLoader().addListener(PluginLoader.Hook.DISCONNECT, listener, this, PluginListener.Priority.MEDIUM);
-			etc.getLoader().addListener(PluginLoader.Hook.CHAT, listener, this, PluginListener.Priority.MEDIUM);
-			etc.getLoader().addListener(PluginLoader.Hook.KICK, listener, this, PluginListener.Priority.MEDIUM);
-			etc.getLoader().addListener(PluginLoader.Hook.BAN, listener, this, PluginListener.Priority.MEDIUM);
-			etc.getLoader().addListener(PluginLoader.Hook.IPBAN, listener, this, PluginListener.Priority.MEDIUM);
-		 */
 	}
 
 	public static void setDebug(boolean d) {
