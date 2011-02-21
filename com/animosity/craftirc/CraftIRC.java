@@ -59,14 +59,10 @@ public class CraftIRC extends JavaPlugin {
     private HashMap<Integer, ArrayList<String>> channames;
     protected HashMap<DualKey, String> chanTagMap;
 
-    public CraftIRC(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder, File plugin,
-            ClassLoader cLoader) {
-        super(pluginLoader, instance, desc, folder, plugin, cLoader);
-        VERSION = desc.getVersion();
-    }
-
     public void onEnable() {
         try {
+            PluginDescriptionFile desc = this.getDescription();
+            VERSION = desc.getVersion();
         	//Load node lists. Bukkit does it now, hurray!
         	bots = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("bots", null));
         	colormap = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("colormap", null));
@@ -169,17 +165,14 @@ public class CraftIRC extends JavaPlugin {
 		            Iterator<String> it = chans.iterator();
 		            while (it.hasNext()) {
 		                String chan = it.next();
-		                System.out.println(String.valueOf(cChanCheckTag(tag, i, chan)));
 		                // Don't echo back to sending channel
 		                if (msg.getSource() == EndPoint.IRC && msg.srcBot == i && msg.srcChannel.equals(chan)) continue;
 		                // Send to all bots, channels with event enabled
-		                
 		                if ((tag == null || cChanCheckTag(tag, i, chan)) && (event == null || cEvents(realEvent, i, chan))) {
-		                    
 		                    msg.trgBot = i;
 		                    msg.trgChannel = chan;
 		                    if (msg.getTarget() == EndPoint.BOTH)
-		                            instances.get(i).sendMessage(chan, msg.asString(EndPoint.IRC));
+		                        instances.get(i).sendMessage(chan, msg.asString(EndPoint.IRC));
 		                    else instances.get(i).sendMessage(chan, msg.asString());
 		                }
 		            }

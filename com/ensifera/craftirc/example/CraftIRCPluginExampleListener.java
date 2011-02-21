@@ -28,14 +28,9 @@ public class CraftIRCPluginExampleListener extends CustomEventListener implement
         if (!(event instanceof IRCEvent)) return;
         else {
             IRCEvent ircEvent = (IRCEvent) event;
-            System.out.println("Event listener received IRCEvent event");
-            System.out.println(ircEvent.msgData.srcChannelTag);
             switch (ircEvent.eventMode) {
-                
                 case COMMAND:
-                    System.out.println("Event listener received IRCEvent.COMMAND");
-                    if (ircEvent.msgData.message.startsWith("example ")) {
-                        
+                    if (ircEvent.msgData.message.startsWith("example")) {
                       this.plugin.sendMessageToTag("This is an example custom CraftIRC command.", ircEvent.msgData.srcChannelTag);
                       ircEvent.setHandled(true);
                     }

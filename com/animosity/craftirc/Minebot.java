@@ -157,6 +157,9 @@ public class Minebot extends PircBot implements Runnable {
 	}
 	
 	public void onJoin(String channel, String sender, String login, String hostname) {
+	    if (this.plugin.isDebug()) {
+            CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.JOIN"));
+        }
 		if (this.channels.contains(channel)) {
 			if (sender.equals(this.nickname)) {
 				CraftIRC.log.info(CraftIRC.NAME + " - Joined channel: " + channel);
@@ -183,6 +186,9 @@ public class Minebot extends PircBot implements Runnable {
 	}
 
 	public void onPart(String channel, String sender, String login, String hostname, String reason) {
+	    if (this.plugin.isDebug()) {
+            CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.PART"));
+        }
 		if (this.channels.contains(channel)) {
 			RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
 		    msg.formatting = "parts";
@@ -202,6 +208,9 @@ public class Minebot extends PircBot implements Runnable {
 	}
 	
 	public void onChannelQuit(String channel, String sender, String login, String hostname, String reason) {
+	    if (this.plugin.isDebug()) {
+            CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.QUIT"));
+        }
 		if (this.channels.contains(channel)) {
 			RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
 		    msg.formatting = "quits";
@@ -221,6 +230,9 @@ public class Minebot extends PircBot implements Runnable {
 
 	public void onKick(String channel, String kickerNick, String kickerLogin, String kickerHostname,
 			String recipientNick, String reason) {
+	    if (this.plugin.isDebug()) {
+            CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.KICK"));
+        }
 		if (recipientNick.equalsIgnoreCase(this.getNick())) {
 			if (this.channels.contains(channel)) {
 				this.joinChannel(channel, this.plugin.cChanPassword(botId, channel));
@@ -371,7 +383,7 @@ public class Minebot extends PircBot implements Runnable {
                 msg.sender = sender;
                 msg.srcBot = botId;
                 msg.srcChannel = channel;
-                msg.message = message;
+                msg.message = message.replaceFirst(cmdPrefix, "");
                 msg.updateTag();
                 // PLUGIN INTEROP
                 msg.setTarget(EndPoint.PLUGIN);
@@ -387,7 +399,9 @@ public class Minebot extends PircBot implements Runnable {
 	}
 
 	protected void onPrivateMessage(String sender, String login, String hostname, String message) {
-		
+	    if (this.plugin.isDebug()) {
+            CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.PRIVMSG"));
+        }
 		if (ignores.contains(sender)) return;
 		
 		String[] splitMessage = message.split(" ");
@@ -417,6 +431,9 @@ public class Minebot extends PircBot implements Runnable {
 	}
 
 	public void onAction(String sender, String login, String hostname, String target, String action) {
+	    if (this.plugin.isDebug()) {
+            CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.ACTION"));
+        }
 	    // IRCEvent - ACTION
 	  	RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
 	    msg.formatting = "action";
@@ -535,8 +552,7 @@ public class Minebot extends PircBot implements Runnable {
 		}
 
 	}
-	
-	
+
 	/**
 	 * @param target - the IRC #channel to send the message to
 	 * @param message - the message to send to the target #channel; this.irc_channel and this.irc_admin_channel are the common targets.
