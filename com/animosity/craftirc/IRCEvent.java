@@ -8,21 +8,21 @@ import org.bukkit.event.Event;
 
 public class IRCEvent extends Event {
     Minebot bot;
-	public Mode eventMode;
-	public RelayedMessage msgData;
-	//String server, sender, channel, recipient, message;
-	
-	
-	/**
-	 * @author Animosity
-	 * @param bot Minebot The instance of the bot the event is sourced from.
-	 * @param eventMode IRCEvent.Mode The event type 
-	 * @param server String The server address the bot is connected to (this.ircServer)
-	 * @param channel String The channel the event is sourced from
-	 * @param sender String The sender of the message
-	 * @param message String the message
-	 
-	 */
+    public Mode eventMode;
+    public RelayedMessage msgData;
+    //String server, sender, channel, recipient, message;
+    	
+    	
+    /**
+    * @author Animosity
+    * @param bot Minebot The instance of the bot the event is sourced from.
+    * @param eventMode IRCEvent.Mode The event type 
+    * @param server String The server address the bot is connected to (this.ircServer)
+    * @param channel String The channel the event is sourced from
+    * @param sender String The sender of the message
+    * @param message String the message
+    	 
+    */
 	/*
 	protected IRCEvent(Minebot bot, Mode eventMode, String server, String channel, String sender, String message) {
 		super("IRCEvent"); // sets Bukkit event type as CUSTOM_EVENT and name to "IRCEvent"
@@ -37,16 +37,16 @@ public class IRCEvent extends Event {
 	}
 	*/
 	
-	protected IRCEvent(Mode mode, RelayedMessage message) {
-	    super("IRCEvent");
-	    this.eventMode = mode;
-	    this.msgData = message;
-	    
-	}
+    protected IRCEvent(Mode mode, RelayedMessage message) {
+        super("IRCEvent");
+        this.eventMode = mode;
+        this.msgData = message;
+        
+    }
 	
-	public enum Mode {
-		JOIN, PART, QUIT, KICK, BAN, MSG, PRIVMSG, ACTION, COMMAND, AUTHED_COMMAND, HANDLED
-	}
+    public enum Mode {
+        JOIN, PART, QUIT, KICK, BAN, MSG, PRIVMSG, ACTION, COMMAND, AUTHED_COMMAND, HANDLED
+    }
 
 	/*public String getServer() {
 		return this.server;
@@ -65,10 +65,10 @@ public class IRCEvent extends Event {
 	}
 	
 	*/
-	public void setHandled(boolean handled) {
-		this.eventMode = Mode.HANDLED;
-		// Also insert handler plugin's name as sender?
-	}
+    public void setHandled(boolean handled) {
+        this.eventMode = Mode.HANDLED;
+        // Also insert handler plugin's name as sender?
+    }
 	public boolean isHandled() {
 	    if (this.eventMode == Mode.HANDLED) return true;
 	    else return false;

@@ -29,6 +29,7 @@ public class CraftIRCPluginExampleListener extends CustomEventListener implement
         else {
             IRCEvent ircEvent = (IRCEvent) event;
             System.out.println("Event listener received IRCEvent event");
+            System.out.println(ircEvent.msgData.srcChannelTag);
             switch (ircEvent.eventMode) {
                 
                 case COMMAND:

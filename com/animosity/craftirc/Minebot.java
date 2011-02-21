@@ -171,6 +171,7 @@ public class Minebot extends PircBot implements Runnable {
 			    msg.sender = sender;
 			    msg.srcBot = botId;
 			    msg.srcChannel = channel;
+			    msg.updateTag();
 			    this.plugin.sendMessage(msg, null, "joins");
 			    // PLUGIN INTEROP
 			    msg.setTarget(EndPoint.PLUGIN);
@@ -189,6 +190,7 @@ public class Minebot extends PircBot implements Runnable {
 		    msg.srcBot = botId;
 		    msg.srcChannel = channel;
 		    msg.message = reason;
+		    msg.updateTag();
 		    this.plugin.sendMessage(msg, null, "parts");
 		    
             // PLUGIN INTEROP
@@ -207,6 +209,7 @@ public class Minebot extends PircBot implements Runnable {
 		    msg.srcBot = botId;
 		    msg.srcChannel = channel;
 		    msg.message = reason;
+		    msg.updateTag();
 		    this.plugin.sendMessage(msg, null, "quits");
 		    
             // PLUGIN INTEROP
@@ -230,6 +233,7 @@ public class Minebot extends PircBot implements Runnable {
         msg.srcChannel = channel;
         msg.message = reason;
         msg.moderator = kickerNick;
+        msg.updateTag();
         this.plugin.sendMessage(msg, null, "kicks");
 		// PLUGIN INTEROP
         msg.setTarget(EndPoint.PLUGIN);
@@ -245,6 +249,7 @@ public class Minebot extends PircBot implements Runnable {
 		    msg.srcBot = botId;
 		    msg.srcChannel = channel;
 		    msg.message = newNick;
+		    msg.updateTag();
 		    this.plugin.sendMessage(msg, null, "nicks");
 		    msg.setTarget(EndPoint.PLUGIN);
 		    
@@ -277,6 +282,7 @@ public class Minebot extends PircBot implements Runnable {
                 msg.srcBot = botId;
                 msg.srcChannel = channel;
                 msg.message = message;
+                msg.updateTag();
                 // PLUGIN INTEROP
                 msg.setTarget(EndPoint.PLUGIN);
                 Event ie = new IRCEvent(Mode.AUTHED_COMMAND, msg);
@@ -325,6 +331,7 @@ public class Minebot extends PircBot implements Runnable {
 			    msg.srcBot = botId;
 			    msg.srcChannel = channel;
 			    msg.message = message;
+			    msg.updateTag();
 			    this.plugin.sendMessage(msg, null, "all-chat");
 				return;
 			}
@@ -339,6 +346,7 @@ public class Minebot extends PircBot implements Runnable {
 				    msg.srcBot = botId;
 				    msg.srcChannel = channel;
 				    msg.message = command;
+				    msg.updateTag();
 				    this.plugin.sendMessage(msg, null, null);
 					this.sendNotice(sender, "Message sent to game");
 					return;
@@ -364,6 +372,7 @@ public class Minebot extends PircBot implements Runnable {
                 msg.srcBot = botId;
                 msg.srcChannel = channel;
                 msg.message = message;
+                msg.updateTag();
                 // PLUGIN INTEROP
                 msg.setTarget(EndPoint.PLUGIN);
                 Event ie = new IRCEvent(Mode.COMMAND, msg);
@@ -397,6 +406,7 @@ public class Minebot extends PircBot implements Runnable {
 		        msg.srcBot = botId;
 		        msg.srcChannel = "";
 		        msg.message = message;
+		        msg.updateTag();
 		        // PLUGIN INTEROP
 		        msg.setTarget(EndPoint.PLUGIN);
 		        Event ie = new IRCEvent(Mode.PRIVMSG, msg);
@@ -414,6 +424,7 @@ public class Minebot extends PircBot implements Runnable {
 	    msg.srcBot = botId;
 	    msg.srcChannel = target;
 	    msg.message = action;
+	    msg.updateTag();
 	    this.plugin.sendMessage(msg, null, "all-chat");
 
 	    //PLUGIN INTEROP

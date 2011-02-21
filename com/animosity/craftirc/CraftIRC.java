@@ -85,6 +85,10 @@ public class CraftIRC extends JavaPlugin {
         		channames.put(botID, cn);
         	}
         	
+
+            CraftIRC.log.info(String.format(CraftIRC.NAME + " Channel tag map: " + chanTagMap.toString()));
+   
+        	
         	//Permissions
         	Plugin check = this.getServer().getPluginManager().getPlugin("Permissions");
        	    if(check != null) {
@@ -165,10 +169,13 @@ public class CraftIRC extends JavaPlugin {
 		            Iterator<String> it = chans.iterator();
 		            while (it.hasNext()) {
 		                String chan = it.next();
+		                System.out.println(String.valueOf(cChanCheckTag(tag, i, chan)));
 		                // Don't echo back to sending channel
 		                if (msg.getSource() == EndPoint.IRC && msg.srcBot == i && msg.srcChannel.equals(chan)) continue;
 		                // Send to all bots, channels with event enabled
+		                
 		                if ((tag == null || cChanCheckTag(tag, i, chan)) && (event == null || cEvents(realEvent, i, chan))) {
+		                    
 		                    msg.trgBot = i;
 		                    msg.trgChannel = chan;
 		                    if (msg.getTarget() == EndPoint.BOTH)
@@ -211,6 +218,7 @@ public class CraftIRC extends JavaPlugin {
      */
     public void sendMessageToTag(String message, String tag) {
         RelayedMessage rm = newMsg(EndPoint.PLUGIN, EndPoint.IRC);
+        rm.message = message;
         this.sendMessage(rm, tag, null);
     }
     
