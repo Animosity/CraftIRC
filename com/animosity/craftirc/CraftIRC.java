@@ -1,32 +1,38 @@
 package com.animosity.craftirc;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import net.minecraft.server.MinecraftServer;
 import org.bukkit.Server;
+import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.PluginLoader;
+// import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 import org.bukkit.util.config.ConfigurationNode;
 
 import com.nijikokun.bukkit.Permissions.*;
 import com.nijiko.permissions.PermissionHandler;
+import net.minecraft.server.ICommandListener;
 
 /**
  * @author Animosity
@@ -41,10 +47,11 @@ import com.nijiko.permissions.PermissionHandler;
 public class CraftIRC extends JavaPlugin {
     public static final String NAME = "CraftIRC";
     public static String VERSION;
-
     protected static final Logger log = Logger.getLogger("Minecraft");
-
+    protected static List<String> defaultConsoleCommands = Arrays.asList("kick","ban","pardon","ban-ip","pardon-ip","op","deop","tp","give","tell","stop","save-all","save-off","save-on","say");
     //Misc class attributes
+    PluginDescriptionFile desc = null;
+    Server server = null;
     private final CraftIRCListener listener = new CraftIRCListener(this);
     private PermissionHandler perms  = null;
     private ArrayList<Minebot> instances;
@@ -62,6 +69,8 @@ public class CraftIRC extends JavaPlugin {
     public void onEnable() {
         try {
             PluginDescriptionFile desc = this.getDescription();
+            server = this.getServer();
+
             VERSION = desc.getVersion();
         	//Load node lists. Bukkit does it now, hurray!
         	bots = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("bots", null));
@@ -535,4 +544,21 @@ public class CraftIRC extends JavaPlugin {
 		return colorizeName(result.replaceAll("&([0-9a-f])", "§$1"));
 	}
 
+    public static boolean queueConsoleCommand(Server server, String cmd) {
+    
+        try {
+            Field f = CraftServer.class.getDeclaredField("console");
+            f.setAccessible(true);
+            MinecraftServer ms = (MinecraftServer) f.get(server);
+            
+            if ((!ms.g) && (MinecraftServer.a(ms))) {
+                ms.a(cmd, ms);
+                return true;
+            }
+    
+        } catch (Exception e) {
+        }
+    
+        return false;
+    }
 }

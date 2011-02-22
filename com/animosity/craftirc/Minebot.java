@@ -276,7 +276,7 @@ public class Minebot extends PircBot implements Runnable {
             CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot onMessage"));
         }
 		if (ignores.contains(sender)) return;
-
+		
 		String[] splitMessage = message.split(" ");
 		String command = Util.combineSplit(1, splitMessage, " ");
 
@@ -285,25 +285,33 @@ public class Minebot extends PircBot implements Runnable {
 			// Parse admin commands here
 			if (userAuthorized(channel, sender) && !ircCmdPrefixes.contains(message.substring(0,0))) {
 			    if (this.plugin.isDebug()) {
-		            CraftIRC.log.info(String.format(CraftIRC.NAME + " Authoried User %s used command %s",sender,message));
+		            CraftIRC.log.info(String.format(CraftIRC.NAME + " Authorized User %s used command %s",sender,message));
 		        }
 			    // IRCEvent - AUTHED_COMMAND
+			    if (this.plugin.isDebug()) {
+                    CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.AUTHED_COMMAND"));
+                }
                 RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
                 msg.formatting = "";
                 msg.sender = sender;
                 msg.srcBot = botId;
                 msg.srcChannel = channel;
-                msg.message = message;
+                msg.message = message.replaceFirst(cmdPrefix, "");
                 msg.updateTag();
                 // PLUGIN INTEROP
                 msg.setTarget(EndPoint.PLUGIN);
                 Event ie = new IRCEvent(Mode.AUTHED_COMMAND, msg);
                 this.plugin.getServer().getPluginManager().callEvent(ie);
 			    
-			    
-				if ((message.startsWith(cmdPrefix + "console ") || message.startsWith(cmdPrefix + "c "))
+				if ((message.startsWith(cmdPrefix + "cmd ") || message.startsWith(cmdPrefix + "c "))
 						&& splitMessage.length > 1 && this.plugin.cConsoleCommands().contains(splitMessage[1])) {
-					this.sendNotice(sender, "NOT YET IMPLEMENTED IN BUKKIT");
+				    if (this.routeCommand(command)) {
+				        this.sendNotice(sender, "Executed console command: " + command);
+				        if (this.plugin.isDebug()) {
+		                    CraftIRC.log.info(String.format(CraftIRC.NAME + " Authorized User %s executed command %s",sender,message));
+		                }
+				    }
+				    
 					return;
 
 				}
@@ -398,7 +406,27 @@ public class Minebot extends PircBot implements Runnable {
 
 	}
 
-	protected void onPrivateMessage(String sender, String login, String hostname, String message) {
+	/**
+	 * Route Command - use Notchian minecraft server's direct console input if command is a default command, else use Bukkit's Command system
+     * @param command - 
+     */
+    private boolean routeCommand(String fullCommand) {
+        String rootCommand = fullCommand.split(" ")[0];
+        if (this.plugin.defaultConsoleCommands.contains(rootCommand)) {
+            if (this.plugin.isDebug()) {
+                CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand() fullCommand=" + fullCommand + " -- rootCommand=" + rootCommand));
+                CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand() -> queueConsoleCommand()"));
+            }
+            this.plugin.queueConsoleCommand(this.plugin.server, fullCommand);
+            return true;
+        } else {
+            
+        }
+        
+        return false;
+    }
+
+    protected void onPrivateMessage(String sender, String login, String hostname, String message) {
 	    if (this.plugin.isDebug()) {
             CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.PRIVMSG"));
         }
@@ -454,9 +482,13 @@ public class Minebot extends PircBot implements Runnable {
 	// IRC user authorization check against prefixes
 	// Currently just for admin channel as first-order level of security
 	public boolean userAuthorized(String channel, String user) {
+	    
 		if (this.plugin.cChanAdmin(botId, channel))
 			try {
 				User check = this.getUser(user, channel);
+				if (this.plugin.isDebug()) {
+		            CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot userAuthorized(): " + String.valueOf(check != null && this.plugin.cBotAdminPrefixes(botId).contains(getHighestUserPrefix(check)))));
+		        }
 				return check != null && this.plugin.cBotAdminPrefixes(botId).contains(getHighestUserPrefix(check));
 			} catch (Exception e) {
 				e.printStackTrace();
