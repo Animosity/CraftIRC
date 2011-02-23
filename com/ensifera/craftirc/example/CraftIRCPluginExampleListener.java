@@ -28,15 +28,21 @@ public class CraftIRCPluginExampleListener extends CustomEventListener implement
         if (!(event instanceof IRCEvent)) return;
         else {
             IRCEvent ircEvent = (IRCEvent) event;
-            switch (ircEvent.eventMode) {
-                case COMMAND:
-                    if (ircEvent.msgData.message.startsWith("example")) {
-                      this.plugin.sendMessageToTag("This is an example custom CraftIRC command.", ircEvent.msgData.srcChannelTag);
-                      ircEvent.setHandled(true);
-                    }
-                
+            if (!ircEvent.isHandled()) {
+                switch (ircEvent.eventMode) {
+                    case COMMAND:
+                        
+                        if (ircEvent.msgData.message.startsWith("example")) {
+                          this.plugin.sendMessageToTag("This is an example custom CraftIRC command.", ircEvent.msgData.srcChannelTag);
+                          ircEvent.setHandled(true);
+                        }
+                    case AUTHED_COMMAND:
+                        if (ircEvent.msgData.message.startsWith("authexample")) {
+                            this.plugin.sendMessageToTag("This is an example custom authenticated CraftIRC command.", ircEvent.msgData.srcChannelTag);
+                            ircEvent.setHandled(true);
+                          }
+                }
             }
-            
             
 
         }
