@@ -1,4 +1,4 @@
-package org.bukkit.animosity.craftirc;
+package com.ensifera.animosity.craftirc;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -20,8 +20,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.jibble.pircbot.*;
 import org.bukkit.ChatColor;
-import org.bukkit.animosity.craftirc.CraftIRC;
-import org.bukkit.animosity.craftirc.util;
+import com.ensifera.animosity.craftirc.CraftIRC;
+import com.ensifera.animosity.craftirc.util;
 
 /**
  * @author Animosity

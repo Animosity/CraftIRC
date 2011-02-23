@@ -1,4 +1,4 @@
-package org.bukkit.animosity.craftirc;
+package com.ensifera.animosity.craftirc;
 
 import java.lang.Exception;
 import java.util.logging.Logger;
