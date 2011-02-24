@@ -1,4 +1,4 @@
-package com.animosity.craftirc;
+package com.ensifera.animosity.craftirc;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

@@ -1,4 +1,4 @@
-package com.animosity.craftirc;
+package com.ensifera.animosity.craftirc;
 
 public class RelayedMessageException extends Exception {
 

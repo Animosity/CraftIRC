@@ -1,4 +1,4 @@
-package com.animosity.craftirc;
+package com.ensifera.animosity.craftirc;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import org.jibble.pircbot.*;
 import org.bukkit.ChatColor;
 import org.bukkit.event.Event;
 
-import com.animosity.craftirc.IRCEvent.Mode;
+import com.ensifera.animosity.craftirc.IRCEvent.Mode;
 
 /**
  * @author Animosity
@@ -23,23 +23,22 @@ public class Minebot extends PircBot implements Runnable {
 
     private CraftIRC plugin = null;
     private int botId;
-    
     private String nickname;
-    
+
     // Connection attributes
     private boolean ssl;
     private String ircServer;
     private int ircPort;
     private String ircPass;
-    
+
     // Nickname authentication
     private String authMethod;
     private String authUser;
     private String authPass;
-    
+
     // Channel attributes
     private ArrayList<String> channels;
-    
+
     // Other things that may be more efficient to store here
     private ArrayList<String> ignores;
     private String cmdPrefix;
@@ -59,18 +58,18 @@ public class Minebot extends PircBot implements Runnable {
         this.setVersion(CraftIRC.NAME + " v" + CraftIRC.VERSION);
 
         nickname = this.plugin.cBotNickname(botId);
-        
+
         ssl = this.plugin.cBotSsl(botId);
         ircServer = this.plugin.cBotServer(botId);
         ircPort = this.plugin.cBotPort(botId);
         ircPass = this.plugin.cBotPassword(botId);
-        
+
         authMethod = this.plugin.cBotAuthMethod(botId);
         authUser = this.plugin.cBotAuthUsername(botId);
         authPass = this.plugin.cBotAuthPassword(botId);
-        
+
         channels = this.plugin.cBotChannels(botId);
-        
+
         ignores = this.plugin.cBotIgnoredUsers(botId);
         cmdPrefix = this.plugin.cCommandPrefix(botId);
         ircCmdPrefixes = this.plugin.cIgnoredPrefixes("irc");
@@ -86,7 +85,6 @@ public class Minebot extends PircBot implements Runnable {
     public void start() {
 
         Iterator<String> it;
-        
         CraftIRC.log.info(CraftIRC.NAME + " v" + CraftIRC.VERSION + " loading.");
 
         try {
@@ -104,9 +102,9 @@ public class Minebot extends PircBot implements Runnable {
                 CraftIRC.log.info(CraftIRC.NAME + " - Connected");
             else
                 CraftIRC.log.info(CraftIRC.NAME + " - Connection failed!");
-            
+
             this.authenticateBot();
-            
+
             ArrayList<String> onConnect = this.plugin.cBotOnConnect(botId);
             it = onConnect.iterator();
             while (it.hasNext())
@@ -117,7 +115,7 @@ public class Minebot extends PircBot implements Runnable {
                 String chan = it.next();
                 this.joinChannel(chan, this.plugin.cChanPassword(botId, chan));
             }
-            
+
         } catch (NumberFormatException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -130,6 +128,11 @@ public class Minebot extends PircBot implements Runnable {
 
     }
 
+    public CraftIRC getPlugin() { 
+        return this.plugin; 
+    }
+    
+    
     void authenticateBot() {
         if (this.authMethod.equalsIgnoreCase("nickserv") && !authPass.isEmpty()) {
             CraftIRC.log.info(CraftIRC.NAME + " - Using Nickserv authentication.");
@@ -144,7 +147,7 @@ public class Minebot extends PircBot implements Runnable {
 
             this.changeNick(this.nickname);
             this.identify(this.authPass);
-            
+
         } else if (this.authMethod.equalsIgnoreCase("gamesurge")) {
             CraftIRC.log.info(CraftIRC.NAME + " - Using GameSurge authentication.");
             this.changeNick(this.nickname);
@@ -157,7 +160,7 @@ public class Minebot extends PircBot implements Runnable {
         }
 
     }
-    
+
     public void onJoin(String channel, String sender, String login, String hostname) {
         if (this.plugin.isDebug()) {
             CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.JOIN"));
@@ -169,7 +172,7 @@ public class Minebot extends PircBot implements Runnable {
                 Iterator<String> it = onJoin.iterator();
                 while (it.hasNext())
                     sendRawLineViaQueue(it.next());
-                
+
             } else {
                 RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
                 msg.formatting = "joins";
@@ -182,7 +185,7 @@ public class Minebot extends PircBot implements Runnable {
                 msg.setTarget(EndPoint.PLUGIN);
                 Event ie = new IRCEvent(Mode.JOIN, msg);
                 this.plugin.getServer().getPluginManager().callEvent(ie);
-                                
+
             }
         }
     }
@@ -200,15 +203,14 @@ public class Minebot extends PircBot implements Runnable {
             msg.message = reason;
             msg.updateTag();
             this.plugin.sendMessage(msg, null, "parts");
-            
+
             // PLUGIN INTEROP
             msg.setTarget(EndPoint.PLUGIN);
             Event ie = new IRCEvent(Mode.PART, msg);
             this.plugin.getServer().getPluginManager().callEvent(ie);
-            
         }
     }
-    
+
     public void onChannelQuit(String channel, String sender, String login, String hostname, String reason) {
         if (this.plugin.isDebug()) {
             CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.QUIT"));
@@ -222,7 +224,7 @@ public class Minebot extends PircBot implements Runnable {
             msg.message = reason;
             msg.updateTag();
             this.plugin.sendMessage(msg, null, "quits");
-            
+
             // PLUGIN INTEROP
             msg.setTarget(EndPoint.PLUGIN);
             Event ie = new IRCEvent(Mode.QUIT, msg);
@@ -254,7 +256,7 @@ public class Minebot extends PircBot implements Runnable {
         Event ie = new IRCEvent(Mode.QUIT, msg);
         this.plugin.getServer().getPluginManager().callEvent(ie);
     }
-    
+
     public void onChannelNickChange(String channel, String oldNick, String login, String hostname, String newNick) {
         if (this.channels.contains(channel)) {
             RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
@@ -266,7 +268,7 @@ public class Minebot extends PircBot implements Runnable {
             msg.updateTag();
             this.plugin.sendMessage(msg, null, "nicks");
             msg.setTarget(EndPoint.PLUGIN);
-            
+
         }
     }
 
@@ -277,48 +279,28 @@ public class Minebot extends PircBot implements Runnable {
         if (this.plugin.isDebug()) {
             CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot onMessage"));
         }
-        if (ignores.contains(sender)) return;
-        
-        String[] splitMessage = message.split(" ");
-        String command = Util.combineSplit(1, splitMessage, " ");
+        if (ignores.contains(sender))
+            return;
 
         try {
-
+            String[] splitMessage = message.split(" ");
+            String command = Util.combineSplit(1, splitMessage, " ");
             // Parse admin commands here
-            if (userAuthorized(channel, sender) && !ircCmdPrefixes.contains(message.substring(0,0))) {
+            if (message.startsWith(cmdPrefix)  && userAuthorized(channel, sender) && !ircCmdPrefixes.contains(message.substring(0, 0))) {
                 if (this.plugin.isDebug()) {
-                    CraftIRC.log.info(String.format(CraftIRC.NAME + " Authorized User %s used command %s",sender,message));
+                    CraftIRC.log.info(String.format(CraftIRC.NAME + " Authorized User %s used command %s", sender, message));
                 }
-                // IRCEvent - AUTHED_COMMAND
-                if (this.plugin.isDebug()) {
-                    CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.AUTHED_COMMAND"));
-                }
-                RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
-                msg.formatting = "";
-                msg.sender = sender;
-                msg.srcBot = botId;
-                msg.srcChannel = channel;
-                msg.message = message.replaceFirst(cmdPrefix, "");
-                msg.updateTag();
-                // PLUGIN INTEROP
-                msg.setTarget(EndPoint.PLUGIN);
-                Event ie = new IRCEvent(Mode.AUTHED_COMMAND, msg);
-                this.plugin.getServer().getPluginManager().callEvent(ie);
-                
+
                 if ((message.startsWith(cmdPrefix + "cmd ") || message.startsWith(cmdPrefix + "c "))
                         && splitMessage.length > 1) {
                     if (this.routeCommand(command)) {
                         this.sendNotice(sender, "Executed console command: " + command);
                         if (this.plugin.isDebug()) {
-                            CraftIRC.log.info(String.format(CraftIRC.NAME + " Authorized User %s executed command %s",sender,message));
+                            CraftIRC.log.info(String.format(CraftIRC.NAME + " Authorized User %s executed command %s", sender, message));
                         }
                     }
-                    
                     return;
-
-                }
-
-                else if (message.startsWith(cmdPrefix + "botsay ") && splitMessage.length > 1) {
+                } else if (message.startsWith(cmdPrefix + "botsay ") && splitMessage.length > 1) {
                     if (this.channels.contains(splitMessage[1])) {
                         command = Util.combineSplit(2, splitMessage, " ");
                         this.sendMessage(splitMessage[1], command);
@@ -330,20 +312,34 @@ public class Minebot extends PircBot implements Runnable {
                         this.sendNotice(sender, "Sent to all channels: " + command);
                     }
                     return;
-                }
-
-                else if (message.startsWith(cmdPrefix + "raw ") && splitMessage.length > 1) {
+                } else if (message.startsWith(cmdPrefix + "raw ") && splitMessage.length > 1) {
                     this.sendRawLine(command);
                     this.sendNotice(sender, "Raw IRC string sent");
                     return;
+                } else {
+                    // IRCEvent - AUTHED_COMMAND
+                    if (this.plugin.isDebug()) {
+                        CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.AUTHED_COMMAND"));
+                    }
+                    RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
+                    msg.formatting = "";
+                    msg.sender = sender;
+                    msg.srcBot = botId;
+                    msg.srcChannel = channel;
+                    msg.message = message.replaceFirst(cmdPrefix, "");
+                    msg.updateTag();
+                    // PLUGIN INTEROP
+                    msg.setTarget(EndPoint.PLUGIN);
+                    Event ie = new IRCEvent(Mode.AUTHED_COMMAND, msg);
+                    this.plugin.getServer().getPluginManager().callEvent(ie);
                 }
 
             } // End admin commands
 
             // Begin public commands
-            
+
             // Send all IRC chatter (no command prefixes or ignored command prefixes)
-            if (!ircCmdPrefixes.contains(message.substring(0,0)) && !message.startsWith(cmdPrefix)) {
+            if (!ircCmdPrefixes.contains(message.substring(0, 0)) && !message.startsWith(cmdPrefix)) {
                 if (this.plugin.isDebug()) {
                     CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot allchat"));
                 }
@@ -358,7 +354,6 @@ public class Minebot extends PircBot implements Runnable {
                 return;
             }
 
-            
             // .say - Send single message to the game
             if (message.startsWith(cmdPrefix + "say ") || message.startsWith(cmdPrefix + "mc ")) {
                 if (splitMessage.length > 1) {
@@ -373,8 +368,7 @@ public class Minebot extends PircBot implements Runnable {
                     this.sendNotice(sender, "Message sent to game");
                     return;
                 }
-                
-                
+
             } else if (message.startsWith(cmdPrefix + "players")) {
                 if (this.plugin.isDebug()) {
                     CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot .players command"));
@@ -382,7 +376,7 @@ public class Minebot extends PircBot implements Runnable {
                 String playerListing = this.getPlayerList();
                 this.sendMessage(channel, playerListing);
                 return;
-                
+
             } else {
                 // IRCEvent - COMMAND
                 if (this.plugin.isDebug()) {
@@ -412,14 +406,16 @@ public class Minebot extends PircBot implements Runnable {
         if (this.plugin.isDebug()) {
             CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.PRIVMSG"));
         }
-        if (ignores.contains(sender)) return;
-        
+        if (ignores.contains(sender))
+            return;
+
         String[] splitMessage = message.split(" ");
-        
+
         try {
             if (splitMessage.length > 1 && splitMessage[0].equalsIgnoreCase("tell")) {
                 if (plugin.getServer().getPlayer(splitMessage[1]) != null) {
-                    this.msgToGame(null, sender, Util.combineSplit(2, splitMessage, " "), messageMode.MSG_PLAYER, splitMessage[1]);
+                    this.msgToGame(null, sender, Util.combineSplit(2, splitMessage, " "), messageMode.MSG_PLAYER,
+                            splitMessage[1]);
                     this.sendNotice(sender, "Whispered to " + splitMessage[1]);
                 }
             } else {
@@ -437,7 +433,8 @@ public class Minebot extends PircBot implements Runnable {
                 this.plugin.getServer().getPluginManager().callEvent(ie);
             }
 
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
     }
 
     public void onAction(String sender, String login, String hostname, String target, String action) {
@@ -445,7 +442,7 @@ public class Minebot extends PircBot implements Runnable {
             CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.ACTION"));
         }
         // IRCEvent - ACTION
-          RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
+        RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
         msg.formatting = "action";
         msg.sender = sender;
         msg.srcBot = botId;
@@ -458,18 +455,21 @@ public class Minebot extends PircBot implements Runnable {
         msg.setTarget(EndPoint.PLUGIN);
         Event ie = new IRCEvent(Mode.ACTION, msg);
         this.plugin.getServer().getPluginManager().callEvent(ie);
-                
+
     }
 
     // IRC user authorization check against prefixes
     // Currently just for admin channel as first-order level of security
     public boolean userAuthorized(String channel, String user) {
-        
+
         if (this.plugin.cChanAdmin(botId, channel))
             try {
                 User check = this.getUser(user, channel);
                 if (this.plugin.isDebug()) {
-                    CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot userAuthorized(): " + String.valueOf(check != null && this.plugin.cBotAdminPrefixes(botId).contains(getHighestUserPrefix(check)))));
+                    CraftIRC.log.info(String.format(CraftIRC.NAME
+                            + " Minebot userAuthorized(): "
+                            + String.valueOf(check != null
+                                    && this.plugin.cBotAdminPrefixes(botId).contains(getHighestUserPrefix(check)))));
                 }
                 return check != null && this.plugin.cBotAdminPrefixes(botId).contains(getHighestUserPrefix(check));
             } catch (Exception e) {
@@ -479,39 +479,56 @@ public class Minebot extends PircBot implements Runnable {
     }
 
     /**
-     * Route Command - use Notchian minecraft server's direct console input if command is a default command, else use Bukkit's Command system
-     * @param command - 
+     * Route Command - use Notchian minecraft server's direct console input if
+     * command is a default command, else use Bukkit's Command system
+     * 
+     * @param command
+     *            -
      */
     private boolean routeCommand(String fullCommand) {
         String rootCommand = fullCommand.split(" ")[0];
-        if (this.plugin.cConsoleCommands().contains(rootCommand) && this.plugin.defaultConsoleCommands.contains(rootCommand)) {
+        if (this.plugin.cConsoleCommands().contains(rootCommand)
+                && this.plugin.defaultConsoleCommands.contains(rootCommand)) {
             if (this.plugin.isDebug()) {
-                CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand() fullCommand=" + fullCommand + " -- rootCommand=" + rootCommand));
+                CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand() fullCommand=" + fullCommand
+                        + " -- rootCommand=" + rootCommand));
                 CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand() -> queueConsoleCommand()"));
             }
-            if (this.plugin.queueConsoleCommand(this.plugin.server, fullCommand)) return true;
-            
-        } else {
-            if (this.plugin.isDebug()) {
-                CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand() fullCommand=" + fullCommand + " -- rootCommand=" + rootCommand));
-                CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand() -> Bukkit dispatchCommand()"));
-            }
-            ConsoleCommandSender console = new ConsoleCommandSender();
-            if (((CraftServer)this.plugin.server).dispatchCommand(console, fullCommand)) {
+            ConsoleCommandSender console = new ConsoleCommandSender(this.plugin.server);
+            if (((CraftServer) this.plugin.server).dispatchCommand(console, fullCommand)) {
                 return true;
             }
-            
+            //if (this.plugin.queueConsoleCommand(this.plugin.server, fullCommand))
+            //    return true;
+
+        } else {
+            if (this.plugin.isDebug()) {
+                CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand() fullCommand=" + fullCommand
+                        + " -- rootCommand=" + rootCommand));
+                CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand() -> Bukkit dispatchCommand()"));
+            }
+            ConsoleCommandSender console = new ConsoleCommandSender(this.plugin.server);
+            if (((CraftServer) this.plugin.server).dispatchCommand(console, fullCommand)) {
+                return true;
+            }
+
         }
-        
+
         return false;
     }
-    
+
     /**
      * TODO: NEED TO CHANGE TO PASS THROUGH FORMATTER FIRST
-     * @param sender - The originating source/user of the IRC event
-     * @param message - The message to be relayed to the game
-     * @param mm - The message type (see messageMode)
-     * @param targetPlayer - The target player to message (for private messages), send null if mm != messageMod.MSG_PLAYER
+     * 
+     * @param sender
+     *            - The originating source/user of the IRC event
+     * @param message
+     *            - The message to be relayed to the game
+     * @param mm
+     *            - The message type (see messageMode)
+     * @param targetPlayer
+     *            - The target player to message (for private messages), send
+     *            null if mm != messageMod.MSG_PLAYER
      */
     public void msgToGame(String source, String sender, String message, messageMode mm, String target) {
 
@@ -525,9 +542,8 @@ public class Minebot extends PircBot implements Runnable {
                 if (this.plugin.isDebug()) {
                     CraftIRC.log.info(String.format(CraftIRC.NAME + " msgToGame(player) : <%s> %s", sender, message));
                 }
-                msg_to_broadcast = (new StringBuilder()).append("[IRC privmsg]").append(" <")
-                        .append(sender).append(ChatColor.WHITE).append("> ")
-                        .append(message).toString();
+                msg_to_broadcast = (new StringBuilder()).append("[IRC privmsg]").append(" <").append(sender)
+                        .append(ChatColor.WHITE).append("> ").append(message).toString();
                 Player p = plugin.getServer().getPlayer(target);
                 if (p != null) {
                     p.sendMessage(msg_to_broadcast);
@@ -547,20 +563,20 @@ public class Minebot extends PircBot implements Runnable {
             Player onlinePlayers[] = plugin.getServer().getOnlinePlayers();
             int playerCount = 0;
             int maxPlayers = this.plugin.getServer().getMaxPlayers(); // CraftBukkit-only, need generic check for server type.
-    
+
             //Integer maxplayers;
             StringBuilder sb = new StringBuilder();
-    
+
             for (int i = 0; i < onlinePlayers.length; i++) {
                 if (onlinePlayers[i] != null) {
-                    playerCount++;            
+                    playerCount++;
                     sb.append(" ").append(onlinePlayers[i].getName());
                 }
             }
-    
+
             if (playerCount > 0) {
                 //return "Online (" + playercount + "/" + maxplayers + "): " + sb.toString();
-                return "Online ("+playerCount+"/"+maxPlayers+"): " + sb.toString();
+                return "Online (" + playerCount + "/" + maxPlayers + "): " + sb.toString();
             } else {
                 return "Nobody is minecrafting right now.";
             }
@@ -570,7 +586,6 @@ public class Minebot extends PircBot implements Runnable {
         }
     }
 
-    
     public ArrayList<String> getChannelList() {
         try {
             return new ArrayList<String>(Arrays.asList(this.getChannels()));
@@ -585,7 +600,7 @@ public class Minebot extends PircBot implements Runnable {
         try {
             if (plugin.isEnabled()) {
                 CraftIRC.log.info(CraftIRC.NAME + " - disconnected from IRC server... reconnecting!");
-                // Reconnect here
+                while (!this.isConnected()) this.start();
             }
 
         } catch (Exception e) {
@@ -595,10 +610,15 @@ public class Minebot extends PircBot implements Runnable {
     }
 
     /**
-     * @param target - the IRC #channel to send the message to
-     * @param message - the message to send to the target #channel; this.irc_channel and this.irc_admin_channel are the common targets.
+     * 
+     * @param target
+     *            - the IRC #channel to send the message to
+     * @param message
+     *            - the message to send to the target #channel; this.irc_channel
+     *            and this.irc_admin_channel are the common targets.
      * 
      */
+    @Deprecated
     public void msg(String target, String message) {
         if (this.plugin.isDebug()) {
             CraftIRC.log.info(String.format(CraftIRC.NAME + " msgToIRC <%s> : %s", target, message));

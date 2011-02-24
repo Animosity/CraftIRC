@@ -1,4 +1,4 @@
-package com.animosity.craftirc;
+package com.ensifera.animosity.craftirc;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -32,7 +32,7 @@ import org.bukkit.util.config.ConfigurationNode;
 
 import com.nijikokun.bukkit.Permissions.*;
 import com.nijiko.permissions.PermissionHandler;
-import net.minecraft.server.ICommandListener;
+//import net.minecraft.server.ICommandListener;
 
 /**
  * @author Animosity
@@ -42,18 +42,19 @@ import net.minecraft.server.ICommandListener;
 
 /**
  * @author Animosity
- *
+ * 
  */
 public class CraftIRC extends JavaPlugin {
     public static final String NAME = "CraftIRC";
     public static String VERSION;
     protected static final Logger log = Logger.getLogger("Minecraft");
-    protected static List<String> defaultConsoleCommands = Arrays.asList("kick","ban","pardon","ban-ip","pardon-ip","op","deop","tp","give","tell","stop","save-all","save-off","save-on","say");
+    protected static List<String> defaultConsoleCommands = Arrays.asList("kick", "ban", "pardon", "ban-ip",
+            "pardon-ip", "op", "deop", "tp", "give", "tell", "stop", "save-all", "save-off", "save-on", "say");
     //Misc class attributes
     PluginDescriptionFile desc = null;
-    Server server = null;
+    public Server server = null;
     private final CraftIRCListener listener = new CraftIRCListener(this);
-    private PermissionHandler perms  = null;
+    private PermissionHandler perms = null;
     private ArrayList<Minebot> instances;
     private boolean debug;
     private Timer holdTimer;
@@ -81,26 +82,24 @@ public class CraftIRC extends JavaPlugin {
             for (int botID = 0; botID < bots.size(); botID++) {
                 channodes.put(botID, new ArrayList<ConfigurationNode>(bots.get(botID).getNodeList("channels", null)));
                 ArrayList<String> cn = new ArrayList<String>();
-                for (Iterator<ConfigurationNode> it = channodes.get(botID).iterator(); it.hasNext(); ) {
+                for (Iterator<ConfigurationNode> it = channodes.get(botID).iterator(); it.hasNext();) {
                     String channelName = it.next().getString("name");
                     chanTagMap.put(new DualKey(botID, channelName), this.cChanTag(botID, channelName));
                     cn.add(channelName);
-                    
+
                 }
                 channames.put(botID, cn);
             }
-            
 
             CraftIRC.log.info(String.format(CraftIRC.NAME + " Channel tag map: " + chanTagMap.toString()));
-   
-            
+
             //Permissions
             Plugin check = this.getServer().getPluginManager().getPlugin("Permissions");
-               if(check != null) {
-                perms = ((Permissions)check).getHandler();
+            if (check != null) {
+                perms = ((Permissions) check).getHandler();
                 log.info("Permissions detected by CraftIRC.");
-               } else {
-                   log.info("Permissions not detected.");
+            } else {
+                log.info("Permissions not detected.");
             }
 
             //Event listeners
@@ -115,7 +114,7 @@ public class CraftIRC extends JavaPlugin {
                 instances.add(new Minebot(this, i).init(cDebug()));
 
             log.info(NAME + " Enabled.");
-            
+
             //Hold timers
             hold = new HashMap<HoldType, Boolean>();
             holdTimer = new Timer();
@@ -123,23 +122,28 @@ public class CraftIRC extends JavaPlugin {
             if (cHold("chat") > 0) {
                 hold.put(HoldType.CHAT, true);
                 holdTimer.schedule(new RemoveHoldTask(this, HoldType.CHAT), now.getTime() + cHold("chat"));
-            } else hold.put(HoldType.CHAT, false);
+            } else
+                hold.put(HoldType.CHAT, false);
             if (cHold("joins") > 0) {
                 hold.put(HoldType.JOINS, true);
                 holdTimer.schedule(new RemoveHoldTask(this, HoldType.JOINS), now.getTime() + cHold("joins"));
-            } else hold.put(HoldType.JOINS, false);
+            } else
+                hold.put(HoldType.JOINS, false);
             if (cHold("quits") > 0) {
                 hold.put(HoldType.QUITS, true);
                 holdTimer.schedule(new RemoveHoldTask(this, HoldType.QUITS), now.getTime() + cHold("quits"));
-            } else hold.put(HoldType.QUITS, false);
+            } else
+                hold.put(HoldType.QUITS, false);
             if (cHold("kicks") > 0) {
                 hold.put(HoldType.KICKS, true);
                 holdTimer.schedule(new RemoveHoldTask(this, HoldType.KICKS), now.getTime() + cHold("kicks"));
-            } else hold.put(HoldType.KICKS, false);
+            } else
+                hold.put(HoldType.KICKS, false);
             if (cHold("bans") > 0) {
                 hold.put(HoldType.BANS, true);
                 holdTimer.schedule(new RemoveHoldTask(this, HoldType.BANS), now.getTime() + cHold("bans"));
-            } else hold.put(HoldType.BANS, false);
+            } else
+                hold.put(HoldType.BANS, false);
 
             setDebug(cDebug());
         } catch (Exception e) {
@@ -150,53 +154,61 @@ public class CraftIRC extends JavaPlugin {
     public void onDisable() {
 
         holdTimer.cancel();
-        
+
         //Disconnect bots
         for (int i = 0; i < bots.size(); i++)
             instances.get(i).disconnect();
 
         log.info(NAME + " Disabled.");
     }
-    
+
     protected RelayedMessage newMsg(EndPoint source, EndPoint target) {
         return new RelayedMessage(this, source, target);
     }
-    
+
     protected void sendMessage(RelayedMessage msg, String tag, String event) {
         try {
             String realEvent = event;
             //Send to IRC
             if (msg.getTarget() == EndPoint.IRC || msg.getTarget() == EndPoint.BOTH) {
-                if (msg.getSource() == EndPoint.IRC) realEvent = "irc-to-irc." + event;
-                if (msg.getSource() == EndPoint.GAME) realEvent = "game-to-irc." + event;
+                if (msg.getSource() == EndPoint.IRC)
+                    realEvent = "irc-to-irc." + event;
+                if (msg.getSource() == EndPoint.GAME)
+                    realEvent = "game-to-irc." + event;
                 for (int i = 0; i < bots.size(); i++) {
                     ArrayList<String> chans = cBotChannels(i);
                     Iterator<String> it = chans.iterator();
                     while (it.hasNext()) {
                         String chan = it.next();
                         // Don't echo back to sending channel
-                        if (msg.getSource() == EndPoint.IRC && msg.srcBot == i && msg.srcChannel.equals(chan)) continue;
+                        if (msg.getSource() == EndPoint.IRC && msg.srcBot == i && msg.srcChannel.equals(chan))
+                            continue;
                         // Send to all bots, channels with event enabled
-                        if ((tag == null || cChanCheckTag(tag, i, chan)) && (event == null || cEvents(realEvent, i, chan))) {
+                        if ((tag == null || cChanCheckTag(tag, i, chan))
+                                && (event == null || cEvents(realEvent, i, chan))) {
                             msg.trgBot = i;
                             msg.trgChannel = chan;
                             if (msg.getTarget() == EndPoint.BOTH)
                                 instances.get(i).sendMessage(chan, msg.asString(EndPoint.IRC));
-                            else instances.get(i).sendMessage(chan, msg.asString());
+                            else
+                                instances.get(i).sendMessage(chan, msg.asString());
                         }
                     }
                 }
             }
-            
+
             //Send to game (doesn't allow game to game)
-            if ((msg.getTarget() == EndPoint.GAME || msg.getTarget() == EndPoint.BOTH) && msg.getSource() == EndPoint.IRC) {
+            if ((msg.getTarget() == EndPoint.GAME || msg.getTarget() == EndPoint.BOTH)
+                    && msg.getSource() == EndPoint.IRC) {
                 realEvent = "irc-to-game." + event;
-                if ((tag == null || cChanCheckTag(tag, msg.srcBot, msg.srcChannel)) && (event == null || cEvents(realEvent, msg.srcBot, msg.srcChannel))) {
-                    for (Player pl: getServer().getOnlinePlayers()) {
+                if ((tag == null || cChanCheckTag(tag, msg.srcBot, msg.srcChannel))
+                        && (event == null || cEvents(realEvent, msg.srcBot, msg.srcChannel))) {
+                    for (Player pl : getServer().getOnlinePlayers()) {
                         if (pl != null) {
                             if (msg.getTarget() == EndPoint.BOTH)
                                 pl.sendMessage(msg.asString(EndPoint.GAME));
-                            else pl.sendMessage(msg.asString());
+                            else
+                                pl.sendMessage(msg.asString());
                         }
                     }
                 }
@@ -206,25 +218,28 @@ public class CraftIRC extends JavaPlugin {
             rme.printStackTrace();
         }
     }
-    
+
     protected void sendRawToBot(int bot, String message) {
         Minebot target = instances.get(bot);
         target.sendRawLineViaQueue(message);
     }
-    
-    /** CraftIRC API call - SendMessageToTag()
-     * Sends a message to an IRC tag
-     * @param message (String) - The message string to send to IRC, this will pass through CraftIRC formatter
+
+    /**
+     * CraftIRC API call - SendMessageToTag() Sends a message to an IRC tag
      * 
-     * @param tag (String) - The IRC target tag to receive the message
+     * @param message
+     *            (String) - The message string to send to IRC, this will pass
+     *            through CraftIRC formatter
+     * 
+     * @param tag
+     *            (String) - The IRC target tag to receive the message
      */
     public void sendMessageToTag(String message, String tag) {
         RelayedMessage rm = newMsg(EndPoint.PLUGIN, EndPoint.IRC);
         rm.message = message;
         this.sendMessage(rm, tag, null);
     }
-    
-    
+
     protected ArrayList<String> ircUserLists(String tag) {
         ArrayList<String> result = new ArrayList<String>();
         if (tag == null)
@@ -253,7 +268,7 @@ public class CraftIRC extends JavaPlugin {
         }
     }
 
-    public void setDebug(boolean d) {
+    protected void setDebug(boolean d) {
         debug = d;
 
         for (int i = 0; i < bots.size(); i++)
@@ -262,7 +277,7 @@ public class CraftIRC extends JavaPlugin {
         log.info(NAME + " DEBUG [" + (d ? "ON" : "OFF") + "]");
     }
 
-    public boolean isDebug() {
+    protected boolean isDebug() {
         return debug;
     }
 
@@ -440,11 +455,11 @@ public class CraftIRC extends JavaPlugin {
     protected String cChanName(int bot, String channel) {
         return getChanNode(bot, channel).getString("name", "#changeme");
     }
-    
+
     protected String cChanTag(int bot, String channel) {
         return getChanNode(bot, channel).getString("tag", String.valueOf(bot) + "_" + channel);
     }
-    
+
     protected String cChanPassword(int bot, String channel) {
         return getChanNode(bot, channel).getString("password", "");
     }
@@ -477,88 +492,103 @@ public class CraftIRC extends JavaPlugin {
             return true;
         return false;
     }
-    
+
     protected enum HoldType {
         CHAT, JOINS, QUITS, KICKS, BANS
     }
-    
+
     protected class RemoveHoldTask extends TimerTask {
         private CraftIRC plugin;
         private HoldType ht;
+
         protected RemoveHoldTask(CraftIRC plugin, HoldType ht) {
             super();
             this.plugin = plugin;
             this.ht = ht;
         }
+
         public void run() {
             this.plugin.hold.put(ht, false);
         }
     }
-    
+
     protected boolean isHeld(HoldType ht) {
         return hold.get(ht);
     }
-    
+
     protected boolean hasPerms() {
         return perms != null;
     }
-    
+
     protected boolean checkPerms(Player pl, String path) {
-        if (perms == null) return true;
-        if (pl != null) return perms.has(pl, path);
+        if (perms == null)
+            return true;
+        if (pl != null)
+            return perms.has(pl, path);
         return false;
     }
-    
+
     protected boolean checkPerms(String pl, String path) {
-        if (perms == null) return true;
+        if (perms == null)
+            return true;
         Player pit = getServer().getPlayer(pl);
-        if (pit != null) return perms.has(pit, path);
+        if (pit != null)
+            return perms.has(pit, path);
         return false;
     }
-    
+
     protected String colorizeName(String name) {
         Pattern color_codes = Pattern.compile("§[0-9a-f]");
         Matcher find_colors = color_codes.matcher(name);
         while (find_colors.find()) {
-            name = find_colors.replaceFirst(Character.toString((char) 3) + String.format("%02d", cColorIrcFromGame(find_colors.group())));
+            name = find_colors.replaceFirst(Character.toString((char) 3)
+                    + String.format("%02d", cColorIrcFromGame(find_colors.group())));
             find_colors = color_codes.matcher(name);
         }
         return name;
     }
-        
+
     protected String getPermPrefix(String pl) {
-        if (perms == null) return "";
+        if (perms == null)
+            return "";
         String group = perms.getGroup(pl);
-        if (group == null) return "";
+        if (group == null)
+            return "";
         String result = perms.getGroupPrefix(group);
-        if (result == null) return "";
-        return colorizeName(result.replaceAll("&([0-9a-f])", "§$1"));
-    }
-    
-    protected String getPermSuffix(String pl) {
-        if (perms == null) return "";
-        String group = perms.getGroup(pl);
-        if (group == null) return "";
-        String result = perms.getGroupSuffix(group);
-        if (result == null) return "";
+        if (result == null)
+            return "";
         return colorizeName(result.replaceAll("&([0-9a-f])", "§$1"));
     }
 
-    public static boolean queueConsoleCommand(Server server, String cmd) {
-    
+    protected String getPermSuffix(String pl) {
+        if (perms == null)
+            return "";
+        String group = perms.getGroup(pl);
+        if (group == null)
+            return "";
+        String result = perms.getGroupSuffix(group);
+        if (result == null)
+            return "";
+        return colorizeName(result.replaceAll("&([0-9a-f])", "§$1"));
+    }
+}
+  /* 
+      public static boolean queueConsoleCommand(Server server, String cmd) {
+
         try {
             Field f = CraftServer.class.getDeclaredField("console");
             f.setAccessible(true);
             MinecraftServer ms = (MinecraftServer) f.get(server);
-            
+
             if ((!ms.g) && (MinecraftServer.a(ms))) {
                 ms.a(cmd, ms);
                 return true;
             }
-    
+
         } catch (Exception e) {
         }
-    
+
         return false;
     }
-}
+ 
+*/

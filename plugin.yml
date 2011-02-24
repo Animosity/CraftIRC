@@ -1,5 +1,5 @@
 name: CraftIRC
-main: com.animosity.craftirc.CraftIRC
+main: com.ensifera.animosity.craftirc.CraftIRC
 version: 2.0 BETA
 commands:
   irc:
