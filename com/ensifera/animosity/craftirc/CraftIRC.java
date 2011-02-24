@@ -181,7 +181,7 @@ public class CraftIRC extends JavaPlugin {
                     while (it.hasNext()) {
                         String chan = it.next();
                         // Don't echo back to sending channel
-                        if (msg.getSource() == EndPoint.IRC && msg.srcBot == i && msg.srcChannel.equals(chan))
+                        if (msg.getSource() == EndPoint.IRC && msg.srcBot == i && msg.srcChannel.equalsIgnoreCase(chan))
                             continue;
                         // Send to all bots, channels with event enabled
                         if ((tag == null || cChanCheckTag(tag, i, chan))
