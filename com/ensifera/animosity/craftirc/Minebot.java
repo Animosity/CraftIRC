@@ -45,6 +45,7 @@ public class Minebot extends PircBot implements Runnable {
     private ArrayList<String> ircCmdPrefixes;
 
     protected Minebot(CraftIRC plugin, int botId) {
+        super();
         this.plugin = plugin;
         this.botId = botId;
     }
@@ -89,7 +90,15 @@ public class Minebot extends PircBot implements Runnable {
 
         try {
             this.setAutoNickChange(true);
-
+            
+            String localAddr = this.plugin.cBindLocalAddr();
+            if (!localAddr.isEmpty()) {
+                
+                if (this.bindLocalAddr(localAddr, this.ircPort)) {
+                    CraftIRC.log.info(CraftIRC.NAME + " - BINDING socket to " + localAddr + ":" + this.ircPort);
+                }
+            }
+            
             if (this.ssl) {
                 CraftIRC.log.info(CraftIRC.NAME + " - Connecting to " + this.ircServer + ":" + this.ircPort + " [SSL]");
                 this.connect(this.ircServer, this.ircPort, this.ircPass, new TrustingSSLSocketFactory());

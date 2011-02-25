@@ -57,7 +57,9 @@ settings:
       #Custom blocks define custom variables you can use within formatting strings
       botname: ''
       network: ''
-      
+  # Optional: Bind to a non-default local address	  
+  # bind-address: 127.0.0.1
+  
   events:
     #### Turn different types of messages on and off here. cancelled-chat only exists in the global scope; The remaining
     ####  events can be redefined in the bot or channel scopes (within an events: block). In irc-to-irc, the source

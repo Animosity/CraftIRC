@@ -388,6 +388,11 @@ public class CraftIRC extends JavaPlugin {
             return cColorGameFromName("foreground");
     }
 
+    //For binding Minebot to a particular local address
+    protected String cBindLocalAddr() {
+        return getConfiguration().getString("settings.bind-address","");
+    }
+    
     protected ArrayList<String> cBotChannels(int bot) {
         return channames.get(bot);
     }

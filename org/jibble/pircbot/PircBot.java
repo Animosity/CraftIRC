@@ -25,8 +25,10 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -87,6 +89,7 @@ public abstract class PircBot implements ReplyConstants, PircBotLogger {
 
 	private static final String PREFIX_DEF = "PREFIX=";
 	private SocketFactory _socketFactory = null;
+	private SocketAddress bindLocalAddr = null; // CraftIRC
 
 	/**
 	 * Constructs a PircBot with the default settings. Your own constructors in
@@ -99,6 +102,16 @@ public abstract class PircBot implements ReplyConstants, PircBotLogger {
 		// default to PREFIX=(ov)@+
 		_userPrefixes.put("o", "@");
 		_userPrefixes.put("v", "+");
+	}
+	
+	public boolean bindLocalAddr(String localAddr, int port) {
+	    try {
+            this.bindLocalAddr = new InetSocketAddress(InetAddress.getByName(localAddr), port);
+            return true;
+        } catch (Exception e) {
+            this.bindLocalAddr = null;
+            return false;
+        }
 	}
 
 	/**
@@ -230,6 +243,8 @@ public abstract class PircBot implements ReplyConstants, PircBotLogger {
 		} else {
 			socket = socketFactory.createSocket(hostname, port);
 		}
+		
+		if (this.bindLocalAddr != null) socket.bind(this.bindLocalAddr); // CraftIRC
 
 		try {
 			this.log("*** Connected to server.");
