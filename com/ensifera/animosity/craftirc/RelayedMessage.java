@@ -69,7 +69,8 @@ public class RelayedMessage {
         String msgout = message;
         int formattingBot = trgBot;
         String formattingChannel = trgChannel;
-        if (source == EndPoint.PLUGIN || target == EndPoint.PLUGIN) 
+ 
+        if (source == EndPoint.PLUGIN || target == EndPoint.PLUGIN || target == EndPoint.UNKNOWN) 
             result = this.message;
         if (source == EndPoint.GAME && target == EndPoint.IRC)
             result = this.plugin.cFormatting("game-to-irc." + formatting, trgBot, trgChannel);

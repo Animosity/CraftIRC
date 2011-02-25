@@ -302,7 +302,16 @@ public class Minebot extends PircBot implements Runnable {
 
                 if ((message.startsWith(cmdPrefix + "cmd ") || message.startsWith(cmdPrefix + "c "))
                         && splitMessage.length > 1) {
-                    if (this.routeCommand(command)) {
+                    
+                    RelayedMessage ircConCmd = this.plugin.newMsg(EndPoint.IRC, EndPoint.UNKNOWN);
+                    ircConCmd.formatting = "";
+                    ircConCmd.sender = sender;
+                    ircConCmd.srcBot = botId;
+                    ircConCmd.srcChannel = channel;
+                    ircConCmd.message = message.replaceFirst(cmdPrefix, "");
+                    ircConCmd.updateTag();
+                    
+                    if (this.routeCommand(command, ircConCmd)) {
                         this.sendNotice(sender, "Executed console command: " + command);
                         if (this.plugin.isDebug()) {
                             CraftIRC.log.info(String.format(CraftIRC.NAME + " Authorized User %s executed command %s", sender, message));
@@ -494,7 +503,7 @@ public class Minebot extends PircBot implements Runnable {
      * @param command
      *            -
      */
-    private boolean routeCommand(String fullCommand) {
+    private boolean routeCommand(String fullCommand, RelayedMessage ircConCmd) {
         String rootCommand = fullCommand.split(" ")[0];
         if (this.plugin.cConsoleCommands().contains(rootCommand)
                 && this.plugin.defaultConsoleCommands.contains(rootCommand)) {
@@ -503,7 +512,8 @@ public class Minebot extends PircBot implements Runnable {
                         + " -- rootCommand=" + rootCommand));
                 CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand() -> queueConsoleCommand()"));
             }
-            ConsoleCommandSender console = new ConsoleCommandSender(this.plugin.server);
+            
+            IRCConsoleCommandSender console = new IRCConsoleCommandSender(this.plugin.server, ircConCmd, true);
             if (((CraftServer) this.plugin.server).dispatchCommand(console, fullCommand)) {
                 return true;
             }
