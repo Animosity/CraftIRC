@@ -12,7 +12,6 @@ import org.bukkit.command.ConsoleCommandSender;
  */
 public class IRCConsoleCommandSender extends ConsoleCommandSender {
     private Boolean op = false;
-    private Minebot srcBot = null;
     private RelayedMessage ircConCmd = null;
     
  
@@ -24,16 +23,19 @@ public class IRCConsoleCommandSender extends ConsoleCommandSender {
      */
     public IRCConsoleCommandSender(Server server, RelayedMessage ircConCmd, Boolean isOp) {
         super(server);
+        this.ircConCmd = ircConCmd;
         this.op = isOp;
-        this.srcBot = srcBot;
     }
     
     public boolean isOp() { return this.op; }
     
     @Override
+    public boolean isPlayer() { return false; }
+    
+    @Override
     public void sendMessage(String message) {
         try {
-            srcBot.getPlugin().sendMessageToTag("[CONSOLE] " + message, ircConCmd.srcChannelTag);
+            ircConCmd.getPlugin().sendMessageToTag(">> " + message, ircConCmd.srcChannelTag);
         } catch (Exception e) {
             e.printStackTrace();
         }

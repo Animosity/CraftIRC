@@ -46,6 +46,11 @@ public class RelayedMessage {
     public void updateTag() {
         srcChannelTag = plugin.chanTagMap.get(new DualKey(srcBot, srcChannel));
     }
+    
+    public CraftIRC getPlugin() {
+        return this.plugin;
+    }
+    
     public EndPoint getSource() {
         return source;
     }

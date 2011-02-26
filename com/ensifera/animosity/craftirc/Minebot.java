@@ -508,17 +508,12 @@ public class Minebot extends PircBot implements Runnable {
         if (this.plugin.cConsoleCommands().contains(rootCommand)
                 && this.plugin.defaultConsoleCommands.contains(rootCommand)) {
             if (this.plugin.isDebug()) {
-                CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand() fullCommand=" + fullCommand
+                CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand(default) fullCommand=" + fullCommand
                         + " -- rootCommand=" + rootCommand));
-                CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand() -> queueConsoleCommand()"));
+                CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand(default) -> queueConsoleCommand()"));
             }
-            
-            IRCConsoleCommandSender console = new IRCConsoleCommandSender(this.plugin.server, ircConCmd, true);
-            if (((CraftServer) this.plugin.server).dispatchCommand(console, fullCommand)) {
-                return true;
-            }
-            //if (this.plugin.queueConsoleCommand(this.plugin.server, fullCommand))
-            //    return true;
+     
+          this.plugin.enqueueConsoleCommand(fullCommand);
 
         } else {
             if (this.plugin.isDebug()) {
@@ -526,7 +521,7 @@ public class Minebot extends PircBot implements Runnable {
                         + " -- rootCommand=" + rootCommand));
                 CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand() -> Bukkit dispatchCommand()"));
             }
-            ConsoleCommandSender console = new ConsoleCommandSender(this.plugin.server);
+            IRCConsoleCommandSender console = new IRCConsoleCommandSender(this.plugin.server, ircConCmd, true);
             if (((CraftServer) this.plugin.server).dispatchCommand(console, fullCommand)) {
                 return true;
             }
