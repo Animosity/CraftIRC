@@ -25,11 +25,6 @@ public class CraftIRCPluginExample extends JavaPlugin {
     protected CraftIRCPluginExampleListener ircListener;
     ArrayList<String> ircTags = new ArrayList<String>();
 
-    public CraftIRCPluginExample(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder,
-            File plugin, ClassLoader cLoader) {
-        super(pluginLoader, instance, desc, folder, plugin, cLoader);
-    }
-
     /* (non-Javadoc)
      * @see org.bukkit.plugin.Plugin#onEnable()
      */
