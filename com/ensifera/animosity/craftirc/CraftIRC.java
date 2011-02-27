@@ -320,6 +320,7 @@ public class CraftIRC extends JavaPlugin {
     }
 
     private boolean cmdRawIrcCommand(CommandSender sender, String[] args) {
+        if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " cmdRawIrcCommand(sender=" + sender.toString() + ", args=" + Util.combineSplit(0, args, " ")));
         if (args.length < 2)
             return false;
         this.sendRawToBot(Integer.parseInt(args[0]), Util.combineSplit(1, args, " "));
@@ -384,6 +385,7 @@ public class CraftIRC extends JavaPlugin {
     }
 
     protected void sendRawToBot(int bot, String message) {
+        if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " sendRawToBot(bot=" + bot + ", message=" + message));
         Minebot target = instances.get(bot);
         target.sendRawLineViaQueue(message);
     }
@@ -403,7 +405,16 @@ public class CraftIRC extends JavaPlugin {
         rm.message = message;
         this.sendMessage(rm, tag, null);
     }
-
+    
+    /** TODO: MAKE THIS
+     * CraftIRC API call - getBotFromTag(tag) Gets the bot id# from a source tag
+     * @param tag
+     * @return
+     */
+    private int getBotFromTag(String tag) {
+        return 0;
+    }
+    
     protected ArrayList<String> ircUserLists(String tag) {
         ArrayList<String> result = new ArrayList<String>();
         if (tag == null)
