@@ -21,6 +21,7 @@ public class CraftIRCListener extends PlayerListener {
         this.plugin = plugin;
     }
 
+    /*
     public void onPlayerCommand(PlayerChatEvent event) {
         String[] split = event.getMessage().split(" ");
         // ACTION/EMOTE can't be claimed, so use onPlayerCommand
@@ -31,7 +32,8 @@ public class CraftIRCListener extends PlayerListener {
             msg.message = Util.combineSplit(1, split, " ");
             this.plugin.sendMessage(msg, null, "all-chat");
         }
-    }
+    } 
+    */
 
     public void onPlayerChat(PlayerChatEvent event) {
         if (this.plugin.isHeld(CraftIRC.HoldType.CHAT))
