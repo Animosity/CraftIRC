@@ -21,10 +21,9 @@ public class CraftIRCListener extends PlayerListener {
         this.plugin = plugin;
     }
 
-    /*
-    public void onPlayerCommand(PlayerChatEvent event) {
+    public void onPlayerCommandPreprocess(PlayerChatEvent event) {
         String[] split = event.getMessage().split(" ");
-        // ACTION/EMOTE can't be claimed, so use onPlayerCommand
+        // ACTION/EMOTE can't be claimed, so use onPlayerCommandPreprocess
         if (split[0].equalsIgnoreCase("/me")) {
             RelayedMessage msg = this.plugin.newMsg(EndPoint.GAME, EndPoint.IRC);
             msg.formatting = "action";
@@ -33,8 +32,7 @@ public class CraftIRCListener extends PlayerListener {
             this.plugin.sendMessage(msg, null, "all-chat");
         }
     } 
-    */
-
+    
     public void onPlayerChat(PlayerChatEvent event) {
         if (this.plugin.isHeld(CraftIRC.HoldType.CHAT))
             return;

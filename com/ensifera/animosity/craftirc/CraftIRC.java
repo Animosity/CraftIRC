@@ -100,7 +100,7 @@ public class CraftIRC extends JavaPlugin {
                 channames.put(botID, cn);
             }
 
-            CraftIRC.log.info(String.format(CraftIRC.NAME + " Channel tag map: " + chanTagMap.toString()));
+            if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " Channel tag map: " + chanTagMap.toString()));
 
             //Permissions
             Plugin check = this.getServer().getPluginManager().getPlugin("Permissions");

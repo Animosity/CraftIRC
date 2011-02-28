@@ -243,8 +243,12 @@ public abstract class PircBot implements ReplyConstants, PircBotLogger {
 		} else {
 			socket = socketFactory.createSocket(hostname, port);
 		}
-		
-		if (this.bindLocalAddr != null) socket.bind(this.bindLocalAddr); // CraftIRC
+		// CraftIRC Start
+		if (this.bindLocalAddr != null) {
+		    socket.setReuseAddress(true);
+		    socket.bind(this.bindLocalAddr); 
+		}
+		// CraftIRC End
 
 		try {
 			this.log("*** Connected to server.");
