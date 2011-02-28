@@ -1,0 +1,14 @@
+README
+
+LICENSING
+
+My license is simple: you must gain permisison from me if you wish to release any derivative works from any of the sources hosted on this repository
+Educational use, as to learn the good and bad coding practices found in these sources is free; you may not redistribute a derivative of these sources as another product however without express permisison.
+
+I reserve the right to utilize any changes found on your forks which have not been pushed/contributed to this main repository if it is deemed awesome.
+
+
+BUILDING
+
+Requires: Bukkit, CraftBukkit, and Permissions (by Niji) on your classpath
+Package the plugin.yml in the root of the jar.
