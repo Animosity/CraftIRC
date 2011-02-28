@@ -179,27 +179,27 @@ public class CraftIRC extends JavaPlugin {
             
             if (commandName.equals("irc")) {
                 if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener onCommand(): commandName=irc" + " " + args.toString()));
-                if ( ((sender instanceof Player) && !this.checkPerms((Player) sender, "craftirc.irc")) || (sender instanceof IRCConsoleCommandSender ))
+                if ( ((sender instanceof Player) && this.checkPerms((Player) sender, "craftirc.irc")) || (sender instanceof IRCConsoleCommandSender ))
                     return this.cmdMsgToAll(sender, args);
             
             } else if (commandName.equals("ircm")) {
                 if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener onCommand(): commandName=ircm"));
-                if ( ((sender instanceof Player) && !this.checkPerms((Player) sender, "craftirc.ircm")) || (sender instanceof IRCConsoleCommandSender )) 
+                if ( ((sender instanceof Player) && this.checkPerms((Player) sender, "craftirc.ircm")) || (sender instanceof IRCConsoleCommandSender )) 
                     return this.cmdMsgToTag(sender, args);                
                 
             } else if (commandName.equals("ircwho")) {
                 if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener onCommand(): commandName=ircwho"));
-                if ( ((sender instanceof Player) && !this.checkPerms((Player) sender, "craftirc.ircwho")) || (sender instanceof IRCConsoleCommandSender ))
+                if ( ((sender instanceof Player) && this.checkPerms((Player) sender, "craftirc.ircwho")) || (sender instanceof IRCConsoleCommandSender ))
                     return this.cmdGetIrcUserList(sender, args);
              
             } else if (commandName.equals("admins!")) {
                 if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener onCommand(): commandName=admins!"));
-                if ( ((sender instanceof Player) && !this.checkPerms((Player) sender, "craftirc.admins!")) || (sender instanceof IRCConsoleCommandSender )) 
+                if ( ((sender instanceof Player) && this.checkPerms((Player) sender, "craftirc.admins!")) || (sender instanceof IRCConsoleCommandSender )) 
                     return this.cmdNotifyIrcAdmins(sender, args);
                 
             } else if (commandName.equals("ircraw")) {
                 if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener onCommand(): commandName=ircraw"));
-                if ( ((sender instanceof Player) && !this.checkPerms((Player) sender, "craftirc.ircraw")) || (sender instanceof IRCConsoleCommandSender )) 
+                if ( ((sender instanceof Player) && this.checkPerms((Player) sender, "craftirc.ircraw")) || (sender instanceof IRCConsoleCommandSender )) 
                     return this.cmdRawIrcCommand(sender, args);
             } else
                 return false;
@@ -233,14 +233,20 @@ public class CraftIRC extends JavaPlugin {
 
     private boolean cmdMsgToAll(CommandSender sender, String[] args) {
         try {
-            if (args.length == 0)
+            if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener cmdMsgToAll()"));
+            if (args.length == 0) {
+                if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener: args.length == 0"));
                 return false;
+            }
             String msgToSend = Util.combineSplit(0, args, " ");
             RelayedMessage msg = this.newMsg(EndPoint.GAME, EndPoint.IRC);
-            if (sender instanceof Player)
+            if (sender instanceof Player) {
+                if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener: sender is a Player"));
                 msg.sender = ((Player) sender).getName();
-            else
+            } else {
+                if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener sender is not a Player"));
                 msg.sender = "SERVER";
+            }
             msg.formatting = "chat";
             msg.message = msgToSend;
             this.sendMessage(msg, null, null);
@@ -306,8 +312,11 @@ public class CraftIRC extends JavaPlugin {
 
     private boolean cmdNotifyIrcAdmins(CommandSender sender, String[] args) {
         try {
-            if (args.length == 0 || !(sender instanceof Player))
+            if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener cmdNotifyIrcAdmins()"));
+            if (args.length == 0 || !(sender instanceof Player)) {
+                if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener cmdNotifyIrcAdmins() - args.length == 0 or Sender != player "));
                 return false;
+            }
             this.noticeAdmins("[Admin notice from " + ((Player) sender).getName() + "] "
                     + Util.combineSplit(0, args, " "));
             sender.sendMessage("Admin notice sent.");
@@ -388,7 +397,12 @@ public class CraftIRC extends JavaPlugin {
         Minebot target = instances.get(bot);
         target.sendRawLineViaQueue(message);
     }
-
+    
+    protected void sendRawToBotViaTag(String tag, String message) {
+        if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " sendRawToBot(tag=" + tag + ", message=" + message));
+        //Minebot target = instances.get(bot);
+        //target.sendRawLineViaQueue(message);
+    }
     /**
      * CraftIRC API call - SendMessageToTag() Sends a message to an IRC tag
      * 
