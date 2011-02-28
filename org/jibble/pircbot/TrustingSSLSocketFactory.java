@@ -65,6 +65,15 @@ public class TrustingSSLSocketFactory extends SSLSocketFactory {
 
     /*
      * (non-Javadoc)
+     * @see javax.net.SocketFactory#createSocket()
+     */
+    @Override
+    public Socket createSocket() throws IOException, UnknownHostException {
+        return prepare((SSLSocket)factory.createSocket());
+    }
+    
+    /*
+     * (non-Javadoc)
      * @see javax.net.SocketFactory#createSocket(java.lang.String, int)
      */
     @Override
