@@ -16,15 +16,16 @@ public class RelayedMessage {
     private CraftIRC plugin;
     private EndPoint source;        //Origin endpoint of the message
     private EndPoint target;        //Target endpoint of the message
-    public String formatting;        //Formatting string ID; Mandatory before toString
-    public String sender;            //Sender of the message/Main subject
-    public String message;            //Message, reason, target nickname
+    public String formatting;       //Formatting string ID; Mandatory before toString
+    public String sender;           //Sender of the message/Main subject
+    public String message;          //Message, reason, target nickname
     public String moderator;        //Person who kicked or banned, if applicable
-    public String srcChannel;        //Source channel; Mandatory before toString if the origin is IRC
-    public int srcBot;                //Source bot ID; Mandatory before toString if the origin is IRC
-    public String trgChannel;        //Target channel; Mandatory before toString if the target is IRC
-    public int trgBot;                //Target bot ID; Mandatory before toString if the origin is IRC
+    public String srcChannel;       //Source channel; Mandatory before toString if the origin is IRC
+    public int srcBot;              //Source bot ID; Mandatory before toString if the origin is IRC
+    public String trgChannel;       //Target channel; Mandatory before toString if the target is IRC
+    public int trgBot;              //Target bot ID; Mandatory before toString if the origin is IRC
     public String srcChannelTag;    //Source tag; Contains the tag of the source channel
+    public String world;            //Source tag; The name of the world the Player sender is chatting from
     
     protected RelayedMessage(CraftIRC plugin, EndPoint source, EndPoint target) {
         this.plugin = plugin;
@@ -39,6 +40,7 @@ public class RelayedMessage {
         srcBot = -1;
         trgBot = -1;
         srcChannelTag = plugin.chanTagMap.get(new DualKey(srcBot, srcChannel));
+        world = "";
         //System.out.println("RelayedMessage: "+srcBot+ " " + srcChannel + " srcChannelTag = " + srcChannelTag);
         //if (srcChannelTag == null) srcChannelTag = String.valueOf(this.srcBot) + "_" + srcChannel; 
         
@@ -117,6 +119,7 @@ public class RelayedMessage {
         result = result.replaceAll("%moderator%", moderator);
         result = result.replaceAll("%srcChannel%", srcChannel);
         result = result.replaceAll("%trgChannel%", trgChannel);
+        result = result.replaceAll("%world%", world);
         if (source == EndPoint.GAME && this.plugin.hasPerms() && this.plugin.cChanNameColors(trgBot, trgChannel)) {
             result = result.replaceAll("%prefix%", this.plugin.getPermPrefix(sender));
             result = result.replaceAll("%suffix%", this.plugin.getPermSuffix(sender));

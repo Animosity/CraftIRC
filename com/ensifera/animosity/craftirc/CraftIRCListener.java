@@ -45,6 +45,7 @@ public class CraftIRCListener extends PlayerListener {
             msg.formatting = "chat";
             msg.sender = event.getPlayer().getName();
             msg.message = event.getMessage();
+            msg.world = event.getPlayer().getWorld().getName();
             this.plugin.sendMessage(msg, null, "all-chat");
 
         } catch (Exception e) {

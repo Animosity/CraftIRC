@@ -13,7 +13,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
-import com.ensifera.animosity.craftirc.*;
+import com.ensifera.animosity.craftirc.CraftIRC;
 
 /**
  * @author Animosity

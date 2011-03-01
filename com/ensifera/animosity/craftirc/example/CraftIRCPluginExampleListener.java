@@ -30,7 +30,6 @@ public class CraftIRCPluginExampleListener extends CustomEventListener implement
             if (!ircEvent.isHandled()) {
                 switch (ircEvent.eventMode) {
                 case COMMAND:
-
                     if (ircEvent.msgData.message.startsWith("example")) {
                         this.plugin.sendMessageToTag("This is an example custom CraftIRC command.",
                                 ircEvent.msgData.srcChannelTag);
