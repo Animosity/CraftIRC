@@ -57,6 +57,7 @@ settings:
       #Custom blocks define custom variables you can use within formatting strings
       botname: ''
       network: ''
+  
   # Optional: Bind to a non-default local address	  
   # bind-address: 127.0.0.1
   

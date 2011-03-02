@@ -290,7 +290,7 @@ public class Minebot extends PircBot implements Runnable {
         }
         if (ignores.contains(sender))
             return;
-
+        
         try {
             String[] splitMessage = message.split(" ");
             String command = Util.combineSplit(1, splitMessage, " ");
@@ -507,8 +507,10 @@ public class Minebot extends PircBot implements Runnable {
      */
     private boolean routeCommand(String fullCommand, RelayedMessage ircConCmd) {
         String rootCommand = fullCommand.split(" ")[0];
-        if (this.plugin.cConsoleCommands().contains(rootCommand)
-                && this.plugin.defaultConsoleCommands.contains(rootCommand)) {
+        if (!this.plugin.defaultConsoleCommands.contains(rootCommand)) 
+            return false;
+        
+        if (this.plugin.cConsoleCommands().contains(rootCommand)) {
             if (this.plugin.isDebug()) {
                 CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand(default) fullCommand=" + fullCommand
                         + " -- rootCommand=" + rootCommand));

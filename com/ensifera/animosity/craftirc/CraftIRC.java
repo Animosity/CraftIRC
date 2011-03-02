@@ -53,7 +53,7 @@ public class CraftIRC extends JavaPlugin {
     public static final String NAME = "CraftIRC";
     public static String VERSION;
     protected static final Logger log = Logger.getLogger("Minecraft");
-    protected static List<String> defaultConsoleCommands = Arrays.asList("kick", "ban", "pardon", "ban-ip",
+    public static List<String> defaultConsoleCommands = Arrays.asList("kick", "ban", "pardon", "ban-ip",
             "pardon-ip", "op", "deop", "tp", "give", "tell", "stop", "save-all", "save-off", "save-on", "say");
     
     //Misc class attributes
