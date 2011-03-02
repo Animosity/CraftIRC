@@ -1,6 +1,6 @@
 name: CraftIRC
 main: com.ensifera.animosity.craftirc.CraftIRC
-version: 2.0 Preview 5
+version: 2.0 Preview 5b
 commands:
   irc:
     description: Sends a message to all IRC channels

@@ -507,8 +507,8 @@ public class Minebot extends PircBot implements Runnable {
      */
     private boolean routeCommand(String fullCommand, RelayedMessage ircConCmd) {
         String rootCommand = fullCommand.split(" ")[0];
-        if (!this.plugin.defaultConsoleCommands.contains(rootCommand)) 
-            return false;
+        //if (!this.plugin.defaultConsoleCommands.contains(rootCommand)) 
+        //    return false;
         
         if (this.plugin.cConsoleCommands().contains(rootCommand)) {
             if (this.plugin.isDebug()) {
