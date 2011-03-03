@@ -398,8 +398,13 @@ public class CraftIRC extends JavaPlugin {
         target.sendRawLineViaQueue(message);
     }
     
-    protected void sendRawToBotViaTag(String tag, String message) {
-        if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " sendRawToBot(tag=" + tag + ", message=" + message));
+    
+    /** TODO: MAKE THIS
+     * @param rawMessage
+     * @param tag
+     */
+    private void sendRawToBotViaTag(String rawMessage, String tag) {
+        if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " sendRawToBot(tag=" + tag + ", message=" + rawMessage));
         //Minebot target = instances.get(bot);
         //target.sendRawLineViaQueue(message);
     }

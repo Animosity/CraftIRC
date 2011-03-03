@@ -109,32 +109,32 @@ public class RelayedMessage {
         if (result == null) throw new RelayedMessageException(this);
         result = result.replaceAll("%k([0-9]{1,2})%", Character.toString((char) 3) + "$1");
         result = result.replaceAll("%k([0-9]{1,2}),([0-9]{1,2})%", Character.toString((char) 3) + "$1,$2");
-        result = result.replaceAll("%k%", Character.toString((char) 3));
-        result = result.replaceAll("%o%", Character.toString((char) 15));
-        result = result.replaceAll("%b%", Character.toString((char) 2));
-        result = result.replaceAll("%u%", Character.toString((char) 31));
-        result = result.replaceAll("%r%", Character.toString((char) 22));
-        result = result.replaceAll("%sender%", sender);
-        result = result.replaceAll("%message%", msgout);
-        result = result.replaceAll("%moderator%", moderator);
-        result = result.replaceAll("%srcChannel%", srcChannel);
-        result = result.replaceAll("%trgChannel%", trgChannel);
-        result = result.replaceAll("%world%", world);
+        result = result.replace("%k%", Character.toString((char) 3));
+        result = result.replace("%o%", Character.toString((char) 15));
+        result = result.replace("%b%", Character.toString((char) 2));
+        result = result.replace("%u%", Character.toString((char) 31));
+        result = result.replace("%r%", Character.toString((char) 22));
+        result = result.replace("%sender%", sender);
+        result = result.replace("%message%", msgout);
+        result = result.replace("%moderator%", moderator);
+        result = result.replace("%srcChannel%", srcChannel);
+        result = result.replace("%trgChannel%", trgChannel);
+        result = result.replace("%world%", world);
         if (source == EndPoint.GAME && this.plugin.hasPerms() && this.plugin.cChanNameColors(trgBot, trgChannel)) {
-            result = result.replaceAll("%prefix%", this.plugin.getPermPrefix(sender));
-            result = result.replaceAll("%suffix%", this.plugin.getPermSuffix(sender));
+            result = result.replace("%prefix%", this.plugin.getPermPrefix(sender));
+            result = result.replace("%suffix%", this.plugin.getPermSuffix(sender));
             if (!moderator.equals("")) {
-                result = result.replaceAll("%modPrefix%", this.plugin.getPermPrefix(moderator));
-                result = result.replaceAll("%modSuffix%", this.plugin.getPermSuffix(moderator));
+                result = result.replace("%modPrefix%", this.plugin.getPermPrefix(moderator));
+                result = result.replace("%modSuffix%", this.plugin.getPermSuffix(moderator));
             } else {
-                result = result.replaceAll("%modPrefix%", "");
-                result = result.replaceAll("%modSuffix%", "");
+                result = result.replace("%modPrefix%", "");
+                result = result.replace("%modSuffix%", "");
             }
         } else {
-            result = result.replaceAll("%prefix%", "");
-            result = result.replaceAll("%suffix%", "");
-            result = result.replaceAll("%modPrefix%", "");
-            result = result.replaceAll("%modSuffix%", "");
+            result = result.replace("%prefix%", "");
+            result = result.replace("%suffix%", "");
+            result = result.replace("%modPrefix%", "");
+            result = result.replace("%modSuffix%", "");
         }
         String aux;
         Pattern other_vars = Pattern.compile("%([A-Za-z0-9]+)%");
