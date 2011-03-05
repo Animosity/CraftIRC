@@ -316,8 +316,9 @@ public class Minebot extends PircBot implements Runnable {
                         if (this.plugin.isDebug()) {
                             CraftIRC.log.info(String.format(CraftIRC.NAME + " Authorized User %s executed command %s", sender, message));
                         }
+                        return;
                     }
-                    return;
+                    
                 } else if (message.startsWith(cmdPrefix + "botsay ") && splitMessage.length > 1) {
                     if (this.channels.contains(splitMessage[1])) {
                         command = Util.combineSplit(2, splitMessage, " ");
@@ -334,26 +335,25 @@ public class Minebot extends PircBot implements Runnable {
                     this.sendRawLine(command);
                     this.sendNotice(sender, "Raw IRC string sent");
                     return;
-                } else {
-                    // IRCEvent - AUTHED_COMMAND
-                    if (this.plugin.isDebug()) {
-                        CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.AUTHED_COMMAND"));
-                    }
-                    RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
-                    msg.formatting = "";
-                    msg.sender = sender;
-                    msg.srcBot = botId;
-                    msg.srcChannel = channel;
-                    msg.message = message.replaceFirst(cmdPrefix, "");
-                    msg.updateTag();
-                    // PLUGIN INTEROP
-                    msg.setTarget(EndPoint.PLUGIN);
-                    Event ie = new IRCEvent(Mode.AUTHED_COMMAND, msg);
-                    this.plugin.getServer().getPluginManager().callEvent(ie);
-                    if (((IRCEvent)ie).isHandled()) return;
+                } 
                     
+                // IRCEvent - AUTHED_COMMAND
+                if (this.plugin.isDebug()) {
+                    CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.AUTHED_COMMAND"));
                 }
-
+                RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
+                msg.formatting = "";
+                msg.sender = sender;
+                msg.srcBot = botId;
+                msg.srcChannel = channel;
+                msg.message = message.replaceFirst(cmdPrefix, "");
+                msg.updateTag();
+                // PLUGIN INTEROP
+                msg.setTarget(EndPoint.PLUGIN);
+                Event ie = new IRCEvent(Mode.AUTHED_COMMAND, msg);
+                this.plugin.getServer().getPluginManager().callEvent(ie);
+                if (((IRCEvent)ie).isHandled()) return;
+                
             } // End admin commands
 
             // Begin public commands
@@ -510,7 +510,12 @@ public class Minebot extends PircBot implements Runnable {
         //if (!this.plugin.defaultConsoleCommands.contains(rootCommand)) 
         //    return false;
         
-        if (this.plugin.cConsoleCommands().contains(rootCommand)) {
+        if (!this.plugin.cConsoleCommands().contains(rootCommand)){
+            if (this.plugin.isDebug()) { CraftIRC.log.info(String.format(CraftIRC.NAME + " Console command: %s not found in config.yml",rootCommand)); }
+            return false;
+        }
+        
+        if (this.plugin.defaultConsoleCommands.contains(rootCommand)) {
             if (this.plugin.isDebug()) {
                 CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand(default) fullCommand=" + fullCommand
                         + " -- rootCommand=" + rootCommand));
