@@ -64,12 +64,12 @@ public class CraftIRC extends JavaPlugin {
     private PermissionHandler perms = null;
     private ArrayList<Minebot> instances;
     private boolean debug;
-    private Timer holdTimer;
+    private Timer holdTimer = new Timer();
     protected HashMap<HoldType, Boolean> hold;
 
     //Bots and channels config storage
-    private ArrayList<ConfigurationNode> bots;
-    private ArrayList<ConfigurationNode> colormap;
+    private ArrayList<ConfigurationNode> bots = new ArrayList<ConfigurationNode>();
+    private ArrayList<ConfigurationNode> colormap = new ArrayList<ConfigurationNode>();
     private HashMap<Integer, ArrayList<ConfigurationNode>> channodes;
     private HashMap<Integer, ArrayList<String>> channames;
     protected HashMap<DualKey, String> chanTagMap;
@@ -77,12 +77,21 @@ public class CraftIRC extends JavaPlugin {
     public void onEnable() {
         try {
             PluginDescriptionFile desc = this.getDescription();
+            VERSION = desc.getVersion();
             server = this.getServer();
+           
             Field cfield = CraftServer.class.getDeclaredField("console");
             cfield.setAccessible(true);
             console = (MinecraftServer) cfield.get((CraftServer)getServer());
-            VERSION = desc.getVersion();
+            
             //Load node lists. Bukkit does it now, hurray!
+            if (null == getConfiguration().getKeys("settings")) {
+                CraftIRC.log.info(String.format(CraftIRC.NAME + " config.yml could not be found in plugins/CraftIRC/ -- disabling!"));
+                getServer().getPluginManager().disablePlugin(((Plugin) (this)));
+                return;
+            }
+            System.out.println(getConfiguration().getProperty("settings").toString());
+            System.out.println(getConfiguration().getProperty("bots").toString());
             bots = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("bots", null));
             colormap = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("colormap", null));
             channodes = new HashMap<Integer, ArrayList<ConfigurationNode>>();
@@ -95,7 +104,6 @@ public class CraftIRC extends JavaPlugin {
                     String channelName = it.next().getString("name");
                     chanTagMap.put(new DualKey(botID, channelName), this.cChanTag(botID, channelName));
                     cn.add(channelName);
-
                 }
                 channames.put(botID, cn);
             }
@@ -153,7 +161,10 @@ public class CraftIRC extends JavaPlugin {
                 holdTimer.schedule(new RemoveHoldTask(this, HoldType.BANS), now.getTime() + cHold("bans"));
             } else
                 hold.put(HoldType.BANS, false);
-
+            
+            // Not yet supported: Register custom "admins!" command alias
+            // this.getCommand("admins!").setAliases(Arrays.asList(this.cAdminsCmd()));
+            
             setDebug(cDebug());
         } catch (Exception e) {
             e.printStackTrace();
@@ -161,14 +172,16 @@ public class CraftIRC extends JavaPlugin {
     }
 
     public void onDisable() {
-
-        holdTimer.cancel();
-
-        //Disconnect bots
-        for (int i = 0; i < bots.size(); i++)
-            instances.get(i).disconnect();
-
-        log.info(NAME + " Disabled.");
+        try {
+            holdTimer.cancel();
+            //Disconnect bots
+            for (int i = 0; i < bots.size(); i++)
+                instances.get(i).disconnect();
+            
+            log.info(NAME + " Disabled.");
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public boolean onCommand(CommandSender sender, Command command, String commandLabel, String[] args) {

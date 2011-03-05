@@ -34,13 +34,18 @@ public class CraftIRCListener extends PlayerListener {
     } 
     
     public void onPlayerChat(PlayerChatEvent event) {
-        if (this.plugin.isHeld(CraftIRC.HoldType.CHAT))
+       
+        if (this.plugin.isHeld(CraftIRC.HoldType.CHAT)) {
             return;
+            
+        }
         // String[] split = message.split(" ");
         try {
-            if (event.isCancelled() && !this.plugin.cEvents("game-to-irc.cancelled-chat", -1, null))
+            if (this.plugin.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " onPlayerChat(): <%s> %s", event.getMessage(), event.getPlayer()));
+            if (event.isCancelled() && !this.plugin.cEvents("game-to-irc.cancelled-chat", -1, null)) {
+                if (this.plugin.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " onPlayerChat(CHAT CANCELLED!): <%s> %s", event.getMessage(), event.getPlayer()));
                 return;
-
+            }
             RelayedMessage msg = this.plugin.newMsg(EndPoint.GAME, EndPoint.IRC);
             msg.formatting = "chat";
             msg.sender = event.getPlayer().getName();
