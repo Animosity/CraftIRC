@@ -90,8 +90,6 @@ public class CraftIRC extends JavaPlugin {
                 getServer().getPluginManager().disablePlugin(((Plugin) (this)));
                 return;
             }
-            System.out.println(getConfiguration().getProperty("settings").toString());
-            System.out.println(getConfiguration().getProperty("bots").toString());
             bots = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("bots", null));
             colormap = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("colormap", null));
             channodes = new HashMap<Integer, ArrayList<ConfigurationNode>>();
