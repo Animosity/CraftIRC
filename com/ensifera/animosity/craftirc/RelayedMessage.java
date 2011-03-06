@@ -121,6 +121,7 @@ public class RelayedMessage {
         result = result.replace("%trgChannel%", trgChannel);
         result = result.replace("%world%", world);
         if (source == EndPoint.GAME && this.plugin.hasPerms() && this.plugin.cChanNameColors(trgBot, trgChannel)) {
+            if (this.plugin.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " RelayedMessage: hasPerms="+String.valueOf(this.plugin.hasPerms())+" cChanNameColors()="+String.valueOf(this.plugin.cChanNameColors(trgBot, trgChannel)))+", apply pre/suffixes ");
             result = result.replace("%prefix%", this.plugin.getPermPrefix(sender));
             result = result.replace("%suffix%", this.plugin.getPermSuffix(sender));
             if (!moderator.equals("")) {
@@ -131,6 +132,7 @@ public class RelayedMessage {
                 result = result.replace("%modSuffix%", "");
             }
         } else {
+            if (this.plugin.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " RelayedMessage: hasPerms="+String.valueOf(this.plugin.hasPerms())+" cChanNameColors()="+String.valueOf(this.plugin.cChanNameColors(trgBot, trgChannel)))+", apply EMPTY pre/suffixes ");
             result = result.replace("%prefix%", "");
             result = result.replace("%suffix%", "");
             result = result.replace("%modPrefix%", "");

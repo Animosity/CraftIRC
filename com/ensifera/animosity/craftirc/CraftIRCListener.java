@@ -22,6 +22,7 @@ public class CraftIRCListener extends PlayerListener {
     }
 
     public void onPlayerCommandPreprocess(PlayerChatEvent event) {
+        try {
         String[] split = event.getMessage().split(" ");
         // ACTION/EMOTE can't be claimed, so use onPlayerCommandPreprocess
         if (split[0].equalsIgnoreCase("/me")) {
@@ -30,6 +31,9 @@ public class CraftIRCListener extends PlayerListener {
             msg.sender = event.getPlayer().getName();
             msg.message = Util.combineSplit(1, split, " ");
             this.plugin.sendMessage(msg, null, "all-chat");
+        }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     } 
     
