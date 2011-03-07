@@ -136,27 +136,27 @@ public class CraftIRC extends JavaPlugin {
             Date now = new Date();
             if (cHold("chat") > 0) {
                 hold.put(HoldType.CHAT, true);
-                holdTimer.schedule(new RemoveHoldTask(this, HoldType.CHAT), now.getTime() + cHold("chat"));
+                holdTimer.schedule(new RemoveHoldTask(this, HoldType.CHAT), cHold("chat"));
             } else
                 hold.put(HoldType.CHAT, false);
             if (cHold("joins") > 0) {
                 hold.put(HoldType.JOINS, true);
-                holdTimer.schedule(new RemoveHoldTask(this, HoldType.JOINS), now.getTime() + cHold("joins"));
+                holdTimer.schedule(new RemoveHoldTask(this, HoldType.JOINS), cHold("joins"));
             } else
                 hold.put(HoldType.JOINS, false);
             if (cHold("quits") > 0) {
                 hold.put(HoldType.QUITS, true);
-                holdTimer.schedule(new RemoveHoldTask(this, HoldType.QUITS), now.getTime() + cHold("quits"));
+                holdTimer.schedule(new RemoveHoldTask(this, HoldType.QUITS), cHold("quits"));
             } else
                 hold.put(HoldType.QUITS, false);
             if (cHold("kicks") > 0) {
                 hold.put(HoldType.KICKS, true);
-                holdTimer.schedule(new RemoveHoldTask(this, HoldType.KICKS), now.getTime() + cHold("kicks"));
+                holdTimer.schedule(new RemoveHoldTask(this, HoldType.KICKS), cHold("kicks"));
             } else
                 hold.put(HoldType.KICKS, false);
             if (cHold("bans") > 0) {
                 hold.put(HoldType.BANS, true);
-                holdTimer.schedule(new RemoveHoldTask(this, HoldType.BANS), now.getTime() + cHold("bans"));
+                holdTimer.schedule(new RemoveHoldTask(this, HoldType.BANS), cHold("bans"));
             } else
                 hold.put(HoldType.BANS, false);
             
