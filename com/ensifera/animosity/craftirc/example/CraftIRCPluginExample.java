@@ -28,7 +28,7 @@ public class CraftIRCPluginExample extends JavaPlugin {
     /* (non-Javadoc)
      * @see org.bukkit.plugin.Plugin#onEnable()
      */
-    @Override
+   
     public void onEnable() {
         Plugin checkplugin = this.getServer().getPluginManager().getPlugin("CraftIRC");
         if (checkplugin == null || !checkplugin.isEnabled()) {

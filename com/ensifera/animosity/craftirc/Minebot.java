@@ -134,13 +134,11 @@ public class Minebot extends PircBot implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     public CraftIRC getPlugin() { 
         return this.plugin; 
     }
-    
     
     void authenticateBot() {
         if (this.authMethod.equalsIgnoreCase("nickserv") && !authPass.isEmpty()) {
@@ -169,7 +167,7 @@ public class Minebot extends PircBot implements Runnable {
         }
 
     }
-
+    // TODO: DOCUMENTATION
     public void onJoin(String channel, String sender, String login, String hostname) {
         if (this.plugin.isDebug()) {
             CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.JOIN"));
@@ -198,7 +196,8 @@ public class Minebot extends PircBot implements Runnable {
             }
         }
     }
-
+    
+    // TODO: DOCUMENTATION
     public void onPart(String channel, String sender, String login, String hostname, String reason) {
         if (this.plugin.isDebug()) {
             CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.PART"));
@@ -219,7 +218,8 @@ public class Minebot extends PircBot implements Runnable {
             this.plugin.getServer().getPluginManager().callEvent(ie);
         }
     }
-
+    
+    // TODO: DOCUMENTATION
     public void onChannelQuit(String channel, String sender, String login, String hostname, String reason) {
         if (this.plugin.isDebug()) {
             CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.QUIT"));
@@ -240,12 +240,10 @@ public class Minebot extends PircBot implements Runnable {
             this.plugin.getServer().getPluginManager().callEvent(ie);
         }
     }
-
+    
+    // TODO: DOCUMENTATION
     public void onKick(String channel, String kickerNick, String kickerLogin, String kickerHostname,
             String recipientNick, String reason) {
-        if (this.plugin.isDebug()) {
-            CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.KICK"));
-        }
         if (recipientNick.equalsIgnoreCase(this.getNick())) {
             if (this.channels.contains(channel)) {
                 this.joinChannel(channel, this.plugin.cChanPassword(botId, channel));
@@ -261,24 +259,30 @@ public class Minebot extends PircBot implements Runnable {
         msg.updateTag();
         this.plugin.sendMessage(msg, null, "kicks");
         // PLUGIN INTEROP
+        if (this.plugin.isDebug()) 
+            CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.KICK"));
         msg.setTarget(EndPoint.PLUGIN);
-        Event ie = new IRCEvent(Mode.QUIT, msg);
+        Event ie = new IRCEvent(Mode.KICK, msg);
         this.plugin.getServer().getPluginManager().callEvent(ie);
     }
 
+    // TODO: DOCUMENTATION
     public void onChannelNickChange(String channel, String oldNick, String login, String hostname, String newNick) {
-        if (this.channels.contains(channel)) {
-            RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
-            msg.formatting = "nicks";
-            msg.sender = oldNick;
-            msg.srcBot = botId;
-            msg.srcChannel = channel;
-            msg.message = newNick;
-            msg.updateTag();
-            this.plugin.sendMessage(msg, null, "nicks");
-            msg.setTarget(EndPoint.PLUGIN);
-
-        }
+        RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
+        msg.formatting = "nicks";
+        msg.sender = oldNick;
+        msg.srcBot = botId;
+        msg.srcChannel = channel;
+        msg.message = newNick;
+        msg.updateTag();
+        this.plugin.sendMessage(msg, null, "nicks");
+        // PLUGIN INTEROP
+        if (this.plugin.isDebug()) 
+            CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.NICKCHANGE"));
+        
+        msg.setTarget(EndPoint.PLUGIN);
+        Event ie = new IRCEvent(Mode.NICKCHANGE, msg);
+        this.plugin.getServer().getPluginManager().callEvent(ie);
     }
 
     /* (non-Javadoc)
@@ -371,11 +375,18 @@ public class Minebot extends PircBot implements Runnable {
                 msg.message = message;
                 msg.updateTag();
                 this.plugin.sendMessage(msg, null, "all-chat");
+                // PLUGIN INTEROP
+                if (this.plugin.isDebug()) 
+                    CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.MSG"));
+                
+                msg.setTarget(EndPoint.PLUGIN);
+                Event ie = new IRCEvent(Mode.MSG, msg);
+                this.plugin.getServer().getPluginManager().callEvent(ie);
                 return;
             }
 
             // .say - Send single message to the game
-            if (message.startsWith(cmdPrefix + "say ") || message.startsWith(cmdPrefix + "mc ")) {
+            else if (message.startsWith(cmdPrefix + "say ") || message.startsWith(cmdPrefix + "mc ")) {
                 if (splitMessage.length > 1) {
                     RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.GAME);
                     msg.formatting = "chat";
@@ -481,7 +492,6 @@ public class Minebot extends PircBot implements Runnable {
     // IRC user authorization check against prefixes
     // Currently just for admin channel as first-order level of security
     public boolean userAuthorized(String channel, String user) {
-
         if (this.plugin.cChanAdmin(botId, channel))
             try {
                 User check = this.getUser(user, channel);

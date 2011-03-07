@@ -50,7 +50,7 @@ public class IRCEvent extends Event {
     }
 
     public enum Mode {
-        JOIN, PART, QUIT, KICK, BAN, MSG, PRIVMSG, ACTION, COMMAND, AUTHED_COMMAND, HANDLED
+        JOIN, PART, QUIT, KICK, BAN, MSG, PRIVMSG, ACTION, COMMAND, AUTHED_COMMAND, NICKCHANGE, HANDLED
     }
 
     /*public String getServer() {
