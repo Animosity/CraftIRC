@@ -25,7 +25,7 @@ settings:
   formatting:
     #### Formatting for the messages relayed by the plugin. You can override all formatting strings in the bot or channel
     ####  scope (within a formatting: block). In irc-to-irc, the target channel controls the format strings.
-    ####     VARIABLES (may be blank depending on the context): %sender% %message% %moderator% %srcChannel% %trgChannel%
+    ####     VARIABLES (may be blank depending on the context): %sender% %message% %moderator% %srcChannel% %trgChannel% %world%
     ####     IF YOU'RE RUNNING Permissions: %prefix% %suffix% %modPredix% %modSuffix% (game-to-irc only)
     ####     IRC FORMATTING: %b% %u% %r% %o% %k% %kNUM% (NUM is 0 to 15); Do the same as CTRL+key in mIRC
     ####     GAME COLORS: §NUM (NUM is 1 to f); Do not use in the end of a line
@@ -66,6 +66,7 @@ settings:
     ####  events can be redefined in the bot or channel scopes (within an events: block). In irc-to-irc, the source
     ####  channel controls the events.
     game-to-irc:
+      # If you use other chat plugins, you probably want to set cancelled-chat: true
       cancelled-chat: false
       all-chat: true
       joins: false

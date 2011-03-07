@@ -441,10 +441,19 @@ public class CraftIRC extends JavaPlugin {
      * @param tag
      * @return
      */
-    private int getBotFromTag(String tag) {
+    private int getBotIdFromTag(String tag) {
         return 0;
     }
     
+    /** TODO: MAKE THIS
+     * CraftIRC API call - getBotFromId(id) Gets the bot id# from a source tag
+     * @param id
+     * @return
+     
+    private Minebot getBotFromId(int id) {
+        return Minebot;
+    }
+    */
     protected ArrayList<String> ircUserLists(String tag) {
         ArrayList<String> result = new ArrayList<String>();
         if (tag == null)
@@ -747,11 +756,12 @@ public class CraftIRC extends JavaPlugin {
         return false;
     }
 
+    // TODO: This needs repair
     protected String colorizeName(String name) {
-        Pattern color_codes = Pattern.compile("§[0-9a-f]");
+        Pattern color_codes = Pattern.compile(Character.toString((char) 3)+"[0-9a-f]");
         Matcher find_colors = color_codes.matcher(name);
         while (find_colors.find()) {
-            name = find_colors.replaceFirst(Character.toString((char) 3)
+            name = find_colors.replaceAll(Character.toString((char) 3)
                     + String.format("%02d", cColorIrcFromGame(find_colors.group())));
             find_colors = color_codes.matcher(name);
         }
@@ -767,7 +777,7 @@ public class CraftIRC extends JavaPlugin {
         String result = perms.getGroupPrefix(group);
         if (result == null)
             return "";
-        return colorizeName(result.replaceAll("&([0-9a-f])", "§$1"));
+        return colorizeName(result.replaceAll("&([0-9a-f])", Character.toString((char) 3)+"$1"));
     }
 
     protected String getPermSuffix(String pl) {
@@ -779,15 +789,15 @@ public class CraftIRC extends JavaPlugin {
         String result = perms.getGroupSuffix(group);
         if (result == null)
             return "";
-        return colorizeName(result.replaceAll("&([0-9a-f])", "§$1"));
+        return colorizeName(result.replaceAll("&([0-9a-f])", Character.toString((char) 3)+"$1"));
     }
    
-    public void enqueueConsoleCommand(String cmd) {
+    protected void enqueueConsoleCommand(String cmd) {
       try {
         console.a(cmd, console);
 
       } catch (Exception e) {
-          
+          e.printStackTrace();
       }
     
        
