@@ -122,11 +122,11 @@ public class RelayedMessage {
         result = result.replace("%world%", world);
         if (source == EndPoint.GAME && this.plugin.hasPerms() && this.plugin.cChanNameColors(trgBot, trgChannel)) {
             //if (this.plugin.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " RelayedMessage: hasPerms="+String.valueOf(this.plugin.hasPerms())+" cChanNameColors()="+String.valueOf(this.plugin.cChanNameColors(trgBot, trgChannel)))+", apply pre/suffixes ");
-            result = result.replace("%prefix%", this.plugin.getPermPrefix(sender));
-            result = result.replace("%suffix%", this.plugin.getPermSuffix(sender));
+            result = result.replace("%prefix%", this.plugin.getPermPrefix(world, sender));
+            result = result.replace("%suffix%", this.plugin.getPermSuffix(world, sender));
             if (!moderator.equals("")) {
-                result = result.replace("%modPrefix%", this.plugin.getPermPrefix(moderator));
-                result = result.replace("%modSuffix%", this.plugin.getPermSuffix(moderator));
+                result = result.replace("%modPrefix%", this.plugin.getPermPrefix(world, moderator));
+                result = result.replace("%modSuffix%", this.plugin.getPermSuffix(world, moderator));
             } else {
                 result = result.replace("%modPrefix%", "");
                 result = result.replace("%modSuffix%", "");

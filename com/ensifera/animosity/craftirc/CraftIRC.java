@@ -29,7 +29,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginDescriptionFile;
 // import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
@@ -76,6 +75,7 @@ public class CraftIRC extends JavaPlugin {
 
     public void onEnable() {
         try {
+            
             PluginDescriptionFile desc = this.getDescription();
             VERSION = desc.getVersion();
             server = this.getServer();
@@ -85,7 +85,7 @@ public class CraftIRC extends JavaPlugin {
             console = (MinecraftServer) cfield.get((CraftServer)getServer());
             
             //Load node lists. Bukkit does it now, hurray!
-            if (null == getConfiguration().getKeys("settings")) {
+            if (null == getConfiguration()) {
                 CraftIRC.log.info(String.format(CraftIRC.NAME + " config.yml could not be found in plugins/CraftIRC/ -- disabling!"));
                 getServer().getPluginManager().disablePlugin(((Plugin) (this)));
                 return;
@@ -160,7 +160,7 @@ public class CraftIRC extends JavaPlugin {
             } else
                 hold.put(HoldType.BANS, false);
             
-            // Not yet supported: Register custom "admins!" command alias
+            // TODO: Not yet supported: Register custom "admins!" command alias
             // this.getCommand("admins!").setAliases(Arrays.asList(this.cAdminsCmd()));
             
             setDebug(cDebug());
@@ -404,12 +404,16 @@ public class CraftIRC extends JavaPlugin {
         }
     }
 
-    protected void sendRawToBot(int bot, String message) {
-        if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " sendRawToBot(bot=" + bot + ", message=" + message));
+    protected void sendRawToBot(String rawMessage, int bot) {
+        if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " sendRawToBot(bot=" + bot + ", message=" + rawMessage));
         Minebot target = instances.get(bot);
-        target.sendRawLineViaQueue(message);
+        target.sendRawLineViaQueue(rawMessage);
     }
     
+    protected void sendMsgToTargetViaBot(String message, String target, int bot) {
+        Minebot target = instances.get(bot);
+        target.sendMessage(target, message);
+    }
     
     /** TODO: MAKE THIS
      * @param rawMessage
@@ -770,13 +774,13 @@ public class CraftIRC extends JavaPlugin {
         return name;
     }
 
-    protected String getPermPrefix(String pl) {
+    protected String getPermPrefix(String world, String pl) {
         if (perms == null)
             return "";
-        String group = perms.getGroup(pl);
+        String group = perms.getGroup(world, pl);
         if (group == null)
             return "";
-        String result = perms.getGroupPrefix(group);
+        String result = perms.getGroupPrefix(world, group);
         if (result == null)
             return "";
         return colorizeName(result.replaceAll("&([0-9a-f])", "§$1"));
