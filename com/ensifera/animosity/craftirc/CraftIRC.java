@@ -29,6 +29,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginDescriptionFile;
 // import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
@@ -343,7 +344,7 @@ public class CraftIRC extends JavaPlugin {
         if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " cmdRawIrcCommand(sender=" + sender.toString() + ", args=" + Util.combineSplit(0, args, " ")));
         if (args.length < 2)
             return false;
-        this.sendRawToBot(Integer.parseInt(args[0]), Util.combineSplit(1, args, " "));
+        this.sendRawToBot(Util.combineSplit(1, args, " "), Integer.parseInt(args[0]));
         return true;
     }
     
@@ -406,13 +407,13 @@ public class CraftIRC extends JavaPlugin {
 
     protected void sendRawToBot(String rawMessage, int bot) {
         if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " sendRawToBot(bot=" + bot + ", message=" + rawMessage));
-        Minebot target = instances.get(bot);
-        target.sendRawLineViaQueue(rawMessage);
+        Minebot targetBot = instances.get(bot);
+        targetBot.sendRawLineViaQueue(rawMessage);
     }
     
     protected void sendMsgToTargetViaBot(String message, String target, int bot) {
-        Minebot target = instances.get(bot);
-        target.sendMessage(target, message);
+        Minebot targetBot = instances.get(bot);
+        targetBot.sendMessage(target, message);
     }
     
     /** TODO: MAKE THIS
@@ -786,13 +787,13 @@ public class CraftIRC extends JavaPlugin {
         return colorizeName(result.replaceAll("&([0-9a-f])", "§$1"));
     }
 
-    protected String getPermSuffix(String pl) {
+    protected String getPermSuffix(String world, String pl) {
         if (perms == null)
             return "";
-        String group = perms.getGroup(pl);
+        String group = perms.getGroup(world, pl);
         if (group == null)
             return "";
-        String result = perms.getGroupSuffix(group);
+        String result = perms.getGroupSuffix(world, group);
         if (result == null)
             return "";
         return colorizeName(result.replaceAll("&([0-9a-f])", "§$1"));

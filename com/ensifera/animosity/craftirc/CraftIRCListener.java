@@ -6,8 +6,11 @@ import java.util.Iterator;
 import org.bukkit.entity.Player;
 import org.bukkit.ChatColor;
 import org.bukkit.event.player.PlayerChatEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -21,7 +24,7 @@ public class CraftIRCListener extends PlayerListener {
         this.plugin = plugin;
     }
 
-    public void onPlayerCommandPreprocess(PlayerChatEvent event) {
+    public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
         try {
         String[] split = event.getMessage().split(" ");
         // ACTION/EMOTE can't be claimed, so use onPlayerCommandPreprocess
@@ -62,7 +65,7 @@ public class CraftIRCListener extends PlayerListener {
         }
     }
 
-    public void onPlayerJoin(PlayerEvent event) {
+    public void onPlayerJoin(PlayerJoinEvent event) {
         if (this.plugin.isHeld(CraftIRC.HoldType.JOINS))
             return;
         try {
@@ -76,7 +79,7 @@ public class CraftIRCListener extends PlayerListener {
         }
     }
 
-    public void onPlayerQuit(PlayerEvent event) {
+    public void onPlayerQuit(PlayerQuitEvent event) {
         if (this.plugin.isHeld(CraftIRC.HoldType.QUITS))
             return;
         try {
