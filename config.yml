@@ -97,7 +97,7 @@ bots:
   ####  column starts a new bot.
   
   - nickname: 'CraftIRCbot'
-    server: 'irc.esper.net'
+    server: 'irc.example.com'
     port: 6667
     userident: 'bot'
     serverpass: ''  #This isn't the nickserv password
@@ -113,12 +113,12 @@ bots:
     ignored-users: []
     
     #Tags allow you to target messages to all the channels within a scope.
-    tag: 'esper'
+    tag: 'example'
     
     formatting:
       custom:
         botname: 'CraftIRCbot'
-        network: 'Esper'
+        network: 'Example'
     
     #Services authentication of the bot's nickname goes here. The username may not be required.
     #Available methods: 'none', 'nickserv', 'gamesurge', 'quakenet'
