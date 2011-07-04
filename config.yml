@@ -97,7 +97,7 @@ bots:
   ####  column starts a new bot.
   
   - nickname: 'CraftIRCbot'
-    server: 'irc.example.com'
+    server: 'irc.esper.net'
     port: 6667
     userident: 'bot'
     serverpass: ''  #This isn't the nickserv password
@@ -113,12 +113,12 @@ bots:
     ignored-users: []
     
     #Tags allow you to target messages to all the channels within a scope.
-    tag: 'example'
+    tag: 'esper'
     
     formatting:
       custom:
         botname: 'CraftIRCbot'
-        network: 'Example'
+        network: 'Esper'
     
     #Services authentication of the bot's nickname goes here. The username may not be required.
     #Available methods: 'none', 'nickserv', 'gamesurge', 'quakenet'
@@ -147,6 +147,9 @@ bots:
         
         #Allow IRC color codes in messages to be converted to Minecraft colors; Set to false to just remove them.
         chat-colors: true
+        
+        #Allow Minecraft color codes in messages to be converted to IRC colors; Set to false to just remove them.
+        game-colors: true
         
         #Enables Permissions prefixes and suffixes for this channel (iChat-format colors are supported).
         name-colors: true

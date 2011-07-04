@@ -350,7 +350,7 @@ public class Minebot extends PircBot implements Runnable {
                 msg.sender = sender;
                 msg.srcBot = botId;
                 msg.srcChannel = channel;
-                msg.message = message.replaceFirst(cmdPrefix, "");
+                msg.message = message.substring(cmdPrefix.length());
                 msg.updateTag();
                 // PLUGIN INTEROP
                 msg.setTarget(EndPoint.PLUGIN);
@@ -418,7 +418,7 @@ public class Minebot extends PircBot implements Runnable {
                 msg.sender = sender;
                 msg.srcBot = botId;
                 msg.srcChannel = channel;
-                msg.message = message.replaceFirst(cmdPrefix, "");
+                msg.message = message.substring(cmdPrefix.length());
                 msg.updateTag();
                 // PLUGIN INTEROP
                 msg.setTarget(EndPoint.PLUGIN);
@@ -520,7 +520,7 @@ public class Minebot extends PircBot implements Runnable {
         //if (!this.plugin.defaultConsoleCommands.contains(rootCommand)) 
         //    return false;
         
-        if (!this.plugin.cConsoleCommands().contains(rootCommand)){
+        if (!this.plugin.cConsoleCommands().contains(rootCommand) && !this.plugin.cConsoleCommands().contains("all")){
             if (this.plugin.isDebug()) { CraftIRC.log.info(String.format(CraftIRC.NAME + " Console command: %s not found in config.yml",rootCommand)); }
             return false;
         }
@@ -533,7 +533,8 @@ public class Minebot extends PircBot implements Runnable {
             }
      
           this.plugin.enqueueConsoleCommand(fullCommand);
-
+          return true;
+          
         } else {
             if (this.plugin.isDebug()) {
                 CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand() fullCommand=" + fullCommand

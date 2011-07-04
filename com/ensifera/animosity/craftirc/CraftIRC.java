@@ -212,8 +212,8 @@ public class CraftIRC extends JavaPlugin {
                 
             } else if (commandName.equals("ircraw")) {
                 if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener onCommand(): commandName=ircraw"));
-                if ( ((sender instanceof Player) && this.checkPerms((Player) sender, "craftirc.ircraw")) || (sender instanceof IRCConsoleCommandSender )) 
-                    return this.cmdRawIrcCommand(sender, args);
+                if ( ((sender instanceof Player) && !this.checkPerms((Player) sender, "craftirc.ircraw"))) return false;
+                return this.cmdRawIrcCommand(sender, args);
             } else
                 return false;
             
@@ -702,7 +702,11 @@ public class CraftIRC extends JavaPlugin {
     protected boolean cChanChatColors(int bot, String channel) {
         return getChanNode(bot, channel).getBoolean("chat-colors", true);
     }
-
+    
+    protected boolean cGameChatColors(int bot, String channel) {
+        return getChanNode(bot, channel).getBoolean("game-colors", true);
+    }
+    
     protected boolean cChanNameColors(int bot, String channel) {
         return getChanNode(bot, channel).getBoolean("name-colors", true);
     }
@@ -801,7 +805,7 @@ public class CraftIRC extends JavaPlugin {
    
     protected void enqueueConsoleCommand(String cmd) {
       try {
-        console.a(cmd, console);
+        console.issueCommand(cmd, console);
 
       } catch (Exception e) {
           e.printStackTrace();

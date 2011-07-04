@@ -71,6 +71,7 @@ public class RelayedMessage {
         if (target != EndPoint.BOTH) return asString(target);
         else return asString(EndPoint.UNKNOWN);
     }
+    
     public String asString(EndPoint realTarget) throws RelayedMessageException {
         String result = "";
         String msgout = message;
@@ -80,7 +81,21 @@ public class RelayedMessage {
         if (source == EndPoint.PLUGIN || target == EndPoint.PLUGIN || target == EndPoint.UNKNOWN) 
             result = this.message;
         if (source == EndPoint.GAME && target == EndPoint.IRC)
+        if (source == EndPoint.GAME && target == EndPoint.IRC) {
+            if(this.plugin.cGameChatColors(trgBot, trgChannel)) {
+                Pattern color_codes = Pattern.compile("\u00A7([A-Za-z0-9])?");
+                Matcher find_colors = color_codes.matcher(msgout);
+                while (find_colors.find()) {
+                    msgout = find_colors.replaceFirst("\u0003" + Integer.toString(this.plugin.cColorIrcFromGame("\u00C2\u00A7" + find_colors.group(1))));
+                    find_colors = color_codes.matcher(msgout);
+                }
+            }
+            else
+                msgout = msgout.replaceAll("(\u00A7([A-Za-z0-9])?)", "");
+            
             result = this.plugin.cFormatting("game-to-irc." + formatting, trgBot, trgChannel);
+        }
+        
         if (source == EndPoint.IRC && (target == EndPoint.IRC || target == EndPoint.BOTH && realTarget == EndPoint.IRC))
             result = this.plugin.cFormatting("irc-to-irc." + formatting, trgBot, trgChannel);
         if (source == EndPoint.IRC && (target == EndPoint.GAME || target == EndPoint.BOTH && realTarget == EndPoint.GAME)) {
@@ -153,5 +168,4 @@ public class RelayedMessage {
         }
         return result;
     }
-    
 }
