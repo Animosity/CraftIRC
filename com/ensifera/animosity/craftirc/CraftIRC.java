@@ -174,9 +174,10 @@ public class CraftIRC extends JavaPlugin {
         try {
             holdTimer.cancel();
             //Disconnect bots
-            for (int i = 0; i < bots.size(); i++)
+            for (int i = 0; i < bots.size(); i++) {
                 instances.get(i).disconnect();
-            
+                instances.get(i).dispose(); // will this cleanup properly?
+            }
             log.info(NAME + " Disabled.");
         } catch(Exception e) {
             e.printStackTrace();
@@ -214,6 +215,17 @@ public class CraftIRC extends JavaPlugin {
                 if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener onCommand(): commandName=ircraw"));
                 if ( ((sender instanceof Player) && !this.checkPerms((Player) sender, "craftirc.ircraw"))) return false;
                 return this.cmdRawIrcCommand(sender, args);
+                
+            } else if (commandName.equals("say")) {
+                // Capture the 'say' command from Minecraft Console
+                if (sender instanceof Server) {
+                    RelayedMessage msg = this.newMsg(EndPoint.GAME, EndPoint.IRC);
+                    msg.formatting = "chat";
+                    msg.sender = "[CONSOLE]";
+                    msg.message = Util.combineSplit(1, args, " ");
+                    this.sendMessage(msg, null, "game-to-irc");
+                }
+                    
             } else
                 return false;
             
@@ -341,11 +353,15 @@ public class CraftIRC extends JavaPlugin {
     }
 
     private boolean cmdRawIrcCommand(CommandSender sender, String[] args) {
-        if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " cmdRawIrcCommand(sender=" + sender.toString() + ", args=" + Util.combineSplit(0, args, " ")));
-        if (args.length < 2)
+        try {
+            if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " cmdRawIrcCommand(sender=" + sender.toString() + ", args=" + Util.combineSplit(0, args, " ")));
+            if (args.length < 2) return false;
+            this.sendRawToBot(Util.combineSplit(1, args, " "), Integer.parseInt(args[0]));
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
             return false;
-        this.sendRawToBot(Util.combineSplit(1, args, " "), Integer.parseInt(args[0]));
-        return true;
+        }
     }
     
     protected RelayedMessage newMsg(EndPoint source, EndPoint target) {
@@ -426,7 +442,7 @@ public class CraftIRC extends JavaPlugin {
         //target.sendRawLineViaQueue(message);
     }
     /**
-     * CraftIRC API call - SendMessageToTag() Sends a message to an IRC tag
+     * CraftIRC API call - sendMessageToTag() Sends a message to an IRC tag
      * 
      * @param message
      *            (String) - The message string to send to IRC, this will pass
