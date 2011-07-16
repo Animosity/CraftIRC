@@ -218,14 +218,14 @@ public class CraftIRC extends JavaPlugin {
                 
             } else if (commandName.equals("say")) {
                 // Capture the 'say' command from Minecraft Console
-                if (sender instanceof Server) {
+                if (sender instanceof ConsoleCommandSender) {
                     RelayedMessage msg = this.newMsg(EndPoint.GAME, EndPoint.IRC);
                     msg.formatting = "chat";
                     msg.sender = "[CONSOLE]";
                     msg.message = Util.combineSplit(1, args, " ");
                     this.sendMessage(msg, null, "game-to-irc");
-                }
-                    
+                    this.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE + "[Server] " + msg);
+                }  
             } else
                 return false;
             
@@ -440,6 +440,24 @@ public class CraftIRC extends JavaPlugin {
         if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " sendRawToBot(tag=" + tag + ", message=" + rawMessage));
         //Minebot target = instances.get(bot);
         //target.sendRawLineViaQueue(message);
+    }
+    /**
+     * CraftIRC API call - sendMessageToTag() Sends a message to an IRC tag
+     * @param sender
+     *            (String) - The name of the message sender.
+     * 
+     * @param message
+     *            (String) - The message string to send to IRC, this will pass
+     *            through CraftIRC formatter
+     * 
+     * @param tag
+     *            (String) - The IRC target tag to receive the message
+     */
+    public void sendMessageToTag(String sender, String message, String tag) {
+        RelayedMessage rm = newMsg(EndPoint.PLUGIN, EndPoint.IRC);
+        rm.message = message;
+        rm.sender = sender;
+        this.sendMessage(rm, tag, null);
     }
     /**
      * CraftIRC API call - sendMessageToTag() Sends a message to an IRC tag
