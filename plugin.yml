@@ -20,3 +20,6 @@ commands:
   ircraw:
     description: Sends a raw line to IRC
     usage: /<command> [botid] [rawirc]
+  say:
+    description: Broadcast a message to everyone, including IRC
+    usage: /<command> [message]

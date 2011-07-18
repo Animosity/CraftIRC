@@ -218,14 +218,17 @@ public class CraftIRC extends JavaPlugin {
                 
             } else if (commandName.equals("say")) {
                 // Capture the 'say' command from Minecraft Console
-                if (sender instanceof Server) {
+                if (sender instanceof ConsoleCommandSender) {
                     RelayedMessage msg = this.newMsg(EndPoint.GAME, EndPoint.IRC);
                     msg.formatting = "chat";
                     msg.sender = "[CONSOLE]";
-                    msg.message = Util.combineSplit(1, args, " ");
-                    this.sendMessage(msg, null, "game-to-irc");
-                }
-                    
+                    String message = Util.combineSplit(0, args, " "); 
+                    msg.message = message;
+                    this.sendMessage(msg, null, "console");
+                    // And replicate the default effect of the 'say' command...
+                    this.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE + "[Server] " + message);
+                    sender.sendMessage("[CONSOLE] " + message);
+                }  
             } else
                 return false;
             
@@ -436,11 +439,6 @@ public class CraftIRC extends JavaPlugin {
      * @param rawMessage
      * @param tag
      */
-    private void sendRawToBotViaTag(String rawMessage, String tag) {
-        if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " sendRawToBot(tag=" + tag + ", message=" + rawMessage));
-        //Minebot target = instances.get(bot);
-        //target.sendRawLineViaQueue(message);
-    }
     /**
      * CraftIRC API call - sendMessageToTag() Sends a message to an IRC tag
      * 
@@ -454,7 +452,7 @@ public class CraftIRC extends JavaPlugin {
     public void sendMessageToTag(String message, String tag) {
         RelayedMessage rm = newMsg(EndPoint.PLUGIN, EndPoint.IRC);
         rm.message = message;
-        this.sendMessage(rm, tag, null);
+        this.sendMessage(rm, tag, "custom");
     }
     
     /** TODO: MAKE THIS
