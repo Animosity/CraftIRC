@@ -7,6 +7,9 @@ import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -46,9 +49,22 @@ public class CraftIRC extends JavaPlugin {
     protected HashMap<HoldType, Boolean> hold;
 
     //Bots and channels config storage
-    private ArrayList<ConfigurationNode> bots = new ArrayList<ConfigurationNode>();
-    private ArrayList<ConfigurationNode> colormap = new ArrayList<ConfigurationNode>();
-    private HashMap<Integer, ArrayList<ConfigurationNode>> channodes;
+    private List<ConfigurationNode> bots;
+    private List<ConfigurationNode> colormap;
+    private Map<Integer, ArrayList<ConfigurationNode>> channodes;
+    private Map<Path, ConfigurationNode> paths;
+    
+    //Endpoints
+    private Map<String,EndPoint> endpoints = new HashMap<String,EndPoint>();
+    private Map<EndPoint,String> tags = new HashMap<EndPoint,String>();
+    
+    //TODO: All logging should use these
+    static void dolog(String message) {
+        log.info("[" + NAME + "] " + message);
+    }
+    static void dowarn(String message) {
+        log.log(Level.WARNING, "[" + NAME + "] " + message);
+    }
 
     public void onEnable() {
         try {
@@ -58,25 +74,38 @@ public class CraftIRC extends JavaPlugin {
             server = this.getServer();
                        
             //Load node lists. Bukkit does it now, hurray!
+            
             if (null == getConfiguration()) {
                 CraftIRC.log.info(String.format(CraftIRC.NAME + " config.yml could not be found in plugins/CraftIRC/ -- disabling!"));
                 getServer().getPluginManager().disablePlugin(((Plugin) (this)));
                 return;
             }
+            
             bots = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("bots", null));
-            colormap = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("colormap", null));
             channodes = new HashMap<Integer, ArrayList<ConfigurationNode>>();
-
             for (int botID = 0; botID < bots.size(); botID++)
                 channodes.put(botID, new ArrayList<ConfigurationNode>(bots.get(botID).getNodeList("channels", null)));
+            
+            colormap = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("colormap", null));
+            
+            paths = new HashMap<Path,ConfigurationNode>();
+            for (ConfigurationNode path : getConfiguration().getNodeList("paths", new LinkedList<ConfigurationNode>())) {
+                Path identifier = new Path(path.getString("source"), path.getString("target"));
+                if (!identifier.getSourceTag().equals(identifier.getTargetTag()) && !paths.containsKey(identifier))
+                    paths.put(identifier, path);
+            }
 
             //Event listeners
             getServer().getPluginManager().registerEvent(Event.Type.PLAYER_COMMAND_PREPROCESS, listener, Priority.Monitor, this);
             getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, listener, Priority.Monitor, this);
             getServer().getPluginManager().registerEvent(Event.Type.PLAYER_QUIT, listener, Priority.Monitor, this);
             getServer().getPluginManager().registerEvent(Event.Type.PLAYER_CHAT, listener, Priority.Monitor, this);
+            //TODO: Player kick event
+            
+            registerEndPoint(cMinecraftTag(), new MinecraftPoint(getServer()));
 
             //Create bots
+            //TODO: Threads
             instances = new ArrayList<Minebot>();
             for (int i = 0; i < bots.size(); i++)
                 instances.add(new Minebot(this, i).init(cDebug()));
@@ -295,6 +324,20 @@ public class CraftIRC extends JavaPlugin {
     protected RelayedMessage newMsg(EndPoint source, EndPoint target) {
         return new RelayedMessage(this, source, target);
     }
+    
+    public boolean registerEndPoint(String tag, EndPoint ep) {
+        if (endpoints.get(tag) != null) return false;
+        if (tags.get(ep) != null) return false;
+        endpoints.put(tag, ep);
+        tags.put(ep, tag);
+        return true;
+    }
+    public EndPoint getEndPoint(String tag) {
+        return endpoints.get(tag);
+    }
+    public String getTag(EndPoint ep) {
+        return tags.get(ep);
+    }
 
     protected void sendMessage(RelayedMessage msg, String tag, String event) {
         try {
@@ -417,52 +460,43 @@ public class CraftIRC extends JavaPlugin {
         }
         return Configuration.getEmptyNode();
     }
-
-    protected boolean cDebug() {
-        return getConfiguration().getBoolean("settings.debug", false);
+    
+    private ConfigurationNode getPathNode(String source, String target) {
+        return paths.get(new Path(source, target));
     }
 
-    protected String cAdminsCmd() {
-        return getConfiguration().getString("settings.admins-cmd", "/admins!");
+    String cMinecraftTag() {
+        return getConfiguration().getString("settings.minecraft-tag", "minecraft");
+    }
+    
+    protected boolean cDebug() {
+        return getConfiguration().getBoolean("settings.debug", false);
     }
 
     protected ArrayList<String> cConsoleCommands() {
         return new ArrayList<String>(getConfiguration().getStringList("settings.console-commands", null));
     }
 
-    protected ArrayList<String> cIgnoredPrefixes(String source) {
-        return new ArrayList<String>(getConfiguration().getStringList("settings.ignored-prefixes." + source, null));
-    }
-
     protected int cHold(String eventType) {
         return getConfiguration().getInt("settings.hold-after-enable." + eventType, 0);
     }
 
-    protected String cFormatting(String eventType, int bot, String channel) {
-        eventType = (eventType.equals("game-to-irc.all-chat") ? "formatting.chat" : eventType);
-        ConfigurationNode source = getChanNode(bot, channel);
-        String result;
-        if (source == null || source.getString("formatting." + eventType) == null)
-            source = bots.get(bot);
-        if (source == null || source.getString("formatting." + eventType) == null)
-            result = getConfiguration().getString("settings.formatting." + eventType, null);
+    protected String cFormatting(String eventType, RelayedMessage msg) {
+        String source = getTag(msg.getSource()), target = getTag(msg.getTarget());
+        if (source == null || target == null) {
+            dowarn("Attempted to obtain formatting for invalid path " + source + " -> " + target + " .");
+            return cDefaultFormatting(eventType, msg);
+        }
+        ConfigurationNode pathConfig = paths.get(new Path(source, target));
+        if (pathConfig != null && pathConfig.getString("formatting." + eventType, null) != null)
+            return pathConfig.getString("formatting." + eventType, null);
         else
-            result = source.getString("formatting." + eventType, null);
-        return result;
+            return cDefaultFormatting(eventType, msg);
     }
-
-    protected boolean cEvents(String eventType, int bot, String channel) {
-        ConfigurationNode source = null;
-        boolean def = eventType.equalsIgnoreCase("game-to-irc.all-chat")
-                || eventType.equalsIgnoreCase("irc-to-game.all-chat");
-        if (channel != null)
-            source = getChanNode(bot, channel);
-        if ((source == null || source.getProperty("events." + eventType) == null) && bot > -1)
-            source = bots.get(bot);
-        if (source == null || source.getProperty("events." + eventType) == null)
-            return getConfiguration().getBoolean("settings.events." + eventType, def);
-        else
-            return source.getBoolean("events." + eventType, false);
+    String cDefaultFormatting(String eventType, RelayedMessage msg) {
+        if (msg.getSource().getType() == EndPoint.Type.MINECRAFT) return getConfiguration().getString("settings.formatting.from-game." + eventType);
+        if (msg.getSource().getType() == EndPoint.Type.IRC) return getConfiguration().getString("settings.formatting.from-irc." + eventType);
+        return "";
     }
 
     protected int cColorIrcFromGame(String game) {
@@ -515,7 +549,6 @@ public class CraftIRC extends JavaPlugin {
             return cColorGameFromName("foreground");
     }
 
-    //For binding Minebot to a particular local address
     protected String cBindLocalAddr() {
         return getConfiguration().getString("settings.bind-address","");
     }
@@ -542,10 +575,6 @@ public class CraftIRC extends JavaPlugin {
 
     protected boolean cBotSsl(int bot) {
         return bots.get(bot).getBoolean("ssl", false);
-    }
-
-    protected int cBotTimeout(int bot) {
-        return bots.get(bot).getInt("timeout", 5000);
     }
 
     protected int cBotMessageDelay(int bot) {
@@ -592,37 +621,21 @@ public class CraftIRC extends JavaPlugin {
         return getChanNode(bot, channel).getString("password", "");
     }
 
-    protected boolean cChanAdmin(int bot, String channel) {
-        return getChanNode(bot, channel).getBoolean("admin", false);
-    }
-
     protected ArrayList<String> cChanOnJoin(int bot, String channel) {
         return new ArrayList<String>(getChanNode(bot, channel).getStringList("on-join", null));
     }
-
-    protected boolean cChanChatColors(int bot, String channel) {
-        return getChanNode(bot, channel).getBoolean("chat-colors", true);
+    
+    public boolean cPathExists(String source, String target) {
+        ConfigurationNode pathNode = getPathNode(source, target);
+        return pathNode != null && !pathNode.getBoolean("disabled", false);
     }
     
-    protected boolean cGameChatColors(int bot, String channel) {
-        return getChanNode(bot, channel).getBoolean("game-colors", true);
+    public boolean cPathAttribute(String source, String target, String attribute) {
+        return getPathNode(source, target).getBoolean(attribute, false);
     }
     
-    protected boolean cChanNameColors(int bot, String channel) {
-        return getChanNode(bot, channel).getBoolean("name-colors", true);
-    }
-
-    // Check to see if channel tag exists on a bot
-    protected boolean cChanCheckTag(String tag, int bot, String channel) {
-        if (tag == null || tag.equals(""))
-            return false;
-        if (getConfiguration().getString("settings.tag", "all").equalsIgnoreCase(tag))
-            return true;
-        if (bots.get(bot).getString("tag", "").equalsIgnoreCase(tag))
-            return true;
-        if (getChanNode(bot, channel).getString("tag", "").equalsIgnoreCase(tag))
-            return true;
-        return false;
+    public List<ConfigurationNode> cPathFilters(String source, String target) {
+        return getPathNode(source, target).getNodeList("filters", new ArrayList<ConfigurationNode>());
     }
 
     protected enum HoldType {

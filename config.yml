@@ -1,4 +1,5 @@
 settings:
+  minecraft-tag: 'minecraft'
   command-prefix: '.'
   debug: false
   console-commands: ['reload', 'save-all']
@@ -17,19 +18,18 @@ settings:
     from-game:
       chat: '(%sender%) %message%'
       action: '* %sender% %message%'
-      joins: '[%sender% connected]'
-      quits: '[%sender% disconnected]'
-      kicks: '[%moderator% KICKED %sender% (%message%)]'
-      bans: '[%moderator% BANNED %sender% (%message%)]'
+      join: '[%sender% connected]'
+      quit: '[%sender% disconnected]'
+      kick: '[%moderator% KICKED %sender% (%message%)]'
     from-irc:
       chat: '[%srcChannel%] <%sender%> %message%'
       action: '[%srcChannel%] * %sender% %message%'
-      joins: '[%srcChannel%] * Joins: %sender%'
-      parts: '[%srcChannel%] * Parts: %sender%'
-      quits: '[%srcChannel%] * Quits: %sender% (%message%)'
-      kicks: '[%srcChannel%] * %sender% was kicked by %moderator% (%message%)'
-      nicks: '[%srcChannel%] * %sender% is now known as %message%'
-  # bind-address: 127.0.0.1
+      join: '[%srcChannel%] * Joins: %sender%'
+      part: '[%srcChannel%] * Parts: %sender%'
+      quit: '[%srcChannel%] * Quits: %sender% (%message%)'
+      kick: '[%srcChannel%] * %sender% was kicked by %moderator% (%message%)'
+      nick: '[%srcChannel%] * %sender% is now known as %message%'
+  #bind-address: 127.0.0.1
      
 bots:
   - nickname: 'CraftIRCbot'
@@ -53,12 +53,15 @@ bots:
         tag: 'changeme'
         on-join:
         # - 'PRIVMSG #changeme :Howdy do!'
+    formatting:
+      
         
 paths:
   - source: 'minecraft'
     target: 'changeme'
   - source 'changeme'
     target: 'minecraft'
+    disable: false
     attributes:
       admin: false
       colors: true
@@ -66,6 +69,12 @@ paths:
       chatcommand: true
       joinpartmessages: true
       moderationmessages: true
+    filters:
+      #Each filter is a disjunction with message fields and regular expressions they must match for the message to be filtered.
+      - message: '^\.[^ ]+'
+    formatting:
+      #chat: '[%srcChannel%] <%sender%> %message%'
+      #join: '[%srcChannel%] * Joins: %sender%'
 
 colormap:
   - {irc: 0, game: '§0', name: 'background'}
