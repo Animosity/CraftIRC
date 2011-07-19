@@ -80,7 +80,6 @@ public class RelayedMessage {
  
         if (source == EndPoint.PLUGIN || target == EndPoint.PLUGIN || target == EndPoint.UNKNOWN) 
             result = this.message;
-        if (source == EndPoint.GAME && target == EndPoint.IRC)
         if (source == EndPoint.GAME && target == EndPoint.IRC) {
             if(this.plugin.cGameChatColors(trgBot, trgChannel)) {
                 Pattern color_codes = Pattern.compile("\u00A7([A-Za-z0-9])?");
