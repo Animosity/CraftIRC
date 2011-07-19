@@ -49,8 +49,6 @@ public class CraftIRC extends JavaPlugin {
     private ArrayList<ConfigurationNode> bots = new ArrayList<ConfigurationNode>();
     private ArrayList<ConfigurationNode> colormap = new ArrayList<ConfigurationNode>();
     private HashMap<Integer, ArrayList<ConfigurationNode>> channodes;
-    private HashMap<Integer, ArrayList<String>> channames;
-    protected HashMap<DualKey, String> chanTagMap;
 
     public void onEnable() {
         try {
@@ -68,20 +66,9 @@ public class CraftIRC extends JavaPlugin {
             bots = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("bots", null));
             colormap = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("colormap", null));
             channodes = new HashMap<Integer, ArrayList<ConfigurationNode>>();
-            channames = new HashMap<Integer, ArrayList<String>>();
-            chanTagMap = new HashMap<DualKey, String>();
-            for (int botID = 0; botID < bots.size(); botID++) {
-                channodes.put(botID, new ArrayList<ConfigurationNode>(bots.get(botID).getNodeList("channels", null)));
-                ArrayList<String> cn = new ArrayList<String>();
-                for (Iterator<ConfigurationNode> it = channodes.get(botID).iterator(); it.hasNext();) {
-                    String channelName = it.next().getString("name");
-                    chanTagMap.put(new DualKey(botID, channelName), this.cChanTag(botID, channelName));
-                    cn.add(channelName);
-                }
-                channames.put(botID, cn);
-            }
 
-            if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " Channel tag map: " + chanTagMap.toString()));
+            for (int botID = 0; botID < bots.size(); botID++)
+                channodes.put(botID, new ArrayList<ConfigurationNode>(bots.get(botID).getNodeList("channels", null)));
 
             //Event listeners
             getServer().getPluginManager().registerEvent(Event.Type.PLAYER_COMMAND_PREPROCESS, listener, Priority.Monitor, this);
@@ -124,10 +111,7 @@ public class CraftIRC extends JavaPlugin {
                 holdTimer.schedule(new RemoveHoldTask(this, HoldType.BANS), cHold("bans"));
             } else
                 hold.put(HoldType.BANS, false);
-            
-            // TODO: Not yet supported: Register custom "admins!" command alias
-            // this.getCommand("admins!").setAliases(Arrays.asList(this.cAdminsCmd()));
-            
+                        
             setDebug(cDebug());
         } catch (Exception e) {
             e.printStackTrace();
@@ -150,7 +134,6 @@ public class CraftIRC extends JavaPlugin {
 
     public boolean onCommand(CommandSender sender, Command command, String commandLabel, String[] args) {
         String commandName = command.getName().toLowerCase();
-        //boolean permCheck = ( || (sender instanceof IRCConsoleCommandSender));
          
         try {
             if (sender instanceof IRCConsoleCommandSender) sender = (IRCConsoleCommandSender)sender;
@@ -199,25 +182,6 @@ public class CraftIRC extends JavaPlugin {
         }
         return debug;
         
-        // Whispering to IRC users
-        /* ***** MULTIPLE USERS MAY HAVE SAME NICKNAME IN DIFFERENT NETWORKS - Come back here later and figure out how to tell them apart
-        
-        if (split[0].equalsIgnoreCase("/ircw")) {
-
-            if (split.length < 3) {
-                player.sendMessage("\247cCorrect usage is: /ircw [IRC user] [message]");
-                return;
-            }
-
-            String player_name = "(" + player.getName() + ") ";
-            String ircMessage = player_name + Util.combineSplit(2, split, " ");
-            bot.sendMessage(split[1], ircMessage);
-            String echoedMessage = "Whispered to IRC";
-            player.sendMessage(echoedMessage);
-            event.setCancelled(true);
-            return;
-        } // ** /ircw <user> <msg>
-        */
     }
 
     private boolean cmdMsgToAll(CommandSender sender, String[] args) {
@@ -396,33 +360,9 @@ public class CraftIRC extends JavaPlugin {
         targetBot.sendMessage(target, message);
     }
     
-    /**
-     * CraftIRC API call - sendMessageToTag() Sends a message to an IRC tag
-     * 
-     * @param message
-     *            (String) - The message string to send to IRC, this will pass
-     *            through CraftIRC formatter
-     * 
-     * @param tag
-     *            (String) - The IRC target tag to receive the message
-     */
-    public void sendMessageToTag(String message, String tag) {
-        RelayedMessage rm = newMsg(EndPoint.PLUGIN, EndPoint.IRC);
-        rm.message = message;
-        this.sendMessage(rm, tag, null);
-    }
-    
-    /** TODO: MAKE THIS
-     * CraftIRC API call - getBotFromId(id) Gets the bot id# from a source tag
-     * @param id
-     * @return
-     
-    private Minebot getBotFromId(int id) {
-        return Minebot;
-    }
-    */
     protected ArrayList<String> ircUserLists(String tag) {
         ArrayList<String> result = new ArrayList<String>();
+        /*
         if (tag == null)
             return result;
         for (int i = 0; i < bots.size(); i++) {
@@ -434,13 +374,15 @@ public class CraftIRC extends JavaPlugin {
                     result.add(Util.getIrcUserList(instances.get(i), chan));
             }
         }
-        return result;
+        */
+        return result;        
     }
 
     public ArrayList<String> getIrcUserListFromTag(String tag) {
         return ircUserLists(tag);
     }
     protected void noticeAdmins(String message) {
+        /* 
         for (int i = 0; i < bots.size(); i++) {
             ArrayList<String> chans = cBotChannels(i);
             Iterator<String> it = chans.iterator();
@@ -450,6 +392,7 @@ public class CraftIRC extends JavaPlugin {
                     instances.get(i).sendNotice(chan, message);
             }
         }
+        */
     }
 
     protected void setDebug(boolean d) {
@@ -575,10 +518,6 @@ public class CraftIRC extends JavaPlugin {
     //For binding Minebot to a particular local address
     protected String cBindLocalAddr() {
         return getConfiguration().getString("settings.bind-address","");
-    }
-    
-    protected ArrayList<String> cBotChannels(int bot) {
-        return channames.get(bot);
     }
 
     protected String cBotNickname(int bot) {

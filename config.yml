@@ -1,51 +1,27 @@
 settings:
-  #### This node contains the global scope. Settings defined here are either global settings or defaults that apply to all
-  ####  bots and channels (unless overriden in the bot or channel scope).
-  
-  #The prefix for the IRC-side bot commands; Can be overriden in the bot scope.
   command-prefix: '.'
-  
-  #You probably don't need this.
   debug: false
-  
   console-commands: ['reload', 'save-all']
-  
-  ignored-prefixes:
-    irc: ['!']
-    game: []
-    
-  #Delay in milliseconds for these game events to be ignored after the plugin is enabled (prevents initial flood burst).
   hold-after-enable:
     chat: 0
     joins: 0
     quits: 0
     kicks: 0
     bans: 0
-    
   formatting:
-    #### Formatting for the messages relayed by the plugin. You can override all formatting strings in the bot or channel
-    ####  scope (within a formatting: block). In irc-to-irc, the target channel controls the format strings.
     ####     VARIABLES (may be blank depending on the context): %sender% %message% %moderator% %srcChannel% %trgChannel% %world%
-    ####     IF YOU'RE RUNNING Permissions: %prefix% %suffix% %modPredix% %modSuffix% (game-to-irc only)
+    ####     How are we going to handle this now: %prefix% %suffix% %modPredix% %modSuffix%
     ####     IRC FORMATTING: %b% %u% %r% %o% %k% %kNUM% (NUM is 0 to 15); Do the same as CTRL+key in mIRC
     ####     GAME COLORS: §NUM (NUM is 1 to f); Do not use in the end of a line
     ####     EASY COLORS: Use the names defined in the colormap: block, such as %blue% %foreground% %yellow% etc.
-    game-to-irc:
+    from-game:
       chat: '(%sender%) %message%'
       action: '* %sender% %message%'
       joins: '[%sender% connected]'
       quits: '[%sender% disconnected]'
       kicks: '[%moderator% KICKED %sender% (%message%)]'
       bans: '[%moderator% BANNED %sender% (%message%)]'
-    irc-to-game:
-      chat: '[%srcChannel%] <%sender%> %message%'
-      action: '[%srcChannel%] * %sender% %message%'
-      joins: '[%srcChannel%] * Joins: %sender%'
-      parts: '[%srcChannel%] * Parts: %sender%'
-      quits: '[%srcChannel%] * Quits: %sender%'
-      kicks: '[%srcChannel%] * %sender% was kicked by %moderator%'
-      nicks: '[%srcChannel%] * %sender% is now known as %message%'
-    irc-to-irc:
+    from-irc:
       chat: '[%srcChannel%] <%sender%> %message%'
       action: '[%srcChannel%] * %sender% %message%'
       joins: '[%srcChannel%] * Joins: %sender%'
@@ -53,115 +29,45 @@ settings:
       quits: '[%srcChannel%] * Quits: %sender% (%message%)'
       kicks: '[%srcChannel%] * %sender% was kicked by %moderator% (%message%)'
       nicks: '[%srcChannel%] * %sender% is now known as %message%'
-    custom:
-      #Custom blocks define custom variables you can use within formatting strings
-      botname: ''
-      network: ''
-  
-  # Optional: Bind to a non-default local address	  
   # bind-address: 127.0.0.1
-  
-  events:
-    #### Turn different types of messages on and off here. cancelled-chat only exists in the global scope; The remaining
-    ####  events can be redefined in the bot or channel scopes (within an events: block). In irc-to-irc, the source
-    ####  channel controls the events.
-    game-to-irc:
-      # If you use other chat plugins, you probably want to set cancelled-chat: true
-      cancelled-chat: false
-      all-chat: true
-      joins: false
-      quits: false
-      kicks: false
-      bans: false
-    irc-to-game:
-      all-chat: true
-      joins: false
-      parts: false
-      quits: false
-      kicks: false
-      nicks: false
-    irc-to-irc:
-      all-chat: true
-      joins: false
-      parts: false
-      quits: false
-      kicks: false
-      nicks: false
-      
-  #Tags allow you to target messages to all the channels within a scope. The global scope contains all channels.
-  tag: 'all'
      
 bots:
-  #### A list of bots; You should only need one bot for each IRC server (the same bot can join multiple channels).
-  ####  Settings that apply to all channels of a bot should be defined in a bot's node. The dash in the third
-  ####  column starts a new bot.
-  
   - nickname: 'CraftIRCbot'
     server: 'irc.esper.net'
     port: 6667
     userident: 'bot'
     serverpass: ''  #This isn't the nickserv password
     ssl: false
-    
-    #Delay between messages helps prevent triggering server-side flood protections (milliseconds)
     message-delay: 1000
-    
-    #Types of IRC users that are considered admins within an admin channel (has no effect in normal channels)
     admin-prefixes: ['@', '%']
-    
-    #Ignore users in this server by nickname
     ignored-users: []
-    
-    #Tags allow you to target messages to all the channels within a scope.
-    tag: 'esper'
-    
-    formatting:
-      custom:
-        botname: 'CraftIRCbot'
-        network: 'Esper'
-    
-    #Services authentication of the bot's nickname goes here. The username may not be required.
-    #Available methods: 'none', 'nickserv', 'gamesurge', 'quakenet'
     auth:
-      method: 'nickserv'
+      method: 'nickserv' #Available methods: 'none', 'nickserv', 'gamesurge', 'quakenet'
       username: ''
       password: ''
-
-    #List here raw IRC commands you want the bot to perform after it connects to the server
     on-connect:
     # - 'PRIVMSG MyBoss :I live again!'
-    
     channels:
-      #### A list of channels; Define here all the channels you want this bot to join. Settings that apply to a single
-      ####  channel can be defined in the channel node. A dash in the 7th column starts a new channel.
-      
       - name: '#changeme'
         password: ''
-        
-        #In admin channels, admins can use console commands (when this feature is supported) and be send emergency
-        # notices from users.
-        admin: false
-        
-        #This tag targets only this channel.
         tag: 'changeme'
-        
-        #Allow IRC color codes in messages to be converted to Minecraft colors; Set to false to just remove them.
-        chat-colors: true
-        
-        #Allow Minecraft color codes in messages to be converted to IRC colors; Set to false to just remove them.
-        game-colors: true
-        
-        #Enables Permissions prefixes and suffixes for this channel (iChat-format colors are supported).
-        name-colors: true
-        
-        #List here raw IRC commands you want the bot to perform after it joins this channel.
         on-join:
         # - 'PRIVMSG #changeme :Howdy do!'
+        
+paths:
+  - source: 'minecraft'
+    target: 'changeme'
+  - source 'changeme'
+    target: 'minecraft'
+    attributes:
+      admin: false
+      colors: true
+      chat: false
+      chatcommand: true
+      joinpartmessages: true
+      moderationmessages: true
 
 colormap:
-  #### Map colors to your taste here; Make sure each irc, game and name appears once and only once.
-  ####  The color 'foreground' *must* exist and will be used as the default by certain features.
-  
   - {irc: 0, game: '§0', name: 'background'}
   - {irc: 2, game: '§1', name: 'navy'}
   - {irc: 3, game: '§2', name: 'darkgreen'}

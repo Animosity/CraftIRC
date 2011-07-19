@@ -34,7 +34,7 @@ public class IRCConsoleCommandSender extends ConsoleCommandSender {
     @Override
     public void sendMessage(String message) {
         try {
-            ircConCmd.getPlugin().sendMessageToTag(">> " + message, ircConCmd.srcChannelTag);
+            //ircConCmd.getPlugin().sendMessageToTag(">> " + message, ircConCmd.srcChannelTag);
         } catch (Exception e) {
             e.printStackTrace();
         }
