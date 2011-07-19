@@ -34,10 +34,12 @@ import org.bukkit.util.config.ConfigurationNode;
  * 
  */
 
+//TODO: Make sure all names are display names
+
 public class CraftIRC extends JavaPlugin {
     public static final String NAME = "CraftIRC";
     public static String VERSION;
-    protected static final Logger log = Logger.getLogger("Minecraft");
+    static final Logger log = Logger.getLogger("Minecraft");
     
     //Misc class attributes
     PluginDescriptionFile desc = null;
@@ -46,7 +48,7 @@ public class CraftIRC extends JavaPlugin {
     private ArrayList<Minebot> instances;
     private boolean debug;
     private Timer holdTimer = new Timer();
-    protected HashMap<HoldType, Boolean> hold;
+    HashMap<HoldType, Boolean> hold;
 
     //Bots and channels config storage
     private List<ConfigurationNode> bots;
@@ -167,44 +169,23 @@ public class CraftIRC extends JavaPlugin {
         try {
             if (sender instanceof IRCConsoleCommandSender) sender = (IRCConsoleCommandSender)sender;
             
-            if (commandName.equals("irc")) {
-                if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener onCommand(): commandName=irc" + " " + args.toString()));
-                if ( ((sender instanceof Player) && this.checkPerms((Player) sender, "craftirc.irc")) || (sender instanceof IRCConsoleCommandSender ))
-                    return this.cmdMsgToAll(sender, args);
-            
-            } else if (commandName.equals("ircm")) {
-                if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener onCommand(): commandName=ircm"));
-                if ( ((sender instanceof Player) && this.checkPerms((Player) sender, "craftirc.ircm")) || (sender instanceof IRCConsoleCommandSender )) 
-                    return this.cmdMsgToTag(sender, args);                
-                
-            } else if (commandName.equals("ircwho")) {
-                if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener onCommand(): commandName=ircwho"));
-                if ( ((sender instanceof Player) && this.checkPerms((Player) sender, "craftirc.ircwho")) || (sender instanceof IRCConsoleCommandSender ))
-                    return this.cmdGetIrcUserList(sender, args);
-             
+            if (commandName.equals("ircmsg")) {
+                return this.cmdMsgToTag(sender, args);
+            } else if (commandName.equals("ircmsguser")) {
+                return this.cmdMsgToUser(sender, args);                
+            } else if (commandName.equals("ircusers")) {
+                return this.cmdGetUserList(sender, args);
             } else if (commandName.equals("admins!")) {
-                if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener onCommand(): commandName=admins!"));
-                if ( ((sender instanceof Player) && this.checkPerms((Player) sender, "craftirc.admins!")) || (sender instanceof IRCConsoleCommandSender )) 
-                    return this.cmdNotifyIrcAdmins(sender, args);
-                
+                return this.cmdNotifyIrcAdmins(sender, args);
             } else if (commandName.equals("ircraw")) {
-                if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener onCommand(): commandName=ircraw"));
-                if ( ((sender instanceof Player) && !this.checkPerms((Player) sender, "craftirc.ircraw"))) return false;
                 return this.cmdRawIrcCommand(sender, args);
-                
             } else if (commandName.equals("say")) {
                 // Capture the 'say' command from Minecraft Console
-                if (sender instanceof Server) {
-                    RelayedMessage msg = this.newMsg(EndPoint.GAME, EndPoint.IRC);
-                    msg.formatting = "chat";
-                    msg.sender = "[CONSOLE]";
-                    msg.message = Util.combineSplit(1, args, " ");
-                    this.sendMessage(msg, null, "game-to-irc");
+                if (sender instanceof ConsoleCommandSender) {
+                    //TODO
                 }
-                    
             } else
                 return false;
-            
         } catch (Exception e) { 
             e.printStackTrace(); 
             return false;
@@ -213,26 +194,21 @@ public class CraftIRC extends JavaPlugin {
         
     }
 
-    private boolean cmdMsgToAll(CommandSender sender, String[] args) {
+    private boolean cmdMsgToTag(CommandSender sender, String[] args) {
         try {
             if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener cmdMsgToAll()"));
-            if (args.length == 0) {
-                if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener: args.length == 0"));
-                return false;
-            }
-            String msgToSend = Util.combineSplit(0, args, " ");
-            RelayedMessage msg = this.newMsg(EndPoint.GAME, EndPoint.IRC);
-            if (sender instanceof Player) {
-                if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener: sender is a Player"));
-                msg.sender = ((Player) sender).getName();
-            } else {
-                if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener sender is not a Player"));
-                msg.sender = "SERVER";
-            }
-            msg.formatting = "chat";
-            msg.message = msgToSend;
-            this.sendMessage(msg, null, null);
+            if (args.length < 2) return false;
+            String msgToSend = Util.combineSplit(1, args, " ");
+            RelayedMessage msg = this.newMsg(getEndPoint(cMinecraftTag()), getEndPoint(args[0]), "chat");
+            if (sender instanceof Player)
+                msg.setField("sender", ((Player) sender).getDisplayName());
+            else
+                msg.setField("sender", "SERVER");
+            msg.setField("message", msgToSend);
+            msg.deliver();
 
+            //TODO: Find a better way to do this (use formatting string, etc.)
+            /*
             String echoedMessage = new StringBuilder().append("<").append(msg.sender)
                     .append(ChatColor.WHITE.toString()).append(" to IRC> ").append(msgToSend).toString();
             // echo -> IRC msg locally in game
@@ -241,6 +217,7 @@ public class CraftIRC extends JavaPlugin {
                     p.sendMessage(echoedMessage);
                 }
             }
+            */
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -248,20 +225,21 @@ public class CraftIRC extends JavaPlugin {
         }
     }
 
-    private boolean cmdMsgToTag(CommandSender sender, String[] args) {
+    private boolean cmdMsgToUser(CommandSender sender, String[] args) {
         try {
-            if (args.length < 2)
+            if (args.length < 3)
                 return false;
-            String msgToSend = Util.combineSplit(1, args, " ");
-            RelayedMessage msg = this.newMsg(EndPoint.GAME, EndPoint.IRC);
+            String msgToSend = Util.combineSplit(2, args, " ");
+            RelayedMessage msg = this.newMsg(getEndPoint(cMinecraftTag()), getEndPoint(args[0]), "chat");
             if (sender instanceof Player)
-                msg.sender = ((Player) sender).getName();
+                msg.setField("sender", ((Player) sender).getDisplayName());
             else
-                msg.sender = "SERVER";
-            msg.formatting = "chat";
-            msg.message = msgToSend;
-            this.sendMessage(msg, args[0], null);
+                msg.setField("sender", "SERVER");;
+            msg.setField("message", msgToSend);
+            msg.deliverTo(args[1]);
 
+            //TODO: Find a better way to do this (use formatting string, etc.)
+            /*
             String echoedMessage = new StringBuilder().append("<").append(msg.sender)
                     .append(ChatColor.WHITE.toString()).append(" to IRC> ").append(msgToSend).toString();
 
@@ -270,6 +248,7 @@ public class CraftIRC extends JavaPlugin {
                     p.sendMessage(echoedMessage);
                 }
             }
+            */
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -277,12 +256,12 @@ public class CraftIRC extends JavaPlugin {
         }
     }
 
-    private boolean cmdGetIrcUserList(CommandSender sender, String[] args) {
+    private boolean cmdGetUserList(CommandSender sender, String[] args) {
         try {
             if (args.length == 0)
                 return false;
-            sender.sendMessage("IRC users in " + args[0] + " channel(s):");
-            ArrayList<String> userlists = this.ircUserLists(args[0]);
+            sender.sendMessage("Users in " + args[0] + ":");
+            List<String> userlists = this.ircUserLists(args[0]);
             for (Iterator<String> it = userlists.iterator(); it.hasNext();)
                 sender.sendMessage(it.next());
             return true;
@@ -321,13 +300,20 @@ public class CraftIRC extends JavaPlugin {
         }
     }
     
-    protected RelayedMessage newMsg(EndPoint source, EndPoint target) {
-        return new RelayedMessage(this, source, target);
+    public RelayedMessage newMsg(EndPoint source, EndPoint target, String eventType) {
+        if (source == null) return null;
+        return new RelayedMessage(this, source, target, eventType);
     }
     
     public boolean registerEndPoint(String tag, EndPoint ep) {
-        if (endpoints.get(tag) != null) return false;
-        if (tags.get(ep) != null) return false;
+        if (endpoints.get(tag) != null || tags.get(ep) != null) {
+            dolog("Couldn't register an endpoint tagged '" + tag + "' because either the tag or the endpoint already exist."); 
+            return false;
+        }
+        if (tag == "*") {
+            dolog("Couldn't register an endpoint - the character * can't be used as a tag.");
+            return false;
+        }
         endpoints.put(tag, ep);
         tags.put(ep, tag);
         return true;
@@ -403,27 +389,10 @@ public class CraftIRC extends JavaPlugin {
         targetBot.sendMessage(target, message);
     }
     
-    protected ArrayList<String> ircUserLists(String tag) {
-        ArrayList<String> result = new ArrayList<String>();
-        /*
-        if (tag == null)
-            return result;
-        for (int i = 0; i < bots.size(); i++) {
-            ArrayList<String> chans = cBotChannels(i);
-            Iterator<String> it = chans.iterator();
-            while (it.hasNext()) {
-                String chan = it.next();
-                if (cChanCheckTag(tag, i, chan))
-                    result.add(Util.getIrcUserList(instances.get(i), chan));
-            }
-        }
-        */
-        return result;        
+    protected List<String> ircUserLists(String tag) {
+        return getEndPoint(tag).listUsers();        
     }
 
-    public ArrayList<String> getIrcUserListFromTag(String tag) {
-        return ircUserLists(tag);
-    }
     protected void noticeAdmins(String message) {
         /* 
         for (int i = 0; i < bots.size(); i++) {

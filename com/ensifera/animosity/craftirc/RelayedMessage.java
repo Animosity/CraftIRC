@@ -1,6 +1,7 @@
 package com.ensifera.animosity.craftirc;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -8,16 +9,21 @@ import java.util.regex.Pattern;
 public class RelayedMessage {
     
     private CraftIRC plugin;
-    private EndPoint source;        //Origin endpoint of the message
-    private EndPoint target;        //Target endpoint of the message
-    private String template;        //Formatting string
+    private EndPoint source;            //Origin endpoint of the message
+    private EndPoint target;            //Target endpoint of the message
+    private LinkedList<EndPoint> cc;    //Multiple extra targets for the message
+    private String template;            //Formatting string
     private Map<String,String> fields;
     
-    RelayedMessage(CraftIRC plugin, EndPoint source, EndPoint target) {
+    RelayedMessage(CraftIRC plugin, EndPoint source) { this(plugin, source, null, ""); }
+    RelayedMessage(CraftIRC plugin, EndPoint source, EndPoint target) { this(plugin, source, target, ""); }
+    RelayedMessage(CraftIRC plugin, EndPoint source, EndPoint target, String eventType) {
         this.plugin = plugin;
-        template = "";
         this.source = source;
         this.target = target;
+        this.template = "%message%";
+        if (eventType != null && eventType != "")
+            this.template = plugin.cFormatting(eventType, this);
         fields = new HashMap<String,String>();
     }
     
@@ -36,6 +42,12 @@ public class RelayedMessage {
     }
     public String getField(String key) {
         return fields.get(key);
+    }
+    
+    public boolean addExtraTarget(EndPoint ep) {
+        if (cc.contains(ep)) return false;
+        cc.add(ep);
+        return true;
     }
         
     public String getMessage() {
@@ -106,5 +118,17 @@ public class RelayedMessage {
         }
         
         return result;
+    }
+    
+    public void deliver() {
+        if (target != null) target.messageIn(this);
+        for (EndPoint et : cc)
+            et.messageIn(this);
+    }
+    
+    public boolean deliverTo(String username) {
+        if (target != null)
+            return target.userMessageIn(username, this);
+        return false;
     }
 }

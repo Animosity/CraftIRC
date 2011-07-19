@@ -19,7 +19,8 @@ public class Path {
     public boolean equals(Object other) {
         if (other != null && other instanceof Path) {
             Path otherPath = (Path)other;
-            return sourceTag.equals(otherPath.getSourceTag()) && targetTag.equals(otherPath.getTargetTag());
+            return (sourceTag.equals(otherPath.getSourceTag()) || sourceTag.equals("*"))
+                && (targetTag.equals(otherPath.getTargetTag()) || targetTag.equals("*"));
         }
         return false;
     }

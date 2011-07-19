@@ -1,22 +1,25 @@
 name: CraftIRC
 main: com.ensifera.animosity.craftirc.CraftIRC
+authors: [Animosity, Protected]
 version: 3.0 ALPHA
 commands:
-  irc:
-    description: Sends a message to all IRC channels
-    usage: /<command> [msg]
-  to:
+  ircmsg:
     description: Send message to tag
     usage: /<command> [tag] [msg]
-  touser:
-    description: PM a user
-    usage: /<command> [tag] [player] [msg]
-  users:
+    permission: craftirc.ircmsg
+  ircmsguser:
+    description: Send a message to a user
+    usage: /<command> [tag] [username] [msg]
+    permission: craftirc.ircmsguser
+  ircusers:
     description: Lists online users
     usage: /<command> [tag]
+    permission: craftirc.ircusers
   admins!:
     description: Sends a notice to admins on IRC
     usage: /<command> [msg]
+    permission: craftirc.admins
   ircraw:
     description: Sends a raw line to IRC
     usage: /<command> [botid] [rawirc]
+    permission: craftirc.ircraw

@@ -1,5 +1,6 @@
 settings:
   minecraft-tag: 'minecraft'
+  console-tag: 'console'
   command-prefix: '.'
   debug: false
   console-commands: ['reload', 'save-all']
@@ -53,8 +54,6 @@ bots:
         tag: 'changeme'
         on-join:
         # - 'PRIVMSG #changeme :Howdy do!'
-    formatting:
-      
         
 paths:
   - source: 'minecraft'

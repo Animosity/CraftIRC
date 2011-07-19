@@ -1,5 +1,8 @@
 package com.ensifera.animosity.craftirc;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 
@@ -26,6 +29,14 @@ public class MinecraftPoint implements EndPoint {
         if (p == null) return false;
         p.sendMessage(msg.getMessage());
         return true;
+    }
+    
+    public List<String> listUsers() {
+        LinkedList<String> users = new LinkedList<String>();
+        for (Player p : server.getOnlinePlayers()) {
+            users.add(p.getDisplayName());
+        }
+        return users;
     }
 
 }
