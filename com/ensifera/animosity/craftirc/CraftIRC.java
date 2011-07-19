@@ -1,67 +1,45 @@
 package com.ensifera.animosity.craftirc;
 
-import java.io.File;
-import java.lang.reflect.Field;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import net.minecraft.server.MinecraftServer;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
-// import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 import org.bukkit.util.config.ConfigurationNode;
-import net.minecraft.server.MinecraftServer;
-import com.nijikokun.bukkit.Permissions.*;
-import com.nijiko.permissions.PermissionHandler;
-//import net.minecraft.server.ICommandListener;
 
 /**
  * @author Animosity
  * @author ricin
  * @author Protected
- */
-
-/**
- * @author Animosity
  * 
  */
+
 public class CraftIRC extends JavaPlugin {
     public static final String NAME = "CraftIRC";
     public static String VERSION;
     protected static final Logger log = Logger.getLogger("Minecraft");
-    public static List<String> defaultConsoleCommands = Arrays.asList("kick", "ban", "pardon", "ban-ip",
-            "pardon-ip", "op", "deop", "tp", "give", "tell", "stop", "save-all", "save-off", "save-on", "say");
     
     //Misc class attributes
     PluginDescriptionFile desc = null;
     public Server server = null;
-    private MinecraftServer console;
     private final CraftIRCListener listener = new CraftIRCListener(this);
-    private PermissionHandler perms = null;
     private ArrayList<Minebot> instances;
     private boolean debug;
     private Timer holdTimer = new Timer();
@@ -80,11 +58,7 @@ public class CraftIRC extends JavaPlugin {
             PluginDescriptionFile desc = this.getDescription();
             VERSION = desc.getVersion();
             server = this.getServer();
-           
-            Field cfield = CraftServer.class.getDeclaredField("console");
-            cfield.setAccessible(true);
-            console = (MinecraftServer) cfield.get((CraftServer)getServer());
-            
+                       
             //Load node lists. Bukkit does it now, hurray!
             if (null == getConfiguration()) {
                 CraftIRC.log.info(String.format(CraftIRC.NAME + " config.yml could not be found in plugins/CraftIRC/ -- disabling!"));
@@ -109,15 +83,6 @@ public class CraftIRC extends JavaPlugin {
 
             if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " Channel tag map: " + chanTagMap.toString()));
 
-            //Permissions
-            Plugin check = this.getServer().getPluginManager().getPlugin("Permissions");
-            if (check != null) {
-                perms = ((Permissions) check).getHandler();
-                log.info("Permissions detected by CraftIRC.");
-            } else {
-                log.info("Permissions not detected.");
-            }
-
             //Event listeners
             getServer().getPluginManager().registerEvent(Event.Type.PLAYER_COMMAND_PREPROCESS, listener, Priority.Monitor, this);
             getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, listener, Priority.Monitor, this);
@@ -134,7 +99,6 @@ public class CraftIRC extends JavaPlugin {
             //Hold timers
             hold = new HashMap<HoldType, Boolean>();
             holdTimer = new Timer();
-            Date now = new Date();
             if (cHold("chat") > 0) {
                 hold.put(HoldType.CHAT, true);
                 holdTimer.schedule(new RemoveHoldTask(this, HoldType.CHAT), cHold("chat"));
@@ -432,15 +396,6 @@ public class CraftIRC extends JavaPlugin {
         targetBot.sendMessage(target, message);
     }
     
-    /** TODO: MAKE THIS
-     * @param rawMessage
-     * @param tag
-     */
-    private void sendRawToBotViaTag(String rawMessage, String tag) {
-        if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " sendRawToBot(tag=" + tag + ", message=" + rawMessage));
-        //Minebot target = instances.get(bot);
-        //target.sendRawLineViaQueue(message);
-    }
     /**
      * CraftIRC API call - sendMessageToTag() Sends a message to an IRC tag
      * 
@@ -455,15 +410,6 @@ public class CraftIRC extends JavaPlugin {
         RelayedMessage rm = newMsg(EndPoint.PLUGIN, EndPoint.IRC);
         rm.message = message;
         this.sendMessage(rm, tag, null);
-    }
-    
-    /** TODO: MAKE THIS
-     * CraftIRC API call - getBotFromTag(tag) Gets the bot id# from a source tag
-     * @param tag
-     * @return
-     */
-    private int getBotIdFromTag(String tag) {
-        return 0;
     }
     
     /** TODO: MAKE THIS
@@ -764,23 +710,17 @@ public class CraftIRC extends JavaPlugin {
     }
 
     protected boolean hasPerms() {
-        return perms != null;
-    }
-
-    protected boolean checkPerms(Player pl, String path) {
-        if (perms == null)
-            return true;
-        if (pl != null)
-            return perms.has(pl, path);
         return false;
     }
 
+    protected boolean checkPerms(Player pl, String path) {
+        return pl.hasPermission(path);
+    }
+
     protected boolean checkPerms(String pl, String path) {
-        if (perms == null)
-            return true;
         Player pit = getServer().getPlayer(pl);
         if (pit != null)
-            return perms.has(pit, path);
+            return pit.hasPermission(path);
         return false;
     }
 
@@ -796,32 +736,20 @@ public class CraftIRC extends JavaPlugin {
     }
 
     protected String getPermPrefix(String world, String pl) {
-        if (perms == null)
-            return "";
-        String group = perms.getGroup(world, pl);
-        if (group == null)
-            return "";
-        String result = perms.getGroupPrefix(world, group);
-        if (result == null)
-            return "";
+        //TODO: Get from herochat/attributeproviders?
+        String result = "";
         return colorizeName(result.replaceAll("&([0-9a-f])", "§$1"));
     }
 
     protected String getPermSuffix(String world, String pl) {
-        if (perms == null)
-            return "";
-        String group = perms.getGroup(world, pl);
-        if (group == null)
-            return "";
-        String result = perms.getGroupSuffix(world, group);
-        if (result == null)
-            return "";
+        //TODO: Get from herochat/attributeproviders?
+        String result = "";
         return colorizeName(result.replaceAll("&([0-9a-f])", "§$1"));
     }
    
     protected void enqueueConsoleCommand(String cmd) {
       try {
-        console.issueCommand(cmd, console);
+        getServer().dispatchCommand(new ConsoleCommandSender(getServer()), cmd);
 
       } catch (Exception e) {
           e.printStackTrace();

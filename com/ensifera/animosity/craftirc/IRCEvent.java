@@ -6,6 +6,8 @@ package com.ensifera.animosity.craftirc;
 import org.bukkit.event.Event;
 
 public class IRCEvent extends Event {
+    
+    private static final long serialVersionUID = 1L;
     Minebot bot;
     public Mode eventMode;
     public RelayedMessage msgData;

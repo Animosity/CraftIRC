@@ -6,9 +6,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.logging.Level;
 
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.craftbukkit.CraftServer;
 import org.jibble.pircbot.*;
 import org.bukkit.ChatColor;
 import org.bukkit.event.Event;
@@ -525,30 +523,15 @@ public class Minebot extends PircBot implements Runnable {
             return false;
         }
         
-        if (this.plugin.defaultConsoleCommands.contains(rootCommand)) {
-            if (this.plugin.isDebug()) {
-                CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand(default) fullCommand=" + fullCommand
-                        + " -- rootCommand=" + rootCommand));
-                CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand(default) -> queueConsoleCommand()"));
-            }
-     
-          this.plugin.enqueueConsoleCommand(fullCommand);
-          return true;
-          
-        } else {
-            if (this.plugin.isDebug()) {
-                CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand() fullCommand=" + fullCommand
-                        + " -- rootCommand=" + rootCommand));
-                CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand() -> Bukkit dispatchCommand()"));
-            }
-            IRCConsoleCommandSender console = new IRCConsoleCommandSender(this.plugin.server, ircConCmd, true);
-            if (((CraftServer) this.plugin.server).dispatchCommand(console, fullCommand)) {
-                return true;
-            }
-
+        if (this.plugin.isDebug()) {
+            CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand(default) fullCommand=" + fullCommand
+                    + " -- rootCommand=" + rootCommand));
+            CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand(default) -> queueConsoleCommand()"));
         }
+ 
+        this.plugin.enqueueConsoleCommand(fullCommand);
+        return true;
 
-        return false;
     }
 
     /**
@@ -643,24 +626,6 @@ public class Minebot extends PircBot implements Runnable {
 
     }
 
-    /**
-     * 
-     * @param target
-     *            - the IRC #channel to send the message to
-     * @param message
-     *            - the message to send to the target #channel; this.irc_channel
-     *            and this.irc_admin_channel are the common targets.
-     * 
-     */
-    @Deprecated
-    public void msg(String target, String message) {
-        if (this.plugin.isDebug()) {
-            CraftIRC.log.info(String.format(CraftIRC.NAME + " msgToIRC <%s> : %s", target, message));
-        }
-        sendMessage(target, message);
-    }
-
-    @Override
     public void run() {
         this.init(false);
     }

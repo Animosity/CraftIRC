@@ -3,7 +3,6 @@
  */
 package com.ensifera.animosity.craftirc;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.command.ConsoleCommandSender;
 /**

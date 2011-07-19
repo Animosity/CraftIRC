@@ -1,20 +1,12 @@
 package com.ensifera.animosity.craftirc;
 
 import java.lang.Exception;
-import java.util.ArrayList;
-import java.util.Iterator;
-import org.bukkit.entity.Player;
-import org.bukkit.ChatColor;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerListener;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 
 public class CraftIRCListener extends PlayerListener {
 
