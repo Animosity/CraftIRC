@@ -64,10 +64,14 @@ paths:
     attributes:
       admin: false
       colors: true
-      chat: false
+      chat: true
       chatcommand: true
-      joinpartmessages: true
-      moderationmessages: true
+      action: true
+      join: true
+      part: true
+      nick: true
+      quit: true
+      kick: true
     filters:
       #Each filter is a disjunction with message fields and regular expressions they must match for the message to be filtered.
       - message: '^\.[^ ]+'

@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -205,7 +204,7 @@ public class CraftIRC extends JavaPlugin {
             else
                 msg.setField("sender", "SERVER");
             msg.setField("message", msgToSend);
-            msg.deliver();
+            msg.post();
 
             //TODO: Find a better way to do this (use formatting string, etc.)
             /*
@@ -236,7 +235,7 @@ public class CraftIRC extends JavaPlugin {
             else
                 msg.setField("sender", "SERVER");;
             msg.setField("message", msgToSend);
-            msg.deliverTo(args[1]);
+            msg.post(args[1]);
 
             //TODO: Find a better way to do this (use formatting string, etc.)
             /*
@@ -300,9 +299,19 @@ public class CraftIRC extends JavaPlugin {
         }
     }
     
+    //Null target: Sends message through all possible paths.
     public RelayedMessage newMsg(EndPoint source, EndPoint target, String eventType) {
         if (source == null) return null;
         return new RelayedMessage(this, source, target, eventType);
+    }
+    public RelayedMessage newMsg(EndPoint source, String target, String eventType) {
+        if (source == null) return null;
+        EndPoint targetpoint = null;
+        if (target != null) {
+            targetpoint = endpoints.get(target);
+            if (targetpoint == null) dolog("The requested target tag '" + target + "' isn't registered."); 
+        }
+        return new RelayedMessage(this, source, targetpoint, eventType);
     }
     
     public boolean registerEndPoint(String tag, EndPoint ep) {
@@ -318,64 +327,45 @@ public class CraftIRC extends JavaPlugin {
         tags.put(ep, tag);
         return true;
     }
-    public EndPoint getEndPoint(String tag) {
+    EndPoint getEndPoint(String tag) {
         return endpoints.get(tag);
     }
-    public String getTag(EndPoint ep) {
+    String getTag(EndPoint ep) {
         return tags.get(ep);
     }
-
-    protected void sendMessage(RelayedMessage msg, String tag, String event) {
-        try {
-            String realEvent = event;
-            //Send to IRC
-            if (msg.getTarget() == EndPoint.IRC || msg.getTarget() == EndPoint.BOTH) {
-                if (msg.getSource() == EndPoint.IRC)
-                    realEvent = "irc-to-irc." + event;
-                if (msg.getSource() == EndPoint.GAME)
-                    realEvent = "game-to-irc." + event;
-                for (int i = 0; i < bots.size(); i++) {
-                    ArrayList<String> chans = cBotChannels(i);
-                    Iterator<String> it = chans.iterator();
-                    while (it.hasNext()) {
-                        String chan = it.next();
-                        // Don't echo back to sending channel
-                        if (msg.getSource() == EndPoint.IRC && msg.srcBot == i && msg.srcChannel.equalsIgnoreCase(chan))
-                            continue;
-                        // Send to all bots, channels with event enabled
-                        if ((tag == null || cChanCheckTag(tag, i, chan))
-                                && (event == null || cEvents(realEvent, i, chan))) {
-                            msg.trgBot = i;
-                            msg.trgChannel = chan;
-                            if (msg.getTarget() == EndPoint.BOTH)
-                                instances.get(i).sendMessage(chan, msg.asString(EndPoint.IRC));
-                            else
-                                instances.get(i).sendMessage(chan, msg.asString());
-                        }
-                    }
-                }
+    
+    boolean delivery(RelayedMessage msg) {
+        return delivery(msg, null, null);
+    }
+    boolean delivery(RelayedMessage msg, List<EndPoint> destinations) {
+        return delivery(msg, destinations, null);
+    }
+    boolean delivery(RelayedMessage msg, String username) {
+        return delivery(msg, null, username);
+    }
+    boolean delivery(RelayedMessage msg, List<EndPoint> destinations, String username) {
+        if (destinations == null) {
+            //Use all possible destinations
+            destinations = new LinkedList<EndPoint>();
+            String sourceTag = getTag(msg.getSource());
+            for (Path path : paths.keySet()) {
+                if (!path.getSourceTag().equals(sourceTag)) continue;
+                ConfigurationNode pathConfig = paths.get(path);
+                if (pathConfig.getBoolean("disable", false)) continue;
+                if (!pathConfig.getBoolean("attributes." + msg.getEvent(), false)) continue;
+                destinations.add(getEndPoint(path.getTargetTag()));
             }
-
-            //Send to game (doesn't allow game to game)
-            if ((msg.getTarget() == EndPoint.GAME || msg.getTarget() == EndPoint.BOTH)
-                    && msg.getSource() == EndPoint.IRC) {
-                realEvent = "irc-to-game." + event;
-                if ((tag == null || cChanCheckTag(tag, msg.srcBot, msg.srcChannel))
-                        && (event == null || cEvents(realEvent, msg.srcBot, msg.srcChannel))) {
-                    for (Player pl : getServer().getOnlinePlayers()) {
-                        if (pl != null) {
-                            if (msg.getTarget() == EndPoint.BOTH)
-                                pl.sendMessage(msg.asString(EndPoint.GAME));
-                            else
-                                pl.sendMessage(msg.asString());
-                        }
-                    }
-                }
-            }
-        } catch (RelayedMessageException rme) {
-            log.log(Level.SEVERE, rme.toString());
-            rme.printStackTrace();
         }
+        if (destinations.size() < 1) return false;
+        //Deliver the message
+        boolean success = true;
+        for (EndPoint destination : destinations) {
+            if (username == null)
+                destination.messageIn(msg);
+            else
+                success = success && destination.userMessageIn(username, msg);
+        }
+        return success;
     }
 
     protected void sendRawToBot(String rawMessage, int bot) {
