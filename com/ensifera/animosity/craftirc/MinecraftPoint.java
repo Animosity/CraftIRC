@@ -31,6 +31,17 @@ public class MinecraftPoint implements EndPoint {
         return true;
     }
     
+    public boolean adminMessageIn(RelayedMessage msg) {
+        String message = msg.getMessage(this);
+        boolean success = false;
+        for (Player p : server.getOnlinePlayers())
+            if (p.isOp()) {
+                p.sendMessage(message);
+                success = true;
+            }
+        return success;
+    }
+    
     public List<String> listUsers() {
         LinkedList<String> users = new LinkedList<String>();
         for (Player p : server.getOnlinePlayers()) {

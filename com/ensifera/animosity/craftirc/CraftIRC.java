@@ -240,7 +240,7 @@ public class CraftIRC extends JavaPlugin {
             else
                 msg.setField("sender", "SERVER");;
             msg.setField("message", msgToSend);
-            msg.post(args[1]);
+            msg.postToUser(args[1]);
 
             //TODO: Find a better way to do this (use formatting string, etc.)
             /*
@@ -282,8 +282,11 @@ public class CraftIRC extends JavaPlugin {
                 if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener cmdNotifyIrcAdmins() - args.length == 0 or Sender != player "));
                 return false;
             }
-            this.noticeAdmins("[Admin notice from " + ((Player) sender).getName() + "] "
-                    + Util.combineSplit(0, args, " "));
+            RelayedMessage msg = newMsg(getEndPoint(cMinecraftTag()), null, "admin");
+            msg.setField("sender", ((Player) sender).getDisplayName());
+            msg.setField("message", Util.combineSplit(0, args, " "));
+            msg.setField("world", ((Player) sender).getWorld().getName());
+            msg.post(true);
             sender.sendMessage("Admin notice sent.");
             return true;
         } catch (Exception e) {
@@ -340,34 +343,57 @@ public class CraftIRC extends JavaPlugin {
     }
     
     boolean delivery(RelayedMessage msg) {
-        return delivery(msg, null, null);
+        return delivery(msg, null, null, false);
     }
     boolean delivery(RelayedMessage msg, List<EndPoint> destinations) {
-        return delivery(msg, destinations, null);
+        return delivery(msg, destinations, null, false);
     }
-    boolean delivery(RelayedMessage msg, String username) {
-        return delivery(msg, null, username);
+    boolean delivery(RelayedMessage msg, List<EndPoint> knownDestinations, String username) {
+        return delivery(msg, knownDestinations, username, false);
     }
-    boolean delivery(RelayedMessage msg, List<EndPoint> destinations, String username) {
-        if (destinations == null) {
+    //Only successful if all known targets (or if there is none at least one possible target) are successful!
+    boolean delivery(RelayedMessage msg, List<EndPoint> knownDestinations, String username, boolean admins) {
+        String sourceTag = getTag(msg.getSource());
+        List<EndPoint> destinations;
+        if (knownDestinations == null) {
             //Use all possible destinations
             destinations = new LinkedList<EndPoint>();
-            String sourceTag = getTag(msg.getSource());
             for (String targetTag : cPathsFrom(sourceTag)) {
                 if (!cPathAttribute(sourceTag, targetTag, "attributes." + msg.getEvent())) continue;
                 destinations.add(getEndPoint(targetTag));
             }
-        }
+        } else destinations = new LinkedList<EndPoint>(knownDestinations);
         if (destinations.size() < 1) return false;
         //Deliver the message
         boolean success = true;
         for (EndPoint destination : destinations) {
-            if (username == null)
-                destination.messageIn(msg);
-            else
+            //Check against path filters
+            if (matchesFilter(msg, cPathFilters(sourceTag, getTag(destination)))) {
+                if (knownDestinations != null) success = false;
+                continue;
+            }
+            //Deliver to user or entire path
+            if (username != null)
                 success = success && destination.userMessageIn(username, msg);
+            else if (admins)
+                destination.adminMessageIn(msg);
+            else
+                destination.messageIn(msg);
         }
         return success;
+    }
+    
+    boolean matchesFilter(RelayedMessage msg, List<ConfigurationNode> filters) {
+        if (filters == null) return false;
+        newFilter: for (ConfigurationNode filter : filters) {
+            for (String key : filter.getKeys()) {
+                Pattern condition = Pattern.compile(filter.getString(key, ""));
+                Matcher check = condition.matcher(msg.getField(key));
+                if (!check.find()) continue newFilter;
+            }
+            return true; 
+        }
+        return false;
     }
 
     protected void sendRawToBot(String rawMessage, int bot) {
@@ -383,20 +409,6 @@ public class CraftIRC extends JavaPlugin {
     
     protected List<String> ircUserLists(String tag) {
         return getEndPoint(tag).listUsers();        
-    }
-
-    protected void noticeAdmins(String message) {
-        /* 
-        for (int i = 0; i < bots.size(); i++) {
-            ArrayList<String> chans = cBotChannels(i);
-            Iterator<String> it = chans.iterator();
-            while (it.hasNext()) {
-                String chan = it.next();
-                if (cChanAdmin(i, chan))
-                    instances.get(i).sendNotice(chan, message);
-            }
-        }
-        */
     }
 
     protected void setDebug(boolean d) {

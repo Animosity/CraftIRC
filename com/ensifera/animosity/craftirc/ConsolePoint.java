@@ -16,6 +16,11 @@ public class ConsolePoint implements EndPoint {
         CraftIRC.dolog("(To " + username + ")" + msg.getMessage());
         return true;
     }
+    
+    public boolean adminMessageIn(RelayedMessage msg) {
+        CraftIRC.dolog("(To the admins)" + msg.getMessage());
+        return true;
+    }
 
     public List<String> listUsers() {
         return null;

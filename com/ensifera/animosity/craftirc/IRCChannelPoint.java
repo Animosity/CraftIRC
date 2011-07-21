@@ -26,6 +26,12 @@ public class IRCChannelPoint implements EndPoint {
         return false;
     }
     
+    public boolean adminMessageIn(RelayedMessage msg) {
+        String message = msg.getMessage();
+        
+        return false;
+    }
+    
     public List<String> listUsers() {
         LinkedList<String> users = new LinkedList<String>();
 

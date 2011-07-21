@@ -158,13 +158,16 @@ public class RelayedMessage {
     }
     
     public void post() {
+        post(false);
+    }
+    public void post(boolean admins) {
         List<EndPoint> destinations = new LinkedList<EndPoint>(cc);
         if (target != null) destinations.add(target);
         Collections.reverse(destinations);
-        plugin.delivery(this, destinations);
+        plugin.delivery(this, destinations, null, admins);
     }
     
-    public boolean post(String username) {
+    public boolean postToUser(String username) {
         List<EndPoint> destinations = new LinkedList<EndPoint>(cc);
         if (target != null) destinations.add(target);
         Collections.reverse(destinations);
