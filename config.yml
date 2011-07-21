@@ -1,5 +1,6 @@
 settings:
   minecraft-tag: 'minecraft'
+  cancelled-tag: 'cancelled'
   console-tag: 'console'
   command-prefix: '.'
   debug: false

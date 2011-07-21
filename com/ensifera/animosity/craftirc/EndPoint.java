@@ -7,7 +7,8 @@ public interface EndPoint {
     //The type is used to format the message and such.
     public enum Type {
         MINECRAFT,
-        IRC
+        IRC,
+        PLAIN
     }
     
     public Type getType();

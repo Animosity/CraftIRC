@@ -104,6 +104,8 @@ public class CraftIRC extends JavaPlugin {
             //TODO: Player kick event
             
             registerEndPoint(cMinecraftTag(), new MinecraftPoint(getServer()));
+            registerEndPoint(cCancelledTag(), new MinecraftPoint(getServer()));
+            registerEndPoint(cConsoleTag(), new ConsolePoint());
 
             //Create bots
             //TODO: Threads
@@ -181,7 +183,10 @@ public class CraftIRC extends JavaPlugin {
             } else if (commandName.equals("say")) {
                 // Capture the 'say' command from Minecraft Console
                 if (sender instanceof ConsoleCommandSender) {
-                    //TODO
+                    RelayedMessage msg = newMsg(getEndPoint(cConsoleTag()), null, "chat");
+                    msg.setField("sender", "SERVER");
+                    msg.setField("message", Util.combineSplit(1, args, " "));
+                    msg.post();
                 }
             } else
                 return false;
@@ -304,7 +309,7 @@ public class CraftIRC extends JavaPlugin {
         if (source == null) return null;
         return new RelayedMessage(this, source, target, eventType);
     }
-    public RelayedMessage newMsg(EndPoint source, String target, String eventType) {
+    public RelayedMessage newMsgToTag(EndPoint source, String target, String eventType) {
         if (source == null) return null;
         EndPoint targetpoint = null;
         if (target != null) {
@@ -348,12 +353,9 @@ public class CraftIRC extends JavaPlugin {
             //Use all possible destinations
             destinations = new LinkedList<EndPoint>();
             String sourceTag = getTag(msg.getSource());
-            for (Path path : paths.keySet()) {
-                if (!path.getSourceTag().equals(sourceTag)) continue;
-                ConfigurationNode pathConfig = paths.get(path);
-                if (pathConfig.getBoolean("disable", false)) continue;
-                if (!pathConfig.getBoolean("attributes." + msg.getEvent(), false)) continue;
-                destinations.add(getEndPoint(path.getTargetTag()));
+            for (String targetTag : cPathsFrom(sourceTag)) {
+                if (!cPathAttribute(sourceTag, targetTag, "attributes." + msg.getEvent())) continue;
+                destinations.add(getEndPoint(targetTag));
             }
         }
         if (destinations.size() < 1) return false;
@@ -426,6 +428,12 @@ public class CraftIRC extends JavaPlugin {
 
     String cMinecraftTag() {
         return getConfiguration().getString("settings.minecraft-tag", "minecraft");
+    }
+    String cCancelledTag() {
+        return getConfiguration().getString("settings.cancelled-tag", "cancelled");
+    }
+    String cConsoleTag() {
+        return getConfiguration().getString("settings.console-tag", "console");
     }
     
     protected boolean cDebug() {
@@ -583,6 +591,27 @@ public class CraftIRC extends JavaPlugin {
     protected ArrayList<String> cChanOnJoin(int bot, String channel) {
         return new ArrayList<String>(getChanNode(bot, channel).getStringList("on-join", null));
     }
+    
+    List<String> cPathsFrom(String source) {
+        List<String> results = new LinkedList<String>();
+        for (Path path : paths.keySet()) {
+            if (!path.getSourceTag().equals(source)) continue;
+            if (paths.get(path).getBoolean("disable", false)) continue;
+            results.add(path.getTargetTag());
+        }
+        return results;
+    }
+    
+    List<String> cPathsTo(String target) {
+        List<String> results = new LinkedList<String>();
+        for (Path path : paths.keySet()) {
+            if (!path.getTargetTag().equals(target)) continue;
+            if (paths.get(path).getBoolean("disable", false)) continue;
+            results.add(path.getSourceTag());
+        }
+        return results;
+    }
+    
     
     public boolean cPathExists(String source, String target) {
         ConfigurationNode pathNode = getPathNode(source, target);

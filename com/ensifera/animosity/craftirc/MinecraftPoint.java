@@ -18,7 +18,7 @@ public class MinecraftPoint implements EndPoint {
     }
 
     public void messageIn(RelayedMessage msg) {
-        String message = msg.getMessage();
+        String message = msg.getMessage(this);
         for (Player p : server.getOnlinePlayers()) {
             p.sendMessage(message);
         }
@@ -27,7 +27,7 @@ public class MinecraftPoint implements EndPoint {
     public boolean userMessageIn(String username, RelayedMessage msg) {
         Player p = server.getPlayer(username);
         if (p == null) return false;
-        p.sendMessage(msg.getMessage());
+        p.sendMessage(msg.getMessage(this));
         return true;
     }
     
