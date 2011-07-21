@@ -1,7 +1,10 @@
 package com.ensifera.animosity.craftirc;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.jibble.pircbot.User;
 
 public class IRCChannelPoint implements EndPoint {
 
@@ -17,24 +20,38 @@ public class IRCChannelPoint implements EndPoint {
     }
 
     public void messageIn(RelayedMessage msg) {
-        String message = msg.getMessage();
-        
+        bot.sendMessage(channel, msg.getMessage(this));
     }
     
     public boolean userMessageIn(String username, RelayedMessage msg) {
-
-        return false;
+        bot.sendNotice(username, msg.getMessage(this));
+        return true;
     }
     
     public boolean adminMessageIn(RelayedMessage msg) {
         String message = msg.getMessage();
-        
-        return false;
+        boolean success = false;
+        for (String nick : listDisplayUsers()) {
+            if (bot.getPlugin().cBotAdminPrefixes(bot.getId()).contains(nick.charAt(0))) {
+                success = true;
+                bot.sendNotice(nick, message);
+            }
+        }
+        return success;
     }
     
     public List<String> listUsers() {
-        LinkedList<String> users = new LinkedList<String>();
-
+        List<String> users = new LinkedList<String>();
+        for (User user : bot.getUsers(channel))
+            users.add(user.getNick());
+        return users;
+    }
+    
+    public List<String> listDisplayUsers() {
+        List<String> users = new LinkedList<String>();
+        for (User user : bot.getUsers(channel))
+            users.add(bot.getHighestUserPrefix(user) + user.getNick());
+        Collections.sort(users);
         return users;
     }
 

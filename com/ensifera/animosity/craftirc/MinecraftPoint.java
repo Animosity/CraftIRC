@@ -1,5 +1,6 @@
 package com.ensifera.animosity.craftirc;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -45,9 +46,18 @@ public class MinecraftPoint implements EndPoint {
     public List<String> listUsers() {
         LinkedList<String> users = new LinkedList<String>();
         for (Player p : server.getOnlinePlayers()) {
-            users.add(p.getDisplayName());
+            users.add(p.getName());
         }
         return users;
+    }
+    
+    public List<String> listDisplayUsers() {
+        LinkedList<String> users = new LinkedList<String>();
+        for (Player p : server.getOnlinePlayers()) {
+            users.add(p.getDisplayName());
+        }
+        Collections.sort(users);
+        return users;  
     }
 
 }

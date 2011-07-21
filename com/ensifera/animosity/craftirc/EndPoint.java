@@ -22,7 +22,10 @@ public interface EndPoint {
     //This is called when a message is sent to administrators in this endpoint. The definition of administrator is up to the endpoint.
     public boolean adminMessageIn(RelayedMessage msg);
     
-    //Return a list of online users at this endpoint, if possible, or null otherwise.
+    //Return a list of online users at this endpoint, if possible, or null otherwise. The list is unsorted and all items are valid usernames.
     public List<String> listUsers();
+    
+    //Returns a list of users for display purposes; Each entry may contain extra information that makes it unusable as a username.
+    public List<String> listDisplayUsers();
 
 }

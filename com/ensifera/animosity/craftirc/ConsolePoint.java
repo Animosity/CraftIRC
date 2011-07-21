@@ -25,5 +25,9 @@ public class ConsolePoint implements EndPoint {
     public List<String> listUsers() {
         return null;
     }
+    
+    public List<String> listDisplayUsers() {
+        return null;
+    }
 
 }
