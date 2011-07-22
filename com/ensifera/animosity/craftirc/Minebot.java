@@ -15,8 +15,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.event.Event;
 import org.bukkit.util.config.ConfigurationNode;
 
-import com.ensifera.animosity.craftirc.IRCEvent.Mode;
-
 /**
  * @author Animosity
  * @author Protected
@@ -193,9 +191,6 @@ public class Minebot extends PircBot implements Runnable {
                 msg.setField("sender", sender);
                 msg.setField("srcChannel", channel);
                 msg.post();
-                // ALTERNATIVE METHOD?
-                Event ie = new IRCEvent(Mode.JOIN, msg);
-                this.plugin.getServer().getPluginManager().callEvent(ie);
             }
         }
     }
@@ -207,9 +202,6 @@ public class Minebot extends PircBot implements Runnable {
             msg.setField("srcChannel", channel);
             msg.setField("message", reason);
             msg.post();
-            // ALTERNATIVE METHOD?
-            Event ie = new IRCEvent(Mode.PART, msg);
-            this.plugin.getServer().getPluginManager().callEvent(ie);
         }
     }
     
@@ -220,9 +212,6 @@ public class Minebot extends PircBot implements Runnable {
             msg.setField("srcChannel", channel);
             msg.setField("message", reason);
             msg.post();
-            // ALTERNATIVE METHOD?
-            Event ie = new IRCEvent(Mode.QUIT, msg);
-            this.plugin.getServer().getPluginManager().callEvent(ie);
         }
     }
     
@@ -237,21 +226,17 @@ public class Minebot extends PircBot implements Runnable {
             msg.setField("message", reason);
             msg.setField("moderator", kickerNick);
             msg.post();            
-            // ALTERNATIVE METHOD?
-            Event ie = new IRCEvent(Mode.KICK, msg);
-            this.plugin.getServer().getPluginManager().callEvent(ie);
         }
     }
 
     public void onChannelNickChange(String channel, String oldNick, String login, String hostname, String newNick) {
-        RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "nick");
-        msg.setField("sender", oldNick);
-        msg.setField("srcChannel", channel);
-        msg.setField("message", newNick);
-        msg.post();
-        // ALTERNATIVE METHOD?
-        Event ie = new IRCEvent(Mode.NICKCHANGE, msg);
-        this.plugin.getServer().getPluginManager().callEvent(ie);
+        if (this.channels.containsKey(channel)) {
+            RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "nick");
+            msg.setField("sender", oldNick);
+            msg.setField("srcChannel", channel);
+            msg.setField("message", newNick);
+            msg.post();
+        }
     }
 
     public void onMessage(String channel, String sender, String login, String hostname, String message) {
@@ -320,9 +305,6 @@ public class Minebot extends PircBot implements Runnable {
                 msg.setField("srcChannel", channel);
                 msg.setField("message", message);
                 msg.post();
-                // PLUGIN INTEROP                
-                Event ie = new IRCEvent(Mode.MSG, msg);
-                this.plugin.getServer().getPluginManager().callEvent(ie);
                 return;
             }
             
@@ -351,22 +333,13 @@ public class Minebot extends PircBot implements Runnable {
     }
 
     protected void onPrivateMessage(String sender, String login, String hostname, String message) {
-        if (this.plugin.isDebug()) {
+        if (this.plugin.isDebug())
             CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.PRIVMSG"));
-        }
-        if (ignores.contains(sender))
-            return;
+        if (ignores.contains(sender)) return;
 
         String[] splitMessage = message.split(" ");
 
         try {
-            if (splitMessage.length > 1 && splitMessage[0].equalsIgnoreCase("tell")) {
-                if (plugin.getServer().getPlayer(splitMessage[1]) != null) {
-                    this.msgToGame(null, sender, Util.combineSplit(2, splitMessage, " "), messageMode.MSG_PLAYER,
-                            splitMessage[1]);
-                    this.sendNotice(sender, "Whispered to " + splitMessage[1]);
-                }
-            } else {
                 // IRCEvent - PRIVMSG
                 RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
                 msg.formatting = "quits";
@@ -379,90 +352,15 @@ public class Minebot extends PircBot implements Runnable {
                 msg.setTarget(EndPoint.PLUGIN);
                 Event ie = new IRCEvent(Mode.PRIVMSG, msg);
                 this.plugin.getServer().getPluginManager().callEvent(ie);
-            }
-
-        } catch (Exception e) {
         }
     }
 
     public void onAction(String sender, String login, String hostname, String target, String action) {
-        if (this.plugin.isDebug()) {
-            CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.ACTION"));
-        }
-        // IRCEvent - ACTION
-        RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
-        msg.formatting = "action";
-        msg.sender = sender;
-        msg.srcBot = botId;
-        msg.srcChannel = target;
-        msg.message = action;
-        msg.updateTag();
-        this.plugin.sendMessage(msg, null, "all-chat");
-
-        //PLUGIN INTEROP
-        msg.setTarget(EndPoint.PLUGIN);
-        Event ie = new IRCEvent(Mode.ACTION, msg);
-        this.plugin.getServer().getPluginManager().callEvent(ie);
-
-    }
-
-    // IRC user authorization check against prefixes
-    // Currently just for admin channel as first-order level of security
-    public boolean userAuthorized(String channel, String user) {
-        if (this.plugin.cChanAdmin(botId, channel))
-            try {
-                User check = this.getUser(user, channel);
-                if (this.plugin.isDebug()) {
-                    CraftIRC.log.info(String.format(CraftIRC.NAME
-                            + " Minebot userAuthorized(): "
-                            + String.valueOf(check != null
-                                    && this.plugin.cBotAdminPrefixes(botId).contains(getHighestUserPrefix(check)))));
-                }
-                return check != null && this.plugin.cBotAdminPrefixes(botId).contains(getHighestUserPrefix(check));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        return false;
-    }
-
-    /**
-     * TODO: NEED TO CHANGE TO PASS THROUGH FORMATTER FIRST
-     * 
-     * @param sender
-     *            - The originating source/user of the IRC event
-     * @param message
-     *            - The message to be relayed to the game
-     * @param mm
-     *            - The message type (see messageMode)
-     * @param targetPlayer
-     *            - The target player to message (for private messages), send
-     *            null if mm != messageMod.MSG_PLAYER
-     */
-    private void msgToGame(String source, String sender, String message, messageMode mm, String target) {
-
-        try {
-
-            String msg_to_broadcast;
-            switch (mm) {
-
-            // MESSAGE TO 1 PLAYER
-            case MSG_PLAYER:
-                if (this.plugin.isDebug()) {
-                    CraftIRC.log.info(String.format(CraftIRC.NAME + " msgToGame(player) : <%s> %s", sender, message));
-                }
-                msg_to_broadcast = (new StringBuilder()).append("[IRC privmsg]").append(" <").append(sender)
-                        .append(ChatColor.WHITE).append("> ").append(message).toString();
-                Player p = plugin.getServer().getPlayer(target);
-                if (p != null) {
-                    p.sendMessage(msg_to_broadcast);
-                }
-
-                break;
-            } //end switch
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        RelayedMessage msg = this.plugin.newMsg(channels.get(target), null, "action");
+        msg.setField("sender", sender);
+        msg.setField("srcChannel", target);
+        msg.setField("message", action);
+        msg.post();
     }
 
     // Return the # of players and player names on the Minecraft server
@@ -522,4 +420,3 @@ public class Minebot extends PircBot implements Runnable {
     }
 
 }// EO Minebot
-

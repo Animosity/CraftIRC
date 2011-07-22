@@ -19,12 +19,14 @@ settings:
     ####     EASY COLORS: Use the names defined in the colormap: block, such as %blue% %foreground% %yellow% etc.
     from-game:
       chat: '(%sender%) %message%'
+      private: '(%sender%) %message%'
       action: '* %sender% %message%'
       join: '[%sender% connected]'
       quit: '[%sender% disconnected]'
       kick: '[%moderator% KICKED %sender% (%message%)]'
     from-irc:
       chat: '[%srcChannel%] <%sender%> %message%'
+      private: '%sender% whispers> %message%'
       action: '[%srcChannel%] * %sender% %message%'
       join: '[%srcChannel%] * Joins: %sender%'
       part: '[%srcChannel%] * Parts: %sender%'
@@ -73,6 +75,7 @@ paths:
       nick: true
       quit: true
       kick: true
+      private: true
     filters:
       #Each filter is a disjunction with message fields and regular expressions they must match for the message to be filtered.
       - message: '^\.[^ ]+'

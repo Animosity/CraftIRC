@@ -10,13 +10,19 @@ import java.util.regex.Pattern;
 
 public class RelayedMessage {
     
+    enum DeliveryMethod {
+        STANDARD,
+        ADMINS,
+        COMMAND
+    }
+    
     private CraftIRC plugin;
     private EndPoint source;            //Origin endpoint of the message
     private EndPoint target;            //Target endpoint of the message
     private String eventType;           //Event type
     private LinkedList<EndPoint> cc;    //Multiple extra targets for the message
     private String template;            //Formatting string
-    private Map<String,String> fields;
+    private Map<String,String> fields;  //All message attributes
     
     RelayedMessage(CraftIRC plugin, EndPoint source) { this(plugin, source, null, ""); }
     RelayedMessage(CraftIRC plugin, EndPoint source, EndPoint target) { this(plugin, source, target, ""); }
@@ -158,19 +164,22 @@ public class RelayedMessage {
     }
     
     public void post() {
-        post(false);
+        post(DeliveryMethod.STANDARD, null);
     }
-    public void post(boolean admins) {
+    public void post(boolean admin) {
+        post(admin ? DeliveryMethod.ADMINS : DeliveryMethod.STANDARD, null);
+    }
+    private boolean post(DeliveryMethod dm, String username) {
         List<EndPoint> destinations = new LinkedList<EndPoint>(cc);
         if (target != null) destinations.add(target);
         Collections.reverse(destinations);
-        plugin.delivery(this, destinations, null, admins);
+        return plugin.delivery(this, destinations, username, dm);
+    }
+    public boolean postToUser(String username) {
+        return post(DeliveryMethod.STANDARD, username);
+    }
+    public void command() {
+        post(DeliveryMethod.COMMAND, null);
     }
     
-    public boolean postToUser(String username) {
-        List<EndPoint> destinations = new LinkedList<EndPoint>(cc);
-        if (target != null) destinations.add(target);
-        Collections.reverse(destinations);
-        return plugin.delivery(this, destinations, username);
-    }
 }
