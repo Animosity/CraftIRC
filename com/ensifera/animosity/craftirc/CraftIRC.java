@@ -33,6 +33,7 @@ import org.bukkit.util.config.ConfigurationNode;
  * 
  */
 
+//TODO: Better handling of null method returns
 public class CraftIRC extends JavaPlugin {
     public static final String NAME = "CraftIRC";
     public static String VERSION;
@@ -105,9 +106,15 @@ public class CraftIRC extends JavaPlugin {
             getServer().getPluginManager().registerEvent(Event.Type.PLAYER_CHAT, listener, Priority.Monitor, this);
             //TODO: Player kick event
             
-            registerEndPoint(cMinecraftTag(), new MinecraftPoint(getServer()));
-            registerEndPoint(cCancelledTag(), new MinecraftPoint(getServer()));
-            registerEndPoint(cConsoleTag(), new ConsolePoint());
+            //Native endpoints!
+            registerEndPoint(cMinecraftTag(), new MinecraftPoint(this, getServer())); //The minecraft server, no bells and whistles
+            registerEndPoint(cCancelledTag(), new MinecraftPoint(this, getServer())); //Handles cancelled chat
+            registerEndPoint(cConsoleTag(), new ConsolePoint());                      //The minecraft console
+            registerCommand(cMinecraftTag(), "cmd");
+            registerCommand(cMinecraftTag(), "c");
+            registerCommand(cMinecraftTag(), "say");
+            registerCommand(cMinecraftTag(), "mc");
+            registerCommand(cMinecraftTag(), "players");
 
             //Create bots
             instances = new ArrayList<Minebot>();
@@ -164,6 +171,10 @@ public class CraftIRC extends JavaPlugin {
             e.printStackTrace();
         }
     }
+    
+    /***************************
+    Minecraft command handling
+    ***************************/
 
     public boolean onCommand(CommandSender sender, Command command, String commandLabel, String[] args) {
         String commandName = command.getName().toLowerCase();
@@ -197,10 +208,6 @@ public class CraftIRC extends JavaPlugin {
         }
         return debug;
     }
-    
-    /***************************
-    Minecraft command handling
-    ***************************/
 
     private boolean cmdMsgToTag(CommandSender sender, String[] args) {
         try {
@@ -287,7 +294,7 @@ public class CraftIRC extends JavaPlugin {
             return false;
         }
     }
-    
+        
     /***************************
     Endpoint and message interface (to be used by CraftIRC and external plugins)
     ***************************/
@@ -309,6 +316,15 @@ public class CraftIRC extends JavaPlugin {
             } else return null;
         }
         return new RelayedMessage(this, source, targetpoint, eventType);
+    }
+    public RelayedCommand newCmd(EndPoint source, String command) {
+        if (source == null) return null;
+        CommandEndPoint target = irccmds.get(command);
+        if (target == null) return null;
+        if (!cPathExists(getTag(source), getTag(target))) return null;
+        RelayedCommand cmd = new RelayedCommand(this, source, target);
+        cmd.setField("command", command);
+        return cmd;
     }
     
     public boolean registerEndPoint(String tag, EndPoint ep) {
@@ -411,7 +427,8 @@ public class CraftIRC extends JavaPlugin {
             else if (dm == RelayedMessage.DeliveryMethod.ADMINS) 
                 destination.adminMessageIn(msg);
             else if (dm == RelayedMessage.DeliveryMethod.COMMAND) {
-                
+                if (!(destination instanceof CommandEndPoint)) continue;
+                ((CommandEndPoint)destination).commandIn((RelayedCommand)msg);
             } else
                 destination.messageIn(msg);
         }
@@ -720,6 +737,7 @@ public class CraftIRC extends JavaPlugin {
     }
     
     public boolean cPathAttribute(String source, String target, String attribute) {
+        //TODO: Default attributes (shared among all paths)
         return getPathNode(source, target).getBoolean(attribute, false);
     }
     

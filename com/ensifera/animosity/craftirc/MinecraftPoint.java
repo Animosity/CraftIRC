@@ -7,11 +7,13 @@ import java.util.List;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 
-public class MinecraftPoint implements EndPoint {
+public class MinecraftPoint implements CommandEndPoint {
 
     Server server;
-    MinecraftPoint(Server server) {
+    CraftIRC plugin;
+    MinecraftPoint(CraftIRC plugin, Server server) {
         this.server = server;
+        this.plugin = plugin;
     }
     
     public Type getType() {
@@ -58,6 +60,33 @@ public class MinecraftPoint implements EndPoint {
         }
         Collections.sort(users);
         return users;  
+    }
+
+    public void commandIn(RelayedCommand cmd) {
+        String command = cmd.getField("command").toLowerCase();
+        if (plugin.cPathAttribute(cmd.getField("source"), cmd.getField("target"), "admin") && cmd.getFlag("admin")) {
+            //Admin commands
+            if (command.equals("cmd") || command.equals("c")) {
+                //TODO
+            }
+        }
+        //Normal commands
+        if (command.equals("say") || command.equals("mc")) {
+            cmd.setField("message", cmd.getField("args"));
+            this.messageIn(cmd);    //Trick: Forwarding command back to this endpoint as a message!
+        } else if (command.equals("players")) {
+            List<String> users = listDisplayUsers();
+            int playerCount = users.size();
+            String result = "Nobody is minecrafting right now.";
+            if (playerCount > 0) {
+                String userstring = Util.combineSplit(0, (String[])listDisplayUsers().toArray(), " ");
+                result = "Online (" + playerCount + "/" + server.getMaxPlayers() + "): " + userstring;
+            }
+            //Reply to remote endpoint! 
+            RelayedMessage response = plugin.newMsgToTag(this, cmd.getField("source"), "");
+            response.setField("message", result);
+            response.post();
+        }
     }
 
 }

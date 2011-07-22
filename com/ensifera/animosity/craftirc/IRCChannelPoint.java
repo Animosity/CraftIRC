@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.jibble.pircbot.User;
 
-public class IRCChannelPoint implements EndPoint {
+public class IRCChannelPoint implements CommandEndPoint {
 
     Minebot bot;
     String channel;
@@ -53,6 +53,20 @@ public class IRCChannelPoint implements EndPoint {
             users.add(bot.getHighestUserPrefix(user) + user.getNick());
         Collections.sort(users);
         return users;
+    }
+
+    public void commandIn(RelayedCommand cmd) {
+        String command = cmd.getField("command").toLowerCase();
+        if (bot.getPlugin().cPathAttribute(cmd.getField("source"), cmd.getField("target"), "admin") && cmd.getFlag("admin")) {
+            String args = cmd.getField("args");
+            if (command.equals("botsay")) {
+                if (args == null) return;
+                bot.sendMessage(args.substring(0, args.indexOf(" ")), args.substring(args.indexOf(" ") + 1));
+            } else if (command.equals("raw")) {
+                if (args == null) return;
+                bot.sendRawLine(args);
+            }
+        }
     }
 
 }

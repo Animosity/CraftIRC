@@ -7,12 +7,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
-import org.bukkit.entity.Player;
 import org.jibble.pircbot.*;
-import org.bukkit.ChatColor;
-import org.bukkit.event.Event;
 import org.bukkit.util.config.ConfigurationNode;
 
 /**
@@ -80,7 +76,9 @@ public class Minebot extends PircBot implements Runnable {
             if (channels.containsKey(name)) continue;
             IRCChannelPoint chan = new IRCChannelPoint(this, name);
             if (!plugin.registerEndPoint(channelNode.getString("tag"), chan)) continue;
-            //TODO: Unregister endpoint when necessary; Add endpoint deregistration
+            plugin.registerCommand(channelNode.getString("tag"), "botsay");
+            plugin.registerCommand(channelNode.getString("tag"), "raw");
+            //TODO: Unregister endpoint when necessary;
             channels.put(name, chan);
         }
         
@@ -201,6 +199,7 @@ public class Minebot extends PircBot implements Runnable {
             msg.setField("sender", sender);
             msg.setField("srcChannel", channel);
             msg.setField("message", reason);
+            msg.setField("ircPrefix", getHighestUserPrefix(getUser(sender, channel)));
             msg.post();
         }
     }
@@ -211,6 +210,7 @@ public class Minebot extends PircBot implements Runnable {
             msg.setField("sender", sender);
             msg.setField("srcChannel", channel);
             msg.setField("message", reason);
+            msg.setField("ircPrefix", getHighestUserPrefix(getUser(sender, channel)));
             msg.post();
         }
     }
@@ -225,6 +225,8 @@ public class Minebot extends PircBot implements Runnable {
             msg.setField("srcChannel", channel);
             msg.setField("message", reason);
             msg.setField("moderator", kickerNick);
+            msg.setField("ircPrefix", getHighestUserPrefix(getUser(recipientNick, channel)));
+            msg.setField("ircModPrefix", getHighestUserPrefix(getUser(kickerNick, channel)));
             msg.post();            
         }
     }
@@ -243,115 +245,29 @@ public class Minebot extends PircBot implements Runnable {
         if (ignores.contains(sender)) return;
         try {
             String[] splitMessage = message.split(" ");
-            String command = Util.combineSplit(1, splitMessage, " ");
-            // Parse admin commands here
-            if (message.startsWith(cmdPrefix) && userAuthorized(channel, sender)) {
-                if (this.plugin.isDebug())
-                    CraftIRC.dolog(String.format("Authorized User %s used command %s", sender, message));
-                if ((message.startsWith(cmdPrefix + "cmd ") || message.startsWith(cmdPrefix + "c "))
-                        && splitMessage.length > 1) {
-                    //TODO - Not sure how it was implemented
-                    /*
-                    //message.replaceFirst(cmdPrefix, "");
-                    
-                    if (//SUCCESS) {
-                        if (this.plugin.isDebug())
-                            CraftIRC.dolog(String.format("Authorized User %s executed command %s", sender, message));
-                        return;
-                    }
-                    */
-                } else if (message.startsWith(cmdPrefix + "botsay ") && splitMessage.length > 1) {
-                    //TODO - Not sure if still needed
-                    return;
-                } else if (message.startsWith(cmdPrefix + "raw ") && splitMessage.length > 1) {
-                    this.sendRawLine(command);
-                    this.sendNotice(sender, "Raw IRC string sent");
-                    return;
-                } 
-                    
-                // ALTERNATIVE METHOD? WHAT IS THIS?
-                RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "command");
-                msg.setField("sender", sender);
-                msg.setField("srcChannel", channel);
-                msg.setField("message", message.substring(cmdPrefix.length()));
-                Event ie = new IRCEvent(Mode.AUTHED_COMMAND, msg);
-                this.plugin.getServer().getPluginManager().callEvent(ie);
-                if (((IRCEvent)ie).isHandled()) return;
-                
-            } // End admin commands
-
-            // Begin public commands
-
-            // .say - Send single message to the game
-            if (message.startsWith(cmdPrefix + "say ") || message.startsWith(cmdPrefix + "mc ")) {
-                if (splitMessage.length > 1) {
-                    RelayedMessage msg = this.plugin.newMsg(channels.get(channel), plugin.getEndPoint(plugin.cMinecraftTag()), "chat");
-                    msg.setField("sender", sender);
-                    msg.setField("srcChannel", channel);
-                    msg.setField("message", message);
-                    msg.post();
-                    this.sendNotice(sender, "Message sent to game");
-                    return;
-                }
-            } else if (message.startsWith(cmdPrefix + "players")) {
-                if (this.plugin.isDebug()) CraftIRC.dolog("Minebot .players command");
-                String playerListing = this.getPlayerList();
-                this.sendMessage(channel, playerListing);
-                return;
+            String command = splitMessage[0];
+            String args = Util.combineSplit(1, splitMessage, " ");
+            RelayedCommand cmd = null;
+            if (command.startsWith(cmdPrefix))
+                cmd = plugin.newCmd(channels.get(channel), command.substring(cmdPrefix.length()));
+            if (cmd != null) {
+                cmd.setField("sender", sender);
+                cmd.setField("srcChannel", channel);
+                cmd.setField("args", args);
+                cmd.setField("ircPrefix", getHighestUserPrefix(getUser(sender, channel)));
+                cmd.setFlag("admin", plugin.cBotAdminPrefixes(botId).contains(cmd.getField("ircPrefix")));
+                cmd.act();
             } else {
-                // Send all IRC chatter (no command prefixes or ignored command prefixes)
                 RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "chat");
                 msg.setField("sender", sender);
                 msg.setField("srcChannel", channel);
                 msg.setField("message", message);
+                msg.setField("ircPrefix", getHighestUserPrefix(getUser(sender, channel)));
                 msg.post();
-                return;
             }
-            
-            //TODO: Still not sure how I'm going to handle this but probably in a different manner
-            /*
-            // IRCEvent - COMMAND
-            if (this.plugin.isDebug()) CraftIRC.dolog("Minebot IRCEVENT.COMMAND");
-            RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
-            msg.formatting = "";
-            msg.sender = sender;
-            msg.srcBot = botId;
-            msg.srcChannel = channel;
-            msg.message = message.substring(cmdPrefix.length());
-            msg.updateTag();
-            // PLUGIN INTEROP
-            msg.setTarget(EndPoint.PLUGIN);
-            Event ie = new IRCEvent(Mode.COMMAND, msg);
-            this.plugin.getServer().getPluginManager().callEvent(ie);
-            */
-
         } catch (Exception e) {
             e.printStackTrace();
             CraftIRC.dowarn("error while relaying IRC command: " + message);
-        }
-
-    }
-
-    protected void onPrivateMessage(String sender, String login, String hostname, String message) {
-        if (this.plugin.isDebug())
-            CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot IRCEVENT.PRIVMSG"));
-        if (ignores.contains(sender)) return;
-
-        String[] splitMessage = message.split(" ");
-
-        try {
-                // IRCEvent - PRIVMSG
-                RelayedMessage msg = this.plugin.newMsg(EndPoint.IRC, EndPoint.BOTH);
-                msg.formatting = "quits";
-                msg.sender = sender;
-                msg.srcBot = botId;
-                msg.srcChannel = "";
-                msg.message = message;
-                msg.updateTag();
-                // PLUGIN INTEROP
-                msg.setTarget(EndPoint.PLUGIN);
-                Event ie = new IRCEvent(Mode.PRIVMSG, msg);
-                this.plugin.getServer().getPluginManager().callEvent(ie);
         }
     }
 
@@ -361,35 +277,6 @@ public class Minebot extends PircBot implements Runnable {
         msg.setField("srcChannel", target);
         msg.setField("message", action);
         msg.post();
-    }
-
-    // Return the # of players and player names on the Minecraft server
-    private String getPlayerList() {
-        try {
-            Player onlinePlayers[] = plugin.getServer().getOnlinePlayers();
-            int playerCount = 0;
-            int maxPlayers = this.plugin.getServer().getMaxPlayers(); // CraftBukkit-only, need generic check for server type.
-
-            //Integer maxplayers;
-            StringBuilder sb = new StringBuilder();
-
-            for (int i = 0; i < onlinePlayers.length; i++) {
-                if (onlinePlayers[i] != null) {
-                    playerCount++;
-                    sb.append(" ").append(onlinePlayers[i].getName());
-                }
-            }
-
-            if (playerCount > 0) {
-                //return "Online (" + playercount + "/" + maxplayers + "): " + sb.toString();
-                return "Online (" + playerCount + "/" + maxPlayers + "): " + sb.toString();
-            } else {
-                return "Nobody is minecrafting right now.";
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Could not retrieve player list!";
-        }
     }
 
     public ArrayList<String> getChannelList() {
@@ -412,11 +299,6 @@ public class Minebot extends PircBot implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-    }
-
-    private enum messageMode {
-        MSG_ALL, ACTION_ALL, MSG_PLAYER, IRC_JOIN, IRC_QUIT, IRC_PART
     }
 
 }// EO Minebot

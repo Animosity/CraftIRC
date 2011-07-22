@@ -68,7 +68,6 @@ paths:
       admin: false
       colors: true
       chat: true
-      chatcommand: true
       action: true
       join: true
       part: true
@@ -76,6 +75,8 @@ paths:
       quit: true
       kick: true
       private: true
+      command: true
+      say: true
     filters:
       #Each filter is a disjunction with message fields and regular expressions they must match for the message to be filtered.
       - message: '^\.[^ ]+'
