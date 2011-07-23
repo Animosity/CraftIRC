@@ -186,6 +186,7 @@ public class Minebot extends PircBot implements Runnable {
                     sendRawLineViaQueue(it.next());
             } else {
                 RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "join");
+                if (msg == null) return;
                 msg.setField("sender", sender);
                 msg.setField("srcChannel", channel);
                 msg.post();
@@ -196,10 +197,10 @@ public class Minebot extends PircBot implements Runnable {
     public void onPart(String channel, String sender, String login, String hostname, String reason) {
         if (this.channels.containsKey(channel)) {
             RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "part");
+            if (msg == null) return;
             msg.setField("sender", sender);
             msg.setField("srcChannel", channel);
             msg.setField("message", reason);
-            msg.setField("ircPrefix", getHighestUserPrefix(getUser(sender, channel)));
             msg.post();
         }
     }
@@ -207,10 +208,10 @@ public class Minebot extends PircBot implements Runnable {
     public void onChannelQuit(String channel, String sender, String login, String hostname, String reason) {
         if (this.channels.containsKey(channel)) {
             RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "quit");
+            if (msg == null) return;
             msg.setField("sender", sender);
             msg.setField("srcChannel", channel);
             msg.setField("message", reason);
-            msg.setField("ircPrefix", getHighestUserPrefix(getUser(sender, channel)));
             msg.post();
         }
     }
@@ -221,11 +222,11 @@ public class Minebot extends PircBot implements Runnable {
             if (recipientNick.equalsIgnoreCase(this.getNick()))
                 this.joinChannel(channel, this.plugin.cChanPassword(botId, channel));
             RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "kick");
+            if (msg == null) return;
             msg.setField("sender", recipientNick);
             msg.setField("srcChannel", channel);
             msg.setField("message", reason);
             msg.setField("moderator", kickerNick);
-            msg.setField("ircPrefix", getHighestUserPrefix(getUser(recipientNick, channel)));
             msg.setField("ircModPrefix", getHighestUserPrefix(getUser(kickerNick, channel)));
             msg.post();            
         }
@@ -234,6 +235,7 @@ public class Minebot extends PircBot implements Runnable {
     public void onChannelNickChange(String channel, String oldNick, String login, String hostname, String newNick) {
         if (this.channels.containsKey(channel)) {
             RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "nick");
+            if (msg == null) return;
             msg.setField("sender", oldNick);
             msg.setField("srcChannel", channel);
             msg.setField("message", newNick);
@@ -259,6 +261,7 @@ public class Minebot extends PircBot implements Runnable {
                 cmd.act();
             } else {
                 RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "chat");
+                if (msg == null) return;
                 msg.setField("sender", sender);
                 msg.setField("srcChannel", channel);
                 msg.setField("message", message);
@@ -267,15 +270,17 @@ public class Minebot extends PircBot implements Runnable {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            CraftIRC.dowarn("error while relaying IRC command: " + message);
+            CraftIRC.dowarn("error while relaying IRC message: " + message);
         }
     }
 
     public void onAction(String sender, String login, String hostname, String target, String action) {
         RelayedMessage msg = this.plugin.newMsg(channels.get(target), null, "action");
+        if (msg == null) return;
         msg.setField("sender", sender);
         msg.setField("srcChannel", target);
         msg.setField("message", action);
+        msg.setField("ircPrefix", getHighestUserPrefix(getUser(sender, target)));
         msg.post();
     }
 

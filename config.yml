@@ -24,6 +24,7 @@ settings:
       join: '[%sender% connected]'
       quit: '[%sender% disconnected]'
       kick: '[%moderator% KICKED %sender% (%message%)]'
+      admin: '%sender% to online admins ->- %message%'
     from-irc:
       chat: '[%srcChannel%] <%sender%> %message%'
       private: '%sender% whispers> %message%'

@@ -215,6 +215,7 @@ public class CraftIRC extends JavaPlugin {
             if (args.length < 2) return false;
             String msgToSend = Util.combineSplit(1, args, " ");
             RelayedMessage msg = this.newMsg(getEndPoint(cMinecraftTag()), getEndPoint(args[0]), "chat");
+            if (msg == null) return true;
             if (sender instanceof Player)
                 msg.setField("sender", ((Player) sender).getDisplayName());
             else
@@ -234,6 +235,7 @@ public class CraftIRC extends JavaPlugin {
             if (args.length < 3) return false;
             String msgToSend = Util.combineSplit(2, args, " ");
             RelayedMessage msg = this.newMsg(getEndPoint(cMinecraftTag()), getEndPoint(args[0]), "private");
+            if (msg == null) return true;
             if (sender instanceof Player)
                 msg.setField("sender", ((Player) sender).getDisplayName());
             else
@@ -271,6 +273,7 @@ public class CraftIRC extends JavaPlugin {
                 return false;
             }
             RelayedMessage msg = newMsg(getEndPoint(cMinecraftTag()), null, "admin");
+            if (msg == null) return true;
             msg.setField("sender", ((Player) sender).getDisplayName());
             msg.setField("message", Util.combineSplit(0, args, " "));
             msg.setField("world", ((Player) sender).getWorld().getName());
@@ -302,9 +305,13 @@ public class CraftIRC extends JavaPlugin {
     //Null target: Sends message through all possible paths.
     public RelayedMessage newMsg(EndPoint source, EndPoint target, String eventType) {
         if (source == null) return null;
-        if (cPathExists(getTag(source), getTag(target)))
+        if (target == null || cPathExists(getTag(source), getTag(target)))
             return new RelayedMessage(this, source, target, eventType);
-        else return null;
+        else {
+            if (isDebug())
+                dolog("Failed to prepare message: " + getTag(source) + " -> " + getTag(target) + " (missing path)");
+            return null;
+        }
     }
     public RelayedMessage newMsgToTag(EndPoint source, String target, String eventType) {
         if (source == null) return null;
@@ -328,6 +335,7 @@ public class CraftIRC extends JavaPlugin {
     }
     
     public boolean registerEndPoint(String tag, EndPoint ep) {
+        if (isDebug()) dolog("Registering endpoint: " + tag);
         if (endpoints.get(tag) != null || tags.get(ep) != null) {
             dolog("Couldn't register an endpoint tagged '" + tag + "' because either the tag or the endpoint already exist."); 
             return false;
@@ -347,6 +355,7 @@ public class CraftIRC extends JavaPlugin {
         return tags.get(ep);
     }
     public boolean registerCommand(String tag, String command) {
+        if (isDebug()) dolog("Registering command: " + command + " to endpoint:" + tag);
         EndPoint ep = getEndPoint(tag);
         if (ep == null) {
             dolog("Couldn't register the command '" + command + "' at the endpoint tagged '" + tag + "' because there is no such tag.");
@@ -401,7 +410,9 @@ public class CraftIRC extends JavaPlugin {
         String sourceTag = getTag(msg.getSource());
         msg.setField("source", sourceTag);
         List<EndPoint> destinations;
-        if (knownDestinations == null) {
+        if (this.isDebug())
+            dolog("A message was posted for delivery to " + (knownDestinations.size() > 0 ? knownDestinations.toString() : "every possible path") + ". Delivered copies:");
+        if (knownDestinations.size() < 1) {
             //Use all possible destinations
             destinations = new LinkedList<EndPoint>();
             for (String targetTag : cPathsFrom(sourceTag)) {
@@ -417,15 +428,17 @@ public class CraftIRC extends JavaPlugin {
             String targetTag = getTag(destination);
             msg.setField("target", targetTag);
             //Check against path filters
-            if (matchesFilter(msg, cPathFilters(sourceTag, targetTag))) {
+            if (msg instanceof RelayedCommand && matchesFilter(msg, cPathFilters(sourceTag, targetTag))) {
                 if (knownDestinations != null) success = false;
                 continue;
             }
             //Finally deliver!
+            if (this.isDebug())
+                dolog("  " + msg.toString());
             if (username != null)
                 success = success && destination.userMessageIn(username, msg);
             else if (dm == RelayedMessage.DeliveryMethod.ADMINS) 
-                destination.adminMessageIn(msg);
+                success = destination.adminMessageIn(msg);
             else if (dm == RelayedMessage.DeliveryMethod.COMMAND) {
                 if (!(destination instanceof CommandEndPoint)) continue;
                 ((CommandEndPoint)destination).commandIn((RelayedCommand)msg);
@@ -440,7 +453,10 @@ public class CraftIRC extends JavaPlugin {
         newFilter: for (ConfigurationNode filter : filters) {
             for (String key : filter.getKeys()) {
                 Pattern condition = Pattern.compile(filter.getString(key, ""));
-                Matcher check = condition.matcher(msg.getField(key));
+                if (condition == null) continue newFilter;
+                String subject = msg.getField(key);
+                if (subject == null) continue newFilter;
+                Matcher check = condition.matcher(subject);
                 if (!check.find()) continue newFilter;
             }
             return true; 
@@ -464,7 +480,7 @@ public class CraftIRC extends JavaPlugin {
     }
     
     List<String> ircUserLists(String tag) {
-        return getEndPoint(tag).listUsers();        
+        return getEndPoint(tag).listDisplayUsers();        
     }
 
     void setDebug(boolean d) {
@@ -567,7 +583,10 @@ public class CraftIRC extends JavaPlugin {
     }
 
     String cFormatting(String eventType, RelayedMessage msg) {
-        String source = getTag(msg.getSource()), target = getTag(msg.getTarget());
+        return cFormatting(eventType, msg, null);
+    }
+    String cFormatting(String eventType, RelayedMessage msg, EndPoint realTarget) {
+        String source = getTag(msg.getSource()), target = getTag(realTarget != null ? realTarget : msg.getTarget());
         if (source == null || target == null) {
             dowarn("Attempted to obtain formatting for invalid path " + source + " -> " + target + " .");
             return cDefaultFormatting(eventType, msg);
@@ -581,6 +600,7 @@ public class CraftIRC extends JavaPlugin {
     String cDefaultFormatting(String eventType, RelayedMessage msg) {
         if (msg.getSource().getType() == EndPoint.Type.MINECRAFT) return getConfiguration().getString("settings.formatting.from-game." + eventType);
         if (msg.getSource().getType() == EndPoint.Type.IRC) return getConfiguration().getString("settings.formatting.from-irc." + eventType);
+        if (msg.getSource().getType() == EndPoint.Type.PLAIN) return getConfiguration().getString("settings.formatting.from-plain." + eventType);
         return "";
     }
 

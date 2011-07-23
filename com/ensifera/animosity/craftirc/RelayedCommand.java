@@ -5,6 +5,8 @@ import java.util.Map;
 
 public class RelayedCommand extends RelayedMessage {
     
+    static String typeString = "CMD";
+    
     private Map<String,Boolean> flags;  //Command flags
     
     RelayedCommand(CraftIRC plugin, EndPoint source, CommandEndPoint target) {

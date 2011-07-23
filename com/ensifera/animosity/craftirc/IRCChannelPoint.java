@@ -1,10 +1,28 @@
 package com.ensifera.animosity.craftirc;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
 import org.jibble.pircbot.User;
+
+class NicknameComparator implements Comparator<String> {
+
+    Minebot bot;
+    NicknameComparator(Minebot bot) {
+        this.bot = bot;
+    }
+    
+    public int compare(String o1, String o2) {
+        String prefixes = bot.getUserPrefixesInOrder();
+        if (!prefixes.contains(o1.substring(0,1)) && !prefixes.contains(o2.substring(0,1))) return o1.compareToIgnoreCase(o2);
+        else if (!prefixes.contains(o1.substring(0,1))) return 1;
+        else if (!prefixes.contains(o2.substring(0,1))) return -1;
+        else return prefixes.indexOf(o1.substring(0,1)) - prefixes.indexOf(o2.substring(0,1));
+    }
+    
+}
 
 public class IRCChannelPoint implements CommandEndPoint {
 
@@ -24,17 +42,18 @@ public class IRCChannelPoint implements CommandEndPoint {
     }
     
     public boolean userMessageIn(String username, RelayedMessage msg) {
+        if (bot.getChannelPrefixes().contains(username.substring(0, 1))) return false;
         bot.sendNotice(username, msg.getMessage(this));
         return true;
     }
     
     public boolean adminMessageIn(RelayedMessage msg) {
-        String message = msg.getMessage();
+        String message = msg.getMessage(this);
         boolean success = false;
         for (String nick : listDisplayUsers()) {
-            if (bot.getPlugin().cBotAdminPrefixes(bot.getId()).contains(nick.charAt(0))) {
+            if (bot.getPlugin().cBotAdminPrefixes(bot.getId()).contains(nick.substring(0, 1))) {
                 success = true;
-                bot.sendNotice(nick, message);
+                bot.sendNotice(nick.substring(1), message);
             }
         }
         return success;
@@ -51,13 +70,15 @@ public class IRCChannelPoint implements CommandEndPoint {
         List<String> users = new LinkedList<String>();
         for (User user : bot.getUsers(channel))
             users.add(bot.getHighestUserPrefix(user) + user.getNick());
-        Collections.sort(users);
+        Collections.sort(users, new NicknameComparator(bot));
         return users;
     }
 
     public void commandIn(RelayedCommand cmd) {
         String command = cmd.getField("command").toLowerCase();
-        if (bot.getPlugin().cPathAttribute(cmd.getField("source"), cmd.getField("target"), "admin") && cmd.getFlag("admin")) {
+        //TODO: Not working for some reason (issues in the registration?)
+        //TODO: Current system doesn't allow for multiple endpoints to handle the same command.
+        if (bot.getPlugin().cPathAttribute(cmd.getField("source"), cmd.getField("target"), "attributes.admin") && cmd.getFlag("admin")) {
             String args = cmd.getField("args");
             if (command.equals("botsay")) {
                 if (args == null) return;

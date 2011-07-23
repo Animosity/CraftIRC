@@ -64,7 +64,7 @@ public class MinecraftPoint implements CommandEndPoint {
 
     public void commandIn(RelayedCommand cmd) {
         String command = cmd.getField("command").toLowerCase();
-        if (plugin.cPathAttribute(cmd.getField("source"), cmd.getField("target"), "admin") && cmd.getFlag("admin")) {
+        if (plugin.cPathAttribute(cmd.getField("source"), cmd.getField("target"), "attributes.admin") && cmd.getFlag("admin")) {
             //Admin commands
             if (command.equals("cmd") || command.equals("c")) {
                 //TODO
@@ -72,14 +72,18 @@ public class MinecraftPoint implements CommandEndPoint {
         }
         //Normal commands
         if (command.equals("say") || command.equals("mc")) {
-            cmd.setField("message", cmd.getField("args"));
-            this.messageIn(cmd);    //Trick: Forwarding command back to this endpoint as a message!
+            RelayedMessage fwd = plugin.newMsg(cmd.getSource(), this, "chat");
+            fwd.copyFields(cmd);
+            fwd.setField("message", cmd.getField("args"));
+            this.messageIn(fwd);
         } else if (command.equals("players")) {
             List<String> users = listDisplayUsers();
             int playerCount = users.size();
             String result = "Nobody is minecrafting right now.";
             if (playerCount > 0) {
-                String userstring = Util.combineSplit(0, (String[])listDisplayUsers().toArray(), " ");
+                List<String> userlist = listDisplayUsers();
+                String userstring = (userlist.size() > 0 ? userlist.get(0) : "");
+                for (int i = 1; i < userlist.size(); i++) userstring = userstring + " " + userlist.get(i);
                 result = "Online (" + playerCount + "/" + server.getMaxPlayers() + "): " + userstring;
             }
             //Reply to remote endpoint! 

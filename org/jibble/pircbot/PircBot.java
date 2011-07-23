@@ -3394,6 +3394,11 @@ public abstract class PircBot implements ReplyConstants, PircBotLogger {
     public final String getUserPrefixesInOrder() {
         return _userPrefixOrder;
     }
+    
+    /* CRAFTIRC */
+    public final String getChannelPrefixes() {
+        return _channelPrefixes;
+    }
 
     /**
      * Disposes of all thread resources used by this PircBot. This may be useful
