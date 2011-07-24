@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jibble.pircbot.*;
 import org.bukkit.util.config.ConfigurationNode;
@@ -37,6 +39,7 @@ public class Minebot extends PircBot implements Runnable {
     private String authPass;
 
     // Channels
+    private Set<String> whereAmI;
     private Map<String,IRCChannelPoint> channels;
 
     // Other things that may be more efficient to store here
@@ -71,13 +74,13 @@ public class Minebot extends PircBot implements Runnable {
         authUser = this.plugin.cBotAuthUsername(botId);
         authPass = this.plugin.cBotAuthPassword(botId);
 
+        whereAmI = new HashSet<String>();
         channels = new HashMap<String,IRCChannelPoint>();
         for (ConfigurationNode channelNode : plugin.cChannels(botId)) {
             String name = channelNode.getString("name");
             if (channels.containsKey(name)) continue;
             IRCChannelPoint chan = new IRCChannelPoint(this, name);
             if (!plugin.registerEndPoint(channelNode.getString("tag"), chan)) continue;
-            //TODO: Unregister endpoint when necessary;
             channels.put(name, chan);
         }
         
@@ -91,6 +94,7 @@ public class Minebot extends PircBot implements Runnable {
         }
     }
 
+    //Thread start
     void start() {
         try {
             this.setAutoNickChange(true);
@@ -103,6 +107,18 @@ public class Minebot extends PircBot implements Runnable {
                 }
             }
             
+            connectToIrc();
+            plugin.scheduleForRetry(this, null);
+
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    void connectToIrc() {
+        try {
             if (this.ssl) {
                 CraftIRC.dolog("Connecting to " + this.ircServer + ":" + this.ircPort + " [SSL]");
                 this.connect(this.ircServer, this.ircPort, this.ircPass, new TrustingSSLSocketFactory());
@@ -110,16 +126,19 @@ public class Minebot extends PircBot implements Runnable {
                 CraftIRC.dolog("Connecting to " + this.ircServer + ":" + this.ircPort);
                 this.connect(this.ircServer, this.ircPort, this.ircPass);
             }
-
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } catch (IrcException e) {
             e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+    }
+    
+    boolean isIn(String channel) {
+        return whereAmI.contains(channel);
+    }
+    
+    void joinIrcChannel(String chan) {
+        this.joinChannel(chan, this.plugin.cChanPassword(botId, chan));
     }
 
     public CraftIRC getPlugin() { 
@@ -140,7 +159,7 @@ public class Minebot extends PircBot implements Runnable {
             sendRawLineViaQueue(it.next());
 
         for (String chan : channels.keySet())
-            this.joinChannel(chan, this.plugin.cChanPassword(botId, chan));
+            joinIrcChannel(chan);
     }
     
     void authenticateBot() {
@@ -171,15 +190,19 @@ public class Minebot extends PircBot implements Runnable {
 
     }
     
+    void amNowInChannel(String channel) {
+        CraftIRC.dolog("Joined channel: " + channel);
+        whereAmI.add(channel);
+        String tag = plugin.cChanTag(botId, channel);
+        if (tag != null) plugin.registerEndPoint(tag, channels.get(channel));
+        for (String line : this.plugin.cChanOnJoin(botId, channel))
+            sendRawLineViaQueue(line);
+    }
+    
     public void onJoin(String channel, String sender, String login, String hostname) {
         if (this.channels.containsKey(channel)) {
-            if (sender.equals(this.nickname)) {
-                CraftIRC.dolog("Joined channel: " + channel);
-                ArrayList<String> onJoin = this.plugin.cChanOnJoin(botId, channel);
-                Iterator<String> it = onJoin.iterator();
-                while (it.hasNext())
-                    sendRawLineViaQueue(it.next());
-            } else {
+            if (sender.equals(this.nickname)) amNowInChannel(channel);
+            else {
                 RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "join");
                 if (msg == null) return;
                 msg.setField("sender", sender);
@@ -190,8 +213,15 @@ public class Minebot extends PircBot implements Runnable {
             }
         }
     }
+
+    void noLongerInChannel(String channel, boolean rejoin) {
+        whereAmI.remove(channel);
+        plugin.unregisterEndPoint(plugin.cChanTag(botId, channel)); 
+        if (rejoin) plugin.scheduleForRetry(this, channel);
+    }
     
     public void onPart(String channel, String sender, String login, String hostname, String reason) {
+        if (sender.equals(this.nickname)) noLongerInChannel(channel, true);
         if (this.channels.containsKey(channel)) {
             RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "part");
             if (msg == null) return;
@@ -205,6 +235,7 @@ public class Minebot extends PircBot implements Runnable {
     }
     
     public void onChannelQuit(String channel, String sender, String login, String hostname, String reason) {
+        if (sender.equals(this.nickname)) noLongerInChannel(channel, false);
         if (this.channels.containsKey(channel)) {
             RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "quit");
             if (msg == null) return;
@@ -217,8 +248,8 @@ public class Minebot extends PircBot implements Runnable {
         }
     }
     
-    public void onKick(String channel, String kickerNick, String kickerLogin, String kickerHostname,
-            String recipientNick, String reason) {
+    public void onKick(String channel, String kickerNick, String kickerLogin, String kickerHostname, String recipientNick, String reason) {
+        if (recipientNick.equals(this.nickname)) noLongerInChannel(channel, true);
         if (this.channels.containsKey(channel)) {
             if (recipientNick.equalsIgnoreCase(this.getNick()))
                 this.joinChannel(channel, this.plugin.cChanPassword(botId, channel));
@@ -236,6 +267,7 @@ public class Minebot extends PircBot implements Runnable {
     }
 
     public void onChannelNickChange(String channel, String oldNick, String login, String hostname, String newNick) {
+        if (oldNick.equals(this.nickname)) this.nickname = newNick;
         if (this.channels.containsKey(channel)) {
             RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "nick");
             if (msg == null) return;
@@ -255,8 +287,9 @@ public class Minebot extends PircBot implements Runnable {
             String command = splitMessage[0];
             String args = Util.combineSplit(1, splitMessage, " ");
             RelayedCommand cmd = null;
-            String localTag = plugin.getTag(channels.get(channel));
+            String localTag = plugin.cChanTag(botId, channel);
             boolean loopbackAdmin = plugin.cPathAttribute(localTag, localTag, "attributes.admin");
+            boolean userAdmin = plugin.cBotAdminPrefixes(botId).contains(getHighestUserPrefix(getUser(sender, channel)));
             if (command.startsWith(cmdPrefix))
                 cmd = plugin.newCmd(channels.get(channel), command.substring(cmdPrefix.length()));
             if (cmd != null) {
@@ -267,12 +300,12 @@ public class Minebot extends PircBot implements Runnable {
                 cmd.setField("ircPrefix", getHighestUserPrefix(getUser(sender, channel)));
                 cmd.setField("username", login);
                 cmd.setField("hostname", hostname);
-                cmd.setFlag("admin", plugin.cBotAdminPrefixes(botId).contains(cmd.getField("ircPrefix")));
+                cmd.setFlag("admin", userAdmin);
                 cmd.act();
-            } else if (command.toLowerCase().equals(cmdPrefix + "botsay") && loopbackAdmin) {
+            } else if (command.toLowerCase().equals(cmdPrefix + "botsay") && loopbackAdmin && userAdmin) {
                 if (args == null) return;
                 sendMessage(args.substring(0, args.indexOf(" ")), args.substring(args.indexOf(" ") + 1));
-            } else if (command.toLowerCase().equals(cmdPrefix + "raw") && loopbackAdmin) {
+            } else if (command.toLowerCase().equals(cmdPrefix + "raw") && loopbackAdmin && userAdmin) {
                 if (args == null) return;
                 sendRawLine(args);
             } else {
@@ -340,10 +373,8 @@ public class Minebot extends PircBot implements Runnable {
             if (plugin.isEnabled()) {
                 CraftIRC.log.info(CraftIRC.NAME + " - disconnected from IRC server... reconnecting!");
                 
-                if (this.ssl)
-                    this.connect(this.ircServer, this.ircPort, this.ircPass, new TrustingSSLSocketFactory());
-                else
-                    this.connect(this.ircServer, this.ircPort, this.ircPass);
+                connectToIrc();
+                plugin.scheduleForRetry(this, null);
                 
             }
 

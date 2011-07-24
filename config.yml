@@ -6,6 +6,7 @@ settings:
   debug: false
   console-commands: ['reload', 'save-all']
   hold-after-enable: {chat: 0, joins: 0, quits: 0, kicks: 0, bans: 0}
+  retry-delay: 10
   #bind-address: 127.0.0.1
   formatting:
     ####     VARIABLES AND COLORS: %name% (as in %message% or %yellow%)

@@ -36,7 +36,6 @@ import org.bukkit.util.config.ConfigurationNode;
 
 //TODO: Ask outsider for suggestions for appropriate command feedback (usability tests)
 //TODO: Better handling of null method returns (try to crash the bot and then stop that from happening again)
-//TODO: Properly implement Auto-reconnect when disconnected and Auto-rejoin channels when kicked (timers)
 //TODO: Service provider for prefix/suffix (discuss with chat plugin makers)
 public class CraftIRC extends JavaPlugin {
     public static final String NAME = "CraftIRC";
@@ -50,7 +49,9 @@ public class CraftIRC extends JavaPlugin {
     private ArrayList<Minebot> instances;
     private boolean debug;
     private Timer holdTimer = new Timer();
-    HashMap<HoldType, Boolean> hold;
+    private Timer retryTimer = new Timer();
+    Map<HoldType, Boolean> hold;
+    Map<String, RetryTask> retry;
 
     //Bots and channels config storage
     private List<ConfigurationNode> bots;
@@ -85,7 +86,6 @@ public class CraftIRC extends JavaPlugin {
             server = this.getServer();
                        
             //Load node lists. Bukkit does it now, hurray!
-            
             if (null == getConfiguration()) {
                 dowarn("config.yml could not be found in plugins/CraftIRC/ -- disabling!");
                 getServer().getPluginManager().disablePlugin(((Plugin) (this)));
@@ -105,6 +105,10 @@ public class CraftIRC extends JavaPlugin {
                 if (!identifier.getSourceTag().equals(identifier.getTargetTag()) && !paths.containsKey(identifier))
                     paths.put(identifier, path);
             }
+            
+            //Retry timers
+            retry = new HashMap<String, RetryTask>();
+            retryTimer = new Timer();
 
             //Event listeners
             getServer().getPluginManager().registerEvent(Event.Type.PLAYER_COMMAND_PREPROCESS, listener, Priority.Monitor, this);
@@ -167,6 +171,7 @@ public class CraftIRC extends JavaPlugin {
 
     public void onDisable() {
         try {
+            retryTimer.cancel();
             holdTimer.cancel();
             //Disconnect bots
             for (int i = 0; i < bots.size(); i++) {
@@ -427,7 +432,7 @@ public class CraftIRC extends JavaPlugin {
         msg.setField("source", sourceTag);
         List<EndPoint> destinations;
         if (this.isDebug())
-            dolog("A message was posted for delivery to " + (knownDestinations.size() > 0 ? knownDestinations.toString() : "every possible path") + ". Delivered copies:");
+            dolog("X->" + (knownDestinations.size() > 0 ? knownDestinations.toString() : "*") + ": " + msg.toString());
         if (knownDestinations.size() < 1) {
             //Use all possible destinations
             destinations = new LinkedList<EndPoint>();
@@ -450,7 +455,7 @@ public class CraftIRC extends JavaPlugin {
             }
             //Finally deliver!
             if (this.isDebug())
-                dolog("  " + msg.toString());
+                dolog("-->X: " + msg.toString());
             if (username != null)
                 success = success && destination.userMessageIn(username, msg);
             else if (dm == RelayedMessage.DeliveryMethod.ADMINS) 
@@ -540,6 +545,11 @@ public class CraftIRC extends JavaPlugin {
       } catch (Exception e) {
           e.printStackTrace();
       }
+    }
+    
+    //If the channel is null it's a reconnect, otherwise a rejoin
+    void scheduleForRetry(Minebot bot, String channel) {
+        retryTimer.schedule(new RetryTask(this, bot, channel), cRetryDelay());
     }
     
     /***************************
@@ -668,6 +678,10 @@ public class CraftIRC extends JavaPlugin {
     String cBindLocalAddr() {
         return getConfiguration().getString("settings.bind-address","");
     }
+    
+    int cRetryDelay() {
+        return getConfiguration().getInt("settings.retry-delay", 10) * 1000;
+    }
 
     String cBotNickname(int bot) {
         return bots.get(bot).getString("nickname", "CraftIRCbot");
@@ -768,7 +782,9 @@ public class CraftIRC extends JavaPlugin {
     }
     
     public boolean cPathAttribute(String source, String target, String attribute) {
-        return getPathNode(source, target).getBoolean(attribute, false);
+        ConfigurationNode node = getPathNode(source, target);
+        if (node.getProperty(attribute) != null) return node.getBoolean(attribute, false);
+        else return getConfiguration().getNode("default-attributes").getBoolean(attribute, false);
     }
     
     public List<ConfigurationNode> cPathFilters(String source, String target) {
