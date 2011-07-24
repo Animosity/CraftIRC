@@ -34,11 +34,10 @@ import org.bukkit.util.config.ConfigurationNode;
  * 
  */
 
-//TODO: Ask outsider for suggestions for appropriate command feedback
-//TODO: Better handling of null method returns
-//TODO: Flood protection
-//TODO: Config reload command
-//TODO: Auto-rejoin channels when kicked
+//TODO: Ask outsider for suggestions for appropriate command feedback (usability tests)
+//TODO: Better handling of null method returns (try to crash the bot and then stop that from happening again)
+//TODO: Properly implement Auto-reconnect when disconnected and Auto-rejoin channels when kicked (timers)
+//TODO: Service provider for prefix/suffix (discuss with chat plugin makers)
 public class CraftIRC extends JavaPlugin {
     public static final String NAME = "CraftIRC";
     public static String VERSION;
@@ -60,9 +59,9 @@ public class CraftIRC extends JavaPlugin {
     private Map<Path, ConfigurationNode> paths;
     
     //Endpoints
-    private Map<String,EndPoint> endpoints = new HashMap<String,EndPoint>();
-    private Map<EndPoint,String> tags = new HashMap<EndPoint,String>();
-    private Map<String,CommandEndPoint> irccmds = new HashMap<String,CommandEndPoint>();
+    private Map<String,EndPoint> endpoints;
+    private Map<EndPoint,String> tags;
+    private Map<String,CommandEndPoint> irccmds;
     
     static void dolog(String message) {
         log.info("[" + NAME + "] " + message);
@@ -77,6 +76,9 @@ public class CraftIRC extends JavaPlugin {
     
     public void onEnable() {
         try {
+            endpoints = new HashMap<String,EndPoint>();
+            tags = new HashMap<EndPoint,String>();
+            irccmds = new HashMap<String,CommandEndPoint>();
             
             PluginDescriptionFile desc = this.getDescription();
             VERSION = desc.getVersion();
@@ -188,20 +190,29 @@ public class CraftIRC extends JavaPlugin {
             if (sender instanceof IRCCommandSender) sender = (IRCCommandSender)sender;
             
             if (commandName.equals("ircmsg")) {
+                if (!sender.hasPermission("craftirc." + commandName)) return false;
                 return this.cmdMsgToTag(sender, args);
             } else if (commandName.equals("ircmsguser")) {
+                if (!sender.hasPermission("craftirc." + commandName)) return false;
                 return this.cmdMsgToUser(sender, args);                
             } else if (commandName.equals("ircusers")) {
+                if (!sender.hasPermission("craftirc." + commandName)) return false;
                 return this.cmdGetUserList(sender, args);
             } else if (commandName.equals("admins!")) {
+                if (!sender.hasPermission("craftirc.admins")) return false;
                 return this.cmdNotifyIrcAdmins(sender, args);
             } else if (commandName.equals("ircraw")) {
+                if (!sender.hasPermission("craftirc." + commandName)) return false;
                 return this.cmdRawIrcCommand(sender, args);
+            } else if (commandName.equals("ircreload")) {
+                if (!sender.hasPermission("craftirc." + commandName)) return false;
+                getServer().getPluginManager().disablePlugin(this);
+                getServer().getPluginManager().enablePlugin(this);
+                return true;
             } else if (commandName.equals("say")) {
                 // Capture the 'say' command from Minecraft Console
                 if (sender instanceof ConsoleCommandSender) {
-                    RelayedMessage msg = newMsg(getEndPoint(cConsoleTag()), null, "chat");
-                    msg.setField("sender", "SERVER");
+                    RelayedMessage msg = newMsg(getEndPoint(cConsoleTag()), null, "generic");
                     msg.setField("message", Util.combineSplit(1, args, " "));
                     msg.post();
                 }
@@ -521,18 +532,6 @@ public class CraftIRC extends JavaPlugin {
             find_colors = color_codes.matcher(name);
         }
         return name;
-    }
-
-    protected String getPermPrefix(String world, String pl) {
-        //TODO: Get from herochat/attributeproviders?
-        String result = "";
-        return colorizeName(result.replaceAll("&([0-9a-f])", "§$1"));
-    }
-
-    protected String getPermSuffix(String world, String pl) {
-        //TODO: Get from herochat/attributeproviders?
-        String result = "";
-        return colorizeName(result.replaceAll("&([0-9a-f])", "§$1"));
     }
    
     protected void enqueueConsoleCommand(String cmd) {

@@ -25,7 +25,7 @@ class NicknameComparator implements Comparator<String> {
     
 }
 
-public class IRCChannelPoint implements CommandEndPoint {
+public class IRCChannelPoint implements EndPoint {
 
     Minebot bot;
     String channel;
@@ -73,22 +73,6 @@ public class IRCChannelPoint implements CommandEndPoint {
             users.add(bot.getHighestUserPrefix(user) + user.getNick());
         Collections.sort(users, new NicknameComparator(bot));
         return users;
-    }
-
-    public void commandIn(RelayedCommand cmd) {
-        String command = cmd.getField("command").toLowerCase();
-        //TODO: Not working for some reason (issues in the registration?)
-        //TODO: Current system doesn't allow for multiple endpoints to handle the same command.
-        if (bot.getPlugin().cPathAttribute(cmd.getField("source"), cmd.getField("target"), "attributes.admin") && cmd.getFlag("admin")) {
-            String args = cmd.getField("args");
-            if (command.equals("botsay")) {
-                if (args == null) return;
-                bot.sendMessage(args.substring(0, args.indexOf(" ")), args.substring(args.indexOf(" ") + 1));
-            } else if (command.equals("raw")) {
-                if (args == null) return;
-                bot.sendRawLine(args);
-            }
-        }
     }
 
 }

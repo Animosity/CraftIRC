@@ -77,8 +77,6 @@ public class Minebot extends PircBot implements Runnable {
             if (channels.containsKey(name)) continue;
             IRCChannelPoint chan = new IRCChannelPoint(this, name);
             if (!plugin.registerEndPoint(channelNode.getString("tag"), chan)) continue;
-            plugin.registerCommand(channelNode.getString("tag"), "botsay");
-            plugin.registerCommand(channelNode.getString("tag"), "raw");
             //TODO: Unregister endpoint when necessary;
             channels.put(name, chan);
         }
@@ -94,8 +92,6 @@ public class Minebot extends PircBot implements Runnable {
     }
 
     void start() {
-        Iterator<String> it;
-
         try {
             this.setAutoNickChange(true);
             
@@ -115,21 +111,6 @@ public class Minebot extends PircBot implements Runnable {
                 this.connect(this.ircServer, this.ircPort, this.ircPass);
             }
 
-            if (this.isConnected())
-                CraftIRC.dolog("Connected");
-            else
-                CraftIRC.dolog("Connection failed!");
-
-            this.authenticateBot();
-
-            ArrayList<String> onConnect = this.plugin.cBotOnConnect(botId);
-            it = onConnect.iterator();
-            while (it.hasNext())
-                sendRawLineViaQueue(it.next());
-
-            for (String chan : channels.keySet())
-                this.joinChannel(chan, this.plugin.cChanPassword(botId, chan));
-
         } catch (NumberFormatException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -147,6 +128,19 @@ public class Minebot extends PircBot implements Runnable {
     
     public int getId() {
         return botId;
+    }
+    
+    public void onConnect() {
+        CraftIRC.dolog("Connected");
+        this.authenticateBot();
+
+        ArrayList<String> onConnect = this.plugin.cBotOnConnect(botId);
+        Iterator<String> it = onConnect.iterator();
+        while (it.hasNext())
+            sendRawLineViaQueue(it.next());
+
+        for (String chan : channels.keySet())
+            this.joinChannel(chan, this.plugin.cChanPassword(botId, chan));
     }
     
     void authenticateBot() {
@@ -261,9 +255,12 @@ public class Minebot extends PircBot implements Runnable {
             String command = splitMessage[0];
             String args = Util.combineSplit(1, splitMessage, " ");
             RelayedCommand cmd = null;
+            String localTag = plugin.getTag(channels.get(channel));
+            boolean loopbackAdmin = plugin.cPathAttribute(localTag, localTag, "attributes.admin");
             if (command.startsWith(cmdPrefix))
                 cmd = plugin.newCmd(channels.get(channel), command.substring(cmdPrefix.length()));
             if (cmd != null) {
+                //Normal command
                 cmd.setField("sender", sender);
                 cmd.setField("srcChannel", channel);
                 cmd.setField("args", args);
@@ -272,7 +269,14 @@ public class Minebot extends PircBot implements Runnable {
                 cmd.setField("hostname", hostname);
                 cmd.setFlag("admin", plugin.cBotAdminPrefixes(botId).contains(cmd.getField("ircPrefix")));
                 cmd.act();
+            } else if (command.toLowerCase().equals(cmdPrefix + "botsay") && loopbackAdmin) {
+                if (args == null) return;
+                sendMessage(args.substring(0, args.indexOf(" ")), args.substring(args.indexOf(" ") + 1));
+            } else if (command.toLowerCase().equals(cmdPrefix + "raw") && loopbackAdmin) {
+                if (args == null) return;
+                sendRawLine(args);
             } else {
+                //Not a command
                 RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "chat");
                 if (msg == null) return;
                 msg.setField("sender", sender);
@@ -307,7 +311,6 @@ public class Minebot extends PircBot implements Runnable {
         msg.setField("sender", sender);
         msg.setField("srcChannel", channel);
         msg.setField("message", topic);
-        msg.setField("ircPrefix", getHighestUserPrefix(getUser(sender, channel)));
         msg.post();
     }
     
@@ -317,7 +320,6 @@ public class Minebot extends PircBot implements Runnable {
         msg.setField("moderator", moderator);
         msg.setField("srcChannel", channel);
         msg.setField("message", mode);
-        msg.setField("ircModPrefix", getHighestUserPrefix(getUser(moderator, channel)));
         msg.setField("username", sourceLogin);
         msg.setField("hostname", sourceHostname);
         msg.post();
@@ -337,7 +339,12 @@ public class Minebot extends PircBot implements Runnable {
         try {
             if (plugin.isEnabled()) {
                 CraftIRC.log.info(CraftIRC.NAME + " - disconnected from IRC server... reconnecting!");
-                while (!this.isConnected()) this.start();
+                
+                if (this.ssl)
+                    this.connect(this.ircServer, this.ircPort, this.ircPass, new TrustingSSLSocketFactory());
+                else
+                    this.connect(this.ircServer, this.ircPort, this.ircPass);
+                
             }
 
         } catch (Exception e) {

@@ -23,3 +23,20 @@ commands:
     description: Sends a raw line to IRC
     usage: /<command> [botid] [rawirc]
     permission: craftirc.ircraw
+  ircreload:
+    description: Reloads the plugin
+    usage: /<command>
+    permission: craftirc.ircreload
+permissions:
+  craftirc.ircmsg:
+    default: true
+  craftirc.ircmsguser:
+    default: true
+  craftirc.ircusers:
+    default: true
+  craftirc.admins:
+    default: true
+  craftirc.ircraw:
+    default: op
+  craftirc.ircreload:
+    default: op
