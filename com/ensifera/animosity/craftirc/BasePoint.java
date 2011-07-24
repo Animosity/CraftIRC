@@ -2,6 +2,7 @@ package com.ensifera.animosity.craftirc;
 
 import java.util.List;
 
+
 //Basic null endpoint that can be extended by a plugin writer.
 public abstract class BasePoint implements EndPoint {
 

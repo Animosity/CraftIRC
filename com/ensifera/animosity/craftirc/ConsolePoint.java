@@ -2,8 +2,18 @@ package com.ensifera.animosity.craftirc;
 
 import java.util.List;
 
-public class ConsolePoint implements EndPoint {
+import org.bukkit.Server;
 
+
+public class ConsolePoint implements CommandEndPoint {
+
+    Server server;
+    CraftIRC plugin;
+    ConsolePoint(CraftIRC plugin, Server server) {
+        this.server = server;
+        this.plugin = plugin;
+    }
+    
     public Type getType() {
         return Type.PLAIN;
     }
@@ -28,6 +38,22 @@ public class ConsolePoint implements EndPoint {
     
     public List<String> listDisplayUsers() {
         return null;
+    }
+
+    public void commandIn(RelayedCommand cmd) {
+        String command = cmd.getField("command").toLowerCase();
+        if (plugin.cPathAttribute(cmd.getField("source"), cmd.getField("target"), "attributes.admin") && cmd.getFlag("admin")) {
+            //Admin commands
+            if (command.equals("cmd") || command.equals("c")) {
+                String args = cmd.getField("args");
+                String ccmd = args.substring(0, args.indexOf(" "));
+                if (ccmd.equals("")) return;
+                if (plugin.cConsoleCommands().contains(ccmd)) {
+                    IRCCommandSender sender = new IRCCommandSender(server, cmd, this);
+                    server.dispatchCommand(sender, args);
+                }
+            }
+        }
     }
 
 }

@@ -26,6 +26,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 import org.bukkit.util.config.ConfigurationNode;
 
+
 /**
  * @author Animosity
  * @author ricin
@@ -33,7 +34,11 @@ import org.bukkit.util.config.ConfigurationNode;
  * 
  */
 
+//TODO: Ask outsider for suggestions for appropriate command feedback
 //TODO: Better handling of null method returns
+//TODO: Flood protection
+//TODO: Config reload command
+//TODO: Auto-rejoin channels when kicked
 public class CraftIRC extends JavaPlugin {
     public static final String NAME = "CraftIRC";
     public static String VERSION;
@@ -104,17 +109,17 @@ public class CraftIRC extends JavaPlugin {
             getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, listener, Priority.Monitor, this);
             getServer().getPluginManager().registerEvent(Event.Type.PLAYER_QUIT, listener, Priority.Monitor, this);
             getServer().getPluginManager().registerEvent(Event.Type.PLAYER_CHAT, listener, Priority.Monitor, this);
-            //TODO: Player kick event
+            getServer().getPluginManager().registerEvent(Event.Type.PLAYER_KICK, listener, Priority.Monitor, this);
             
             //Native endpoints!
             registerEndPoint(cMinecraftTag(), new MinecraftPoint(this, getServer())); //The minecraft server, no bells and whistles
             registerEndPoint(cCancelledTag(), new MinecraftPoint(this, getServer())); //Handles cancelled chat
-            registerEndPoint(cConsoleTag(), new ConsolePoint());                      //The minecraft console
-            registerCommand(cMinecraftTag(), "cmd");
-            registerCommand(cMinecraftTag(), "c");
+            registerEndPoint(cConsoleTag(), new ConsolePoint(this, getServer()));     //The minecraft console
             registerCommand(cMinecraftTag(), "say");
             registerCommand(cMinecraftTag(), "mc");
             registerCommand(cMinecraftTag(), "players");
+            registerCommand(cConsoleTag(), "cmd");
+            registerCommand(cConsoleTag(), "c");
 
             //Create bots
             instances = new ArrayList<Minebot>();
@@ -180,7 +185,7 @@ public class CraftIRC extends JavaPlugin {
         String commandName = command.getName().toLowerCase();
          
         try {
-            if (sender instanceof IRCConsoleCommandSender) sender = (IRCConsoleCommandSender)sender;
+            if (sender instanceof IRCCommandSender) sender = (IRCCommandSender)sender;
             
             if (commandName.equals("ircmsg")) {
                 return this.cmdMsgToTag(sender, args);
@@ -222,7 +227,7 @@ public class CraftIRC extends JavaPlugin {
                 msg.setField("sender", "SERVER");
             msg.setField("message", msgToSend);
             msg.post();
-            //TODO: Echo/feedback
+            sender.sendMessage("Message sent.");
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -242,7 +247,7 @@ public class CraftIRC extends JavaPlugin {
                 msg.setField("sender", "SERVER");;
             msg.setField("message", msgToSend);
             msg.postToUser(args[1]);
-            sender.sendMessage("Message sent."); //TODO: More detail?
+            sender.sendMessage("Message sent.");
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -557,7 +562,14 @@ public class CraftIRC extends JavaPlugin {
     }
     
     private ConfigurationNode getPathNode(String source, String target) {
-        return paths.get(new Path(source, target));
+        ConfigurationNode result = paths.get(new Path(source, target));
+        if (result == null) return getConfiguration().getNode("default-attributes");
+        ConfigurationNode basepath;
+        if (result.getKeys().contains("base") && (basepath = result.getNode("base")) != null) {
+            ConfigurationNode basenode = paths.get(new Path(basepath.getString("source", ""), basepath.getString("target", "")));
+            if (basenode != null) result = basenode;
+        }
+        return result;
     }
 
     String cMinecraftTag() {
@@ -757,7 +769,6 @@ public class CraftIRC extends JavaPlugin {
     }
     
     public boolean cPathAttribute(String source, String target, String attribute) {
-        //TODO: Default attributes (shared among all paths)
         return getPathNode(source, target).getBoolean(attribute, false);
     }
     

@@ -5,18 +5,12 @@ settings:
   command-prefix: '.'
   debug: false
   console-commands: ['reload', 'save-all']
-  hold-after-enable:
-    chat: 0
-    joins: 0
-    quits: 0
-    kicks: 0
-    bans: 0
+  hold-after-enable: {chat: 0, joins: 0, quits: 0, kicks: 0, bans: 0}
+  #bind-address: 127.0.0.1
   formatting:
-    ####     VARIABLES (may be blank depending on the context): %sender% %message% %moderator% %srcChannel% %trgChannel% %world%
+    ####     VARIABLES AND COLORS: %name% (as in %message% or %yellow%)
     ####     How are we going to handle this now: %prefix% %suffix% %modPredix% %modSuffix%
-    ####     IRC FORMATTING: %b% %u% %r% %o% %k% %kNUM% (NUM is 0 to 15); Do the same as CTRL+key in mIRC
-    ####     GAME COLORS: §NUM (NUM is 1 to f); Do not use in the end of a line
-    ####     EASY COLORS: Use the names defined in the colormap: block, such as %blue% %foreground% %yellow% etc.
+    ####     IRC FORMATTING: %b% %u% %r% %o% %k% %kNUM% (NUM is 0 to 15); Do the same as CTRL+key in mIRC (%o% uses'foreground')
     from-game:
       chat: '(%sender%) %message%'
       private: '(%sender%) %message%'
@@ -25,6 +19,7 @@ settings:
       quit: '[%sender% disconnected]'
       kick: '[%moderator% KICKED %sender% (%message%)]'
       admin: '%sender% to online admins ->- %message%'
+      generic: '%message%'
     from-irc:
       chat: '[%srcChannel%] <%sender%> %message%'
       private: '%sender% whispers> %message%'
@@ -34,7 +29,6 @@ settings:
       quit: '[%srcChannel%] * Quits: %sender% (%message%)'
       kick: '[%srcChannel%] * %sender% was kicked by %moderator% (%message%)'
       nick: '[%srcChannel%] * %sender% is now known as %message%'
-  #bind-address: 127.0.0.1
      
 bots:
   - nickname: 'CraftIRCbot'
@@ -64,26 +58,29 @@ paths:
     target: 'changeme'
   - source 'changeme'
     target: 'minecraft'
-    disable: false
-    attributes:
-      admin: false
-      colors: true
-      chat: true
-      action: true
-      join: true
-      part: true
-      nick: true
-      quit: true
-      kick: true
-      private: true
-      command: true
-      say: true
     filters:
       #Each filter is a disjunction with message fields and regular expressions they must match for the message to be filtered.
       - message: '^\.[^ ]+'
     formatting:
       #chat: '[%srcChannel%] <%sender%> %message%'
       #join: '[%srcChannel%] * Joins: %sender%'
+
+default-attributes:
+	disable: false
+	attributes:
+		admin: false
+		colors: true
+		chat: true
+		action: true
+		join: true
+		part: true
+		nick: true
+		quit: true
+		kick: true
+		private: true
+		command: true
+		say: true
+		generic: true
 
 colormap:
   - {irc: 0, game: '§0', name: 'background'}

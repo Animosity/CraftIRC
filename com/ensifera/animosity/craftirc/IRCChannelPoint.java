@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.jibble.pircbot.User;
 
+
 class NicknameComparator implements Comparator<String> {
 
     Minebot bot;

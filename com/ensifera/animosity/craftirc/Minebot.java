@@ -11,6 +11,7 @@ import java.util.Map;
 import org.jibble.pircbot.*;
 import org.bukkit.util.config.ConfigurationNode;
 
+
 /**
  * @author Animosity
  * @author Protected
@@ -189,6 +190,8 @@ public class Minebot extends PircBot implements Runnable {
                 if (msg == null) return;
                 msg.setField("sender", sender);
                 msg.setField("srcChannel", channel);
+                msg.setField("username", login);
+                msg.setField("hostname", hostname);
                 msg.post();
             }
         }
@@ -201,6 +204,8 @@ public class Minebot extends PircBot implements Runnable {
             msg.setField("sender", sender);
             msg.setField("srcChannel", channel);
             msg.setField("message", reason);
+            msg.setField("username", login);
+            msg.setField("hostname", hostname);
             msg.post();
         }
     }
@@ -212,6 +217,8 @@ public class Minebot extends PircBot implements Runnable {
             msg.setField("sender", sender);
             msg.setField("srcChannel", channel);
             msg.setField("message", reason);
+            msg.setField("username", login);
+            msg.setField("hostname", hostname);
             msg.post();
         }
     }
@@ -228,6 +235,8 @@ public class Minebot extends PircBot implements Runnable {
             msg.setField("message", reason);
             msg.setField("moderator", kickerNick);
             msg.setField("ircModPrefix", getHighestUserPrefix(getUser(kickerNick, channel)));
+            msg.setField("modUsername", kickerNick);
+            msg.setField("modHostname", kickerLogin);
             msg.post();            
         }
     }
@@ -239,6 +248,8 @@ public class Minebot extends PircBot implements Runnable {
             msg.setField("sender", oldNick);
             msg.setField("srcChannel", channel);
             msg.setField("message", newNick);
+            msg.setField("username", login);
+            msg.setField("hostname", hostname);
             msg.post();
         }
     }
@@ -257,6 +268,8 @@ public class Minebot extends PircBot implements Runnable {
                 cmd.setField("srcChannel", channel);
                 cmd.setField("args", args);
                 cmd.setField("ircPrefix", getHighestUserPrefix(getUser(sender, channel)));
+                cmd.setField("username", login);
+                cmd.setField("hostname", hostname);
                 cmd.setFlag("admin", plugin.cBotAdminPrefixes(botId).contains(cmd.getField("ircPrefix")));
                 cmd.act();
             } else {
@@ -266,6 +279,8 @@ public class Minebot extends PircBot implements Runnable {
                 msg.setField("srcChannel", channel);
                 msg.setField("message", message);
                 msg.setField("ircPrefix", getHighestUserPrefix(getUser(sender, channel)));
+                msg.setField("username", login);
+                msg.setField("hostname", hostname);
                 msg.post();
             }
         } catch (Exception e) {
@@ -281,6 +296,30 @@ public class Minebot extends PircBot implements Runnable {
         msg.setField("srcChannel", target);
         msg.setField("message", action);
         msg.setField("ircPrefix", getHighestUserPrefix(getUser(sender, target)));
+        msg.setField("username", login);
+        msg.setField("hostname", hostname);
+        msg.post();
+    }
+    
+    public void onTopic(String channel, String topic, String sender, long date, boolean changed) {
+        RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "topic");
+        if (msg == null) return;
+        msg.setField("sender", sender);
+        msg.setField("srcChannel", channel);
+        msg.setField("message", topic);
+        msg.setField("ircPrefix", getHighestUserPrefix(getUser(sender, channel)));
+        msg.post();
+    }
+    
+    protected void onMode(String channel, String moderator, String sourceLogin, String sourceHostname, String mode) {
+        RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "mode");
+        if (msg == null) return;
+        msg.setField("moderator", moderator);
+        msg.setField("srcChannel", channel);
+        msg.setField("message", mode);
+        msg.setField("ircModPrefix", getHighestUserPrefix(getUser(moderator, channel)));
+        msg.setField("username", sourceLogin);
+        msg.setField("hostname", sourceHostname);
         msg.post();
     }
 

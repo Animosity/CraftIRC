@@ -7,6 +7,7 @@ import java.util.List;
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
 
+
 public class MinecraftPoint implements CommandEndPoint {
 
     Server server;
@@ -64,13 +65,6 @@ public class MinecraftPoint implements CommandEndPoint {
 
     public void commandIn(RelayedCommand cmd) {
         String command = cmd.getField("command").toLowerCase();
-        if (plugin.cPathAttribute(cmd.getField("source"), cmd.getField("target"), "attributes.admin") && cmd.getFlag("admin")) {
-            //Admin commands
-            if (command.equals("cmd") || command.equals("c")) {
-                //TODO
-            }
-        }
-        //Normal commands
         if (command.equals("say") || command.equals("mc")) {
             RelayedMessage fwd = plugin.newMsg(cmd.getSource(), this, "chat");
             fwd.copyFields(cmd);
