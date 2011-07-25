@@ -21,7 +21,7 @@ public class PluginExample extends JavaPlugin implements EndPoint {
                 try {
                     craftircHandle = (CraftIRC) checkplugin;
                     craftircHandle.registerEndPoint("mytag", this);
-                    RelayedMessage rm = craftircHandle.newMsg(this, null, "announcement");
+                    RelayedMessage rm = craftircHandle.newMsg(this, null, "generic");
                     rm.setField("message", "I'm aliiive!");
                     rm.post();
                 } catch (ClassCastException ex) {
