@@ -58,6 +58,7 @@ public class Minebot extends PircBot implements Runnable {
     public synchronized void run() {
         this.setVerbose(debug);
         this.setMessageDelay(plugin.cBotMessageDelay(botId));
+        this.setQueueSize(plugin.cBotQueueSize(botId));
         this.setName(plugin.cBotNickname(botId));
         this.setFinger(CraftIRC.NAME + " v" + CraftIRC.VERSION);
         this.setLogin(plugin.cBotLogin(botId));

@@ -39,6 +39,7 @@ bots:
     serverpass: ''  #This isn't the nickserv password
     ssl: false
     message-delay: 1000
+    queue-size: 5
     admin-prefixes: ['@', '%']
     ignored-users: []
     auth:

@@ -25,7 +25,10 @@ public class CraftIRCListener extends PlayerListener {
                 if (msg == null) return;
                 msg.setField("sender", event.getPlayer().getDisplayName());
                 msg.setField("message", Util.combineSplit(1, split, " "));
-                msg.setField("world", event.getPlayer().getWorld().getName()); 
+                msg.setField("world", event.getPlayer().getWorld().getName());
+                msg.setField("realSender", event.getPlayer().getName());
+                msg.setField("prefix", plugin.getPrefix(event.getPlayer()));
+                msg.setField("suffix", plugin.getPrefix(event.getPlayer()));
                 msg.post();
             }
         } catch (Exception e) {
@@ -44,7 +47,10 @@ public class CraftIRCListener extends PlayerListener {
             if (msg == null) return;
             msg.setField("sender", event.getPlayer().getDisplayName());
             msg.setField("message", event.getMessage());
-            msg.setField("world", event.getPlayer().getWorld().getName()); 
+            msg.setField("world", event.getPlayer().getWorld().getName());
+            msg.setField("realSender", event.getPlayer().getName());
+            msg.setField("prefix", plugin.getPrefix(event.getPlayer()));
+            msg.setField("suffix", plugin.getPrefix(event.getPlayer()));
             msg.post();
         } catch (Exception e) {
             e.printStackTrace();
@@ -57,6 +63,10 @@ public class CraftIRCListener extends PlayerListener {
             RelayedMessage msg = plugin.newMsg(plugin.getEndPoint(plugin.cMinecraftTag()), null, "join");
             if (msg == null) return;
             msg.setField("sender", event.getPlayer().getDisplayName());
+            msg.setField("world", event.getPlayer().getWorld().getName());
+            msg.setField("realSender", event.getPlayer().getName());
+            msg.setField("prefix", plugin.getPrefix(event.getPlayer()));
+            msg.setField("suffix", plugin.getPrefix(event.getPlayer()));
             msg.post();
         } catch (Exception e) {
             e.printStackTrace();
@@ -69,6 +79,10 @@ public class CraftIRCListener extends PlayerListener {
             RelayedMessage msg = plugin.newMsg(plugin.getEndPoint(plugin.cMinecraftTag()), null, "quit");
             if (msg == null) return;
             msg.setField("sender", event.getPlayer().getDisplayName());
+            msg.setField("world", event.getPlayer().getWorld().getName());
+            msg.setField("realSender", event.getPlayer().getName());
+            msg.setField("prefix", plugin.getPrefix(event.getPlayer()));
+            msg.setField("suffix", plugin.getPrefix(event.getPlayer()));
             msg.post();
         } catch (Exception e) {
             e.printStackTrace();
@@ -81,7 +95,9 @@ public class CraftIRCListener extends PlayerListener {
         if (msg == null) return;
         msg.setField("sender", event.getPlayer().getDisplayName());
         msg.setField("message", (event.getReason().length() == 0) ? "no reason given" : event.getReason());
-        msg.setField("moderator", "Admin"); //there is no moderator context in CBukkit, oh no.
+        msg.setField("realSender", event.getPlayer().getName());
+        msg.setField("prefix", plugin.getPrefix(event.getPlayer()));
+        msg.setField("suffix", plugin.getPrefix(event.getPlayer()));
         msg.post();
     }
 

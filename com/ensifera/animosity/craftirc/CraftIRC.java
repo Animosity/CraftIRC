@@ -13,6 +13,8 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import net.myshelter.minecraft.PlayerInfo;
+
 import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -36,8 +38,8 @@ import org.bukkit.util.config.ConfigurationNode;
 
 //TODO: Ask outsider for suggestions for appropriate command feedback (usability tests)
 //TODO: Better handling of null method returns (try to crash the bot and then stop that from happening again)
-//TODO: Service provider for prefix/suffix (discuss with chat plugin makers)
 public class CraftIRC extends JavaPlugin {
+    
     public static final String NAME = "CraftIRC";
     public static String VERSION;
     static final Logger log = Logger.getLogger("Minecraft");
@@ -52,6 +54,7 @@ public class CraftIRC extends JavaPlugin {
     private Timer retryTimer = new Timer();
     Map<HoldType, Boolean> hold;
     Map<String, RetryTask> retry;
+    private PlayerInfo infoservice = null;
 
     //Bots and channels config storage
     private List<ConfigurationNode> bots;
@@ -105,6 +108,11 @@ public class CraftIRC extends JavaPlugin {
                 if (!identifier.getSourceTag().equals(identifier.getTargetTag()) && !paths.containsKey(identifier))
                     paths.put(identifier, path);
             }
+            
+            //Prefixes and suffixes
+            try {
+                infoservice = getServer().getServicesManager().load(PlayerInfo.class);
+            } catch (java.lang.NoClassDefFoundError e) {}
             
             //Retry timers
             retry = new HashMap<String, RetryTask>();
@@ -512,6 +520,16 @@ public class CraftIRC extends JavaPlugin {
 
         dolog("DEBUG [" + (d ? "ON" : "OFF") + "]");
     }
+    
+    String getPrefix(Player p) {
+        if (infoservice != null) return infoservice.getPrefix(p);
+        else return "";
+    }
+    
+    String getSuffix(Player p) {
+        if (infoservice != null) return infoservice.getSuffix(p);
+        else return "";
+    }
 
     boolean isDebug() {
         return debug;
@@ -709,6 +727,10 @@ public class CraftIRC extends JavaPlugin {
 
     int cBotMessageDelay(int bot) {
         return bots.get(bot).getInt("message-delay", 1000);
+    }
+    
+    int cBotQueueSize(int bot) {
+        return bots.get(bot).getInt("queue-size", 5);
     }
 
     public String cCommandPrefix(int bot) {

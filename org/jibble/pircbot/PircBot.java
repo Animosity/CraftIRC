@@ -540,7 +540,7 @@ public abstract class PircBot implements ReplyConstants, PircBotLogger {
         if (line == null) {
             throw new NullPointerException("Cannot send null messages to server");
         }
-        if (isConnected()) {
+        if (isConnected() && _outQueue.size() < _queueSize) {
             _outQueue.add(line);
         }
     }
@@ -2790,6 +2790,18 @@ public abstract class PircBot implements ReplyConstants, PircBotLogger {
     public final long getMessageDelay() {
         return _messageDelay;
     }
+    
+    //Added by Protected
+    public void setQueueSize(long size) {
+        if (size < 2) {
+            throw new IllegalArgumentException("Cannot have a negative time.");
+        }
+        _queueSize = size;
+    }
+    
+    public long getQueueSize() {
+        return _queueSize;
+    }
 
     /**
      * Gets the maximum length of any line that is sent via the IRC protocol.
@@ -3599,6 +3611,7 @@ public abstract class PircBot implements ReplyConstants, PircBotLogger {
     // Outgoing message stuff.
     private Queue _outQueue = new Queue();
     private long _messageDelay = 1000;
+    private long _queueSize = 5;
 
     // A Hashtable of channels that points to a selfreferential Hashtable of
     // User objects (used to remember which users are in which channels).
