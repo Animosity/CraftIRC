@@ -100,6 +100,14 @@ public class RelayedMessage {
             result = result.replace("%b%", Character.toString((char) 2));
             result = result.replace("%u%", Character.toString((char) 31));
             result = result.replace("%r%", Character.toString((char) 22));
+        } else if (realTarget.getType() == EndPoint.Type.MINECRAFT) {
+            result = result.replaceAll("%k([0-9]{1,2})%", "");
+            result = result.replaceAll("%k([0-9]{1,2}),([0-9]{1,2})%", "");
+            result = result.replace("%k%", plugin.cColorGameFromName("foreground"));
+            result = result.replace("%o%", plugin.cColorGameFromName("foreground"));
+            result = result.replace("%b%", "");
+            result = result.replace("%u%", "");
+            result = result.replace("%r%", ""); 
         } else {
             result = result.replaceAll("%k([0-9]{1,2})%", "");
             result = result.replaceAll("%k([0-9]{1,2}),([0-9]{1,2})%", "");

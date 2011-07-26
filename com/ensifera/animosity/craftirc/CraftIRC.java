@@ -80,8 +80,6 @@ public class CraftIRC extends JavaPlugin {
     
     public void onEnable() {
         try {
-            getConfiguration().load(); //For ircreload support
-            
             endpoints = new HashMap<String,EndPoint>();
             tags = new HashMap<EndPoint,String>();
             irccmds = new HashMap<String,CommandEndPoint>();
@@ -96,6 +94,8 @@ public class CraftIRC extends JavaPlugin {
                 getServer().getPluginManager().disablePlugin(((Plugin) (this)));
                 return;
             }
+            
+            getConfiguration().load(); //For ircreload support
             
             bots = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("bots", null));
             channodes = new HashMap<Integer, ArrayList<ConfigurationNode>>();
@@ -378,6 +378,9 @@ public class CraftIRC extends JavaPlugin {
         endpoints.put(tag, ep);
         tags.put(ep, tag);
         return true;
+    }
+    public boolean endPointRegistered(String tag) {
+        return endpoints.get(tag) != null;
     }
     EndPoint getEndPoint(String tag) {
         return endpoints.get(tag);

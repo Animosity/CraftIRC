@@ -195,7 +195,7 @@ public class Minebot extends PircBot implements Runnable {
         CraftIRC.dolog("Joined channel: " + channel);
         whereAmI.add(channel);
         String tag = plugin.cChanTag(botId, channel);
-        if (tag != null) plugin.registerEndPoint(tag, channels.get(channel));
+        if (tag != null && !plugin.endPointRegistered(tag)) plugin.registerEndPoint(tag, channels.get(channel));
         for (String line : this.plugin.cChanOnJoin(botId, channel))
             sendRawLineViaQueue(line);
     }
