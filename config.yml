@@ -220,19 +220,19 @@ default-attributes:
 # You must never repeat a name, an irc color or a minecraft color in more than one 3-tuple.
 # Use %colorname% in a formatting string to have the correct color show up in the message.
 colormap:
-  - {irc: 0, game: '§0', name: 'background'}
-  - {irc: 2, game: '§1', name: 'navy'}
-  - {irc: 3, game: '§2', name: 'darkgreen'}
-  - {irc: 10, game: '§3', name: 'teal'}
-  - {irc: 5, game: '§4', name: 'maroon'}
-  - {irc: 6, game: '§5', name: 'purple'}
-  - {irc: 7, game: '§6', name: 'orange'}
-  - {irc: 15, game: '§7', name: 'grey'}
-  - {irc: 14, game: '§8', name: 'darkgrey'}
-  - {irc: 12, game: '§9', name: 'blue'}
-  - {irc: 9, game: '§a', name: 'green'}
-  - {irc: 11, game: '§b', name: 'cyan'}
-  - {irc: 4, game: '§c', name: 'red'}
-  - {irc: 13, game: '§d', name: 'magenta'}
-  - {irc: 8, game: '§e', name: 'yellow'}
-  - {irc: 1, game: '§f', name: 'foreground'}
+  - {irc: 0, game: "\u00C2\u00A70", name: 'background'}
+  - {irc: 2, game: "\u00C2\u00A71", name: 'navy'}
+  - {irc: 3, game: "\u00C2\u00A72", name: 'darkgreen'}
+  - {irc: 10, game: "\u00C2\u00A73", name: 'teal'}
+  - {irc: 5, game: "\u00C2\u00A74", name: 'maroon'}
+  - {irc: 6, game: "\u00C2\u00A75", name: 'purple'}
+  - {irc: 7, game: "\u00C2\u00A76", name: 'orange'}
+  - {irc: 15, game: "\u00C2\u00A77", name: 'grey'}
+  - {irc: 14, game: "\u00C2\u00A78", name: 'darkgrey'}
+  - {irc: 12, game: "\u00C2\u00A79", name: 'blue'}
+  - {irc: 9, game: "\u00C2\u00A7a", name: 'green'}
+  - {irc: 11, game: "\u00C2\u00A7b", name: 'cyan'}
+  - {irc: 4, game: "\u00C2\u00A7c", name: 'red'}
+  - {irc: 13, game: "\u00C2\u00A7d", name: 'magenta'}
+  - {irc: 8, game: "\u00C2\u00A7e", name: 'yellow'}
+  - {irc: 1, game: "\u00C2\u00A7f", name: 'foreground'}

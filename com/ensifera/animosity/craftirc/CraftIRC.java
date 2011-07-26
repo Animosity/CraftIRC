@@ -80,6 +80,8 @@ public class CraftIRC extends JavaPlugin {
     
     public void onEnable() {
         try {
+            getConfiguration().load(); //For ircreload support
+            
             endpoints = new HashMap<String,EndPoint>();
             tags = new HashMap<EndPoint,String>();
             irccmds = new HashMap<String,CommandEndPoint>();
@@ -689,10 +691,10 @@ public class CraftIRC extends JavaPlugin {
         while (it.hasNext()) {
             color = it.next();
             if (color.getString("name").equalsIgnoreCase(name) && color.getProperty("game") != null)
-                return color.getString("game", "§f");
+                return color.getString("game", "\u00C2\u00A7f");
         }
         if (name.equalsIgnoreCase("foreground"))
-            return "§f";
+            return "\u00C2\u00A7f";
         else
             return cColorGameFromName("foreground");
     }
