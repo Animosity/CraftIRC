@@ -609,6 +609,10 @@ public class CraftIRC extends JavaPlugin {
         return getConfiguration().getString("settings.console-tag", "console");
     }
     
+    boolean cCancelChat() {
+        return getConfiguration().getBoolean("settings.cancel-chat", false);
+    }
+    
     boolean cDebug() {
         return getConfiguration().getBoolean("settings.debug", false);
     }

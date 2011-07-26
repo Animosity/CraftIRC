@@ -39,6 +39,7 @@ public class CraftIRCListener extends PlayerListener {
     public void onPlayerChat(PlayerChatEvent event) {
         if (this.plugin.isHeld(CraftIRC.HoldType.CHAT)) return;
         try {
+            if (plugin.cCancelChat()) event.setCancelled(true);
             RelayedMessage msg;
             if (event.isCancelled())
                 msg = plugin.newMsg(plugin.getEndPoint(plugin.cCancelledTag()), null, "chat");

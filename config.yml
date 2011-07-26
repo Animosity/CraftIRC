@@ -22,6 +22,9 @@ settings:
   cancelled-tag: 'cancelled'  #Cancelled chat is sent here (and nothing else).
   console-tag: 'console'      #The minecraft server console.
   
+  #Set this to true to have CraftIRC cancel all minecraft chat if no other plugin is doing it.
+  cancel-chat: false
+  
   #IRC commands start with this, for example '.players' (it's not part of the command name though)
   command-prefix: '.'
   
@@ -158,7 +161,7 @@ paths:
     filters:
       #Each filter contains regular expressions for formatting variables. This one ignores commands (.TEXT)
       - message: '^\.[^ ]+'
-      
+
     #Every path can override the formatting strings defined in settings.formatting .
     formatting:
     #  chat: '[%srcChannel%] <%sender%> %message%'
@@ -168,6 +171,9 @@ paths:
     attributes:
     #  admin: false
     #  ...
+    
+    #A path can inherit missing attributes from another existing path rather than from default-attributes.
+    #base: {source: 'minecraft', target: 'changeme'}
     
     #The disable flag allows you to disable a path temporarily without removing it from the configuration file.
     disable: false
@@ -183,7 +189,7 @@ paths:
 default-attributes:
 
   #Disables all communication paths. No message will be sent anywhere.
-  #If you don't set this to false, CraftIRC will not work!
+  #If you don't set this to false, CraftIRC may not work!
   disable: true
   
   #Every event type (they're the same as the names in settings.formatting) can be enabled or disabled here.
@@ -210,7 +216,8 @@ default-attributes:
 
 
 # ******************* COLOR CONVERSION MAP *******************
-# Here you can assign 3-tuples with names, IRC colors and Minecraft colors. Never repeat any of them!
+# Here you can assign 3-tuples with names, IRC colors and Minecraft colors.
+# You must never repeat a name, an irc color or a minecraft color in more than one 3-tuple.
 # Use %colorname% in a formatting string to have the correct color show up in the message.
 colormap:
   - {irc: 0, game: '§0', name: 'background'}

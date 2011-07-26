@@ -1,7 +1,7 @@
 name: CraftIRC
 main: com.ensifera.animosity.craftirc.CraftIRC
 authors: [Animosity, Protected]
-version: 3.0 ALPHA
+version: 3.0
 commands:
   ircmsg:
     description: Send message to tag

@@ -115,7 +115,7 @@ public class RelayedMessage {
         Matcher find_vars = other_vars.matcher(result);
         while (find_vars.find()) {
             if (fields.get(find_vars.group(1)) != null)
-                result = find_vars.replaceFirst(fields.get(find_vars.group(1)));
+                result = find_vars.replaceFirst(Matcher.quoteReplacement(fields.get(find_vars.group(1))));
             else if (realTarget.getType() == EndPoint.Type.IRC)
                 result = find_vars.replaceFirst(Character.toString((char) 3) + String.format("%02d", this.plugin.cColorIrcFromName(find_vars.group(1))));
             else if (realTarget.getType() == EndPoint.Type.MINECRAFT)
