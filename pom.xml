@@ -2,8 +2,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.ensifera</groupId>
-  <artifactId>${artifactId}</artifactId>
-  <sourceDirectory>src</sourceDirectory>
+  <artifactId>CraftIRC</artifactId>
   <packaging>jar</packaging>
   <version>3.0.0-SNAPSHOT</version>
   <name>CraftIRC</name>
@@ -11,7 +10,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <api.version>unknown</api.version>
-  </properties> 
+  </properties>
   <scm>
     <connection>scm:git:git://github.com/Animosity/CraftIRC/CraftIRC.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/Animosity/CraftIRC/CraftIRC.git</developerConnection>
