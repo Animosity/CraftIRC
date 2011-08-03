@@ -1,5 +1,8 @@
 package com.ensifera.animosity.craftirc;
 
+import org.jibble.pircbot.TrustingSSLSocketFactory;
+import org.jibble.pircbot.PircBot;
+import org.jibble.pircbot.IrcException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
