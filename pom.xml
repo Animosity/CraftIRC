@@ -11,7 +11,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <api.version>unknown</api.version>
-  </properties>
+  </properties> 
   <scm>
     <connection>scm:git:git://github.com/Animosity/CraftIRC/CraftIRC.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/Animosity/CraftIRC/CraftIRC.git</developerConnection>
