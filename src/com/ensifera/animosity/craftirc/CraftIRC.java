@@ -552,7 +552,7 @@ public class CraftIRC extends JavaPlugin {
     }
 
     String colorizeName(String name) {
-        Pattern color_codes = Pattern.compile("ง[0-9a-f]");
+        Pattern color_codes = Pattern.compile("ยง[0-9a-f]");
         Matcher find_colors = color_codes.matcher(name);
         while (find_colors.find()) {
             name = find_colors.replaceFirst(Character.toString((char) 3)
