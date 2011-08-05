@@ -551,6 +551,7 @@ public class CraftIRC extends JavaPlugin {
         return false;
     }
 
+    // TODO: Make sure this works
     String colorizeName(String name) {
         Pattern color_codes = Pattern.compile("§[0-9a-f]");
         Matcher find_colors = color_codes.matcher(name);
