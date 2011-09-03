@@ -1,5 +1,9 @@
 package com.ensifera.animosity.craftirc;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -22,7 +26,6 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
@@ -42,6 +45,7 @@ public class CraftIRC extends JavaPlugin {
     
     public static final String NAME = "CraftIRC";
     public static String VERSION;
+    private String DEFAULTCONFIG_INJAR_PATH = "/defaults/config.yml";
     static final Logger log = Logger.getLogger("Minecraft");
     
     //Misc class attributes
@@ -87,11 +91,15 @@ public class CraftIRC extends JavaPlugin {
             PluginDescriptionFile desc = this.getDescription();
             VERSION = desc.getVersion();
             server = this.getServer();
-                       
-            //Load node lists. Bukkit does it now, hurray!
-            if (null == getConfiguration()) {
-                dowarn("config.yml could not be found in plugins/CraftIRC/ -- disabling!");
-                getServer().getPluginManager().disablePlugin(((Plugin) (this)));
+            
+            String dataFolderPath = this.getDataFolder().getPath() + File.separator;
+            (new File(dataFolderPath)).mkdir();
+
+            //Checking if the configuration file exists and imports the default one from the .jar if it doesn't
+            File configFile = new File(dataFolderPath + "config.yml");
+            if (!configFile.exists()) {
+                importDefaultConfig(DEFAULTCONFIG_INJAR_PATH, configFile);
+                autoDisable();
                 return;
             }
             
@@ -178,15 +186,48 @@ public class CraftIRC extends JavaPlugin {
             e.printStackTrace();
         }
     }
+    
+    private void importDefaultConfig(String injarPath, File destination) {
+        try {
+            InputStream is = this.getClass().getResourceAsStream(injarPath);
+            if (is == null) {
+                throw new Exception("The default configuration file could not be found in the .jar");
+            }
+            OutputStream os = new FileOutputStream(destination);
+
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = is.read(buffer)) != -1) {
+                os.write(buffer, 0, bytesRead);
+            }
+
+            is.close();
+            os.close();
+        } catch (Exception e) {
+            dowarn("The default configuration file could not be imported:");
+            e.printStackTrace();
+            dowarn("You can MANUALLY place config.yml in " + destination.getParent());
+            return;
+        }
+        dolog("Default configuration file created: " + destination.getPath());
+        dolog("Take some time to EDIT it, then restart your server.");
+    }
+    
+    private void autoDisable() {
+        dolog("Auto-disabling...");
+        getServer().getPluginManager().disablePlugin(this);
+    }
 
     public void onDisable() {
         try {
             retryTimer.cancel();
             holdTimer.cancel();
             //Disconnect bots
-            for (int i = 0; i < bots.size(); i++) {
-                instances.get(i).disconnect();
-                instances.get(i).dispose();
+            if (bots != null) {
+                for (int i = 0; i < bots.size(); i++) {
+                    instances.get(i).disconnect();
+                    instances.get(i).dispose();
+                }
             }
             dolog("Disabled.");
         } catch(Exception e) {
