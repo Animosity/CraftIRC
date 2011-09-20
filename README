@@ -1,3 +1,24 @@
+ATTENTION 
+Sept. 20, 2011
+
+CraftIRC3 is currently in debugging/documenting phase prior to a wider release.
+CraftIRC3 source is available on this repository under the branch "three" and can be easily built with the Maven POM.
+
+CraftIRC2 which currently resides in the "master" branch will perhaps undergo a final maintenance release by Animosity, before becoming legacy.
+I welcome anyone else to maintain or contribute to the CraftIRC2 branch and prolong its life and support of plugins that use CraftIRC2.
+
+
+CraftIRC3 is incompatible with plugins which utilize CraftIRC2 (e.g. HeroChat) and those plugins must be updated to the new API.
+The new API has documentation in this Github repo's Wiki, which will be ported to BukkitDev very soon.
+
+
+
+
+----------------------------------------------------------------------------------------------------------
+
+
+
+
 README
 
 LICENSING
