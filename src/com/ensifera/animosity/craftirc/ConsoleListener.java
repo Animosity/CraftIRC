@@ -13,7 +13,7 @@ public class ConsoleListener extends ServerListener {
 	public void onServerCommand(ServerCommandEvent event) {
 		if(event.getCommand().toLowerCase().startsWith("say")) {
 			String message = event.getCommand().substring(4);
-            RelayedMessage msg = plugin.newMsg(plugin.getEndPoint(plugin.cConsoleTag()), null, "generic");
+            RelayedMessage msg = plugin.newMsg(plugin.getEndPoint(plugin.cConsoleTag()), null, "console");
             msg.setField("message", message);
             msg.post();
 		}
