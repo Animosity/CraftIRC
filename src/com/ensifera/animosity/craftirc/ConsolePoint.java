@@ -48,7 +48,7 @@ public class ConsolePoint implements CommandEndPoint {
                 String args = cmd.getField("args");
                 String ccmd = args.substring(0, args.indexOf(" "));
                 if (ccmd.equals("")) return;
-                if (plugin.cConsoleCommands().contains(ccmd)) {
+                if (plugin.cConsoleCommands().contains(ccmd) || plugin.cConsoleCommands().contains("*")) {
                     IRCCommandSender sender = new IRCCommandSender(server, cmd, this);
                     server.dispatchCommand(sender, args);
                 }
