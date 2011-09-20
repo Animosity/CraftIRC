@@ -52,6 +52,7 @@ public class CraftIRC extends JavaPlugin {
     PluginDescriptionFile desc = null;
     public Server server = null;
     private final CraftIRCListener listener = new CraftIRCListener(this);
+    private final ConsoleListener sayListener = new ConsoleListener(this);
     private ArrayList<Minebot> instances;
     private boolean debug;
     private Timer holdTimer = new Timer();
@@ -134,6 +135,7 @@ public class CraftIRC extends JavaPlugin {
             getServer().getPluginManager().registerEvent(Event.Type.PLAYER_QUIT, listener, Priority.Monitor, this);
             getServer().getPluginManager().registerEvent(Event.Type.PLAYER_CHAT, listener, Priority.Monitor, this);
             getServer().getPluginManager().registerEvent(Event.Type.PLAYER_KICK, listener, Priority.Monitor, this);
+            getServer().getPluginManager().registerEvent(Event.Type.SERVER_COMMAND, sayListener, Priority.Monitor, this);
             
             //Native endpoints!
             registerEndPoint(cMinecraftTag(), new MinecraftPoint(this, getServer())); //The minecraft server, no bells and whistles
@@ -265,13 +267,6 @@ public class CraftIRC extends JavaPlugin {
                 getServer().getPluginManager().disablePlugin(this);
                 getServer().getPluginManager().enablePlugin(this);
                 return true;
-            } else if (commandName.equals("say")) {
-                // Capture the 'say' command from Minecraft Console
-                if (sender instanceof ConsoleCommandSender) {
-                    RelayedMessage msg = newMsg(getEndPoint(cConsoleTag()), null, "generic");
-                    msg.setField("message", Util.combineSplit(1, args, " "));
-                    msg.post();
-                }
             } else
                 return false;
         } catch (Exception e) { 
