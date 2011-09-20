@@ -273,7 +273,6 @@ public class CraftIRC extends JavaPlugin {
             e.printStackTrace(); 
             return false;
         }
-        return debug;
     }
 
     private boolean cmdMsgToTag(CommandSender sender, String[] args) {
