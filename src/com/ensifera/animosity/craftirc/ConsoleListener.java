@@ -15,6 +15,7 @@ public class ConsoleListener extends ServerListener {
 			String message = event.getCommand().substring(4);
             RelayedMessage msg = plugin.newMsg(plugin.getEndPoint(plugin.cConsoleTag()), null, "console");
             msg.setField("message", message);
+            msg.doNotColor("message");
             msg.post();
 		}
 	}

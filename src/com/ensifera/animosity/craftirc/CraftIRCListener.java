@@ -28,7 +28,8 @@ public class CraftIRCListener extends PlayerListener {
                 msg.setField("world", event.getPlayer().getWorld().getName());
                 msg.setField("realSender", event.getPlayer().getName());
                 msg.setField("prefix", plugin.getPrefix(event.getPlayer()));
-                msg.setField("suffix", plugin.getPrefix(event.getPlayer()));
+                msg.setField("suffix", plugin.getSuffix(event.getPlayer()));
+                msg.doNotColor("message");
                 msg.post();
             }
         } catch (Exception e) {
@@ -51,7 +52,8 @@ public class CraftIRCListener extends PlayerListener {
             msg.setField("world", event.getPlayer().getWorld().getName());
             msg.setField("realSender", event.getPlayer().getName());
             msg.setField("prefix", plugin.getPrefix(event.getPlayer()));
-            msg.setField("suffix", plugin.getPrefix(event.getPlayer()));
+            msg.setField("suffix", plugin.getSuffix(event.getPlayer()));
+            msg.doNotColor("message");
             msg.post();
         } catch (Exception e) {
             e.printStackTrace();
@@ -67,7 +69,7 @@ public class CraftIRCListener extends PlayerListener {
             msg.setField("world", event.getPlayer().getWorld().getName());
             msg.setField("realSender", event.getPlayer().getName());
             msg.setField("prefix", plugin.getPrefix(event.getPlayer()));
-            msg.setField("suffix", plugin.getPrefix(event.getPlayer()));
+            msg.setField("suffix", plugin.getSuffix(event.getPlayer()));
             msg.post();
         } catch (Exception e) {
             e.printStackTrace();
@@ -83,7 +85,7 @@ public class CraftIRCListener extends PlayerListener {
             msg.setField("world", event.getPlayer().getWorld().getName());
             msg.setField("realSender", event.getPlayer().getName());
             msg.setField("prefix", plugin.getPrefix(event.getPlayer()));
-            msg.setField("suffix", plugin.getPrefix(event.getPlayer()));
+            msg.setField("suffix", plugin.getSuffix(event.getPlayer()));
             msg.post();
         } catch (Exception e) {
             e.printStackTrace();
@@ -98,7 +100,8 @@ public class CraftIRCListener extends PlayerListener {
         msg.setField("message", (event.getReason().length() == 0) ? "no reason given" : event.getReason());
         msg.setField("realSender", event.getPlayer().getName());
         msg.setField("prefix", plugin.getPrefix(event.getPlayer()));
-        msg.setField("suffix", plugin.getPrefix(event.getPlayer()));
+        msg.setField("suffix", plugin.getSuffix(event.getPlayer()));
+        msg.doNotColor("message");
         msg.post();
     }
 

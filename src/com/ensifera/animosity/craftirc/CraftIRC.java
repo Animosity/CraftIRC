@@ -22,14 +22,17 @@ import net.myshelter.minecraft.PlayerInfo;
 import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.config.Configuration;
-import org.bukkit.util.config.ConfigurationNode;
+
+import com.sk89q.util.config.Configuration;
+import com.sk89q.util.config.ConfigurationNode;
+
+import de.bananaco.permissions.Permissions;
+import de.bananaco.permissions.interfaces.PermissionSet;
 
 
 /**
@@ -47,6 +50,8 @@ public class CraftIRC extends JavaPlugin {
     public static String VERSION;
     private String DEFAULTCONFIG_INJAR_PATH = "/defaults/config.yml";
     static final Logger log = Logger.getLogger("Minecraft");
+    
+    Configuration configuration;
     
     //Misc class attributes
     PluginDescriptionFile desc = null;
@@ -85,6 +90,9 @@ public class CraftIRC extends JavaPlugin {
     
     public void onEnable() {
         try {
+        	configuration = new Configuration(new File(getDataFolder().getPath() + "/config.yml"));
+        	configuration.load();
+        	
             endpoints = new HashMap<String,EndPoint>();
             tags = new HashMap<EndPoint,String>();
             irccmds = new HashMap<String,CommandEndPoint>();
@@ -104,17 +112,15 @@ public class CraftIRC extends JavaPlugin {
                 return;
             }
             
-            getConfiguration().load(); //For ircreload support
-            
-            bots = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("bots", null));
+            bots = new ArrayList<ConfigurationNode>(configuration.getNodeList("bots", null));
             channodes = new HashMap<Integer, ArrayList<ConfigurationNode>>();
             for (int botID = 0; botID < bots.size(); botID++)
                 channodes.put(botID, new ArrayList<ConfigurationNode>(bots.get(botID).getNodeList("channels", null)));
             
-            colormap = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("colormap", null));
+            colormap = new ArrayList<ConfigurationNode>(configuration.getNodeList("colormap", null));
             
             paths = new HashMap<Path,ConfigurationNode>();
-            for (ConfigurationNode path : getConfiguration().getNodeList("paths", new LinkedList<ConfigurationNode>())) {
+            for (ConfigurationNode path : configuration.getNodeList("paths", new LinkedList<ConfigurationNode>())) {
                 Path identifier = new Path(path.getString("source"), path.getString("target"));
                 if (!identifier.getSourceTag().equals(identifier.getTargetTag()) && !paths.containsKey(identifier))
                     paths.put(identifier, path);
@@ -287,6 +293,7 @@ public class CraftIRC extends JavaPlugin {
             else
                 msg.setField("sender", "SERVER");
             msg.setField("message", msgToSend);
+            msg.doNotColor("message");
             msg.post();
             sender.sendMessage("Message sent.");
             return true;
@@ -307,6 +314,7 @@ public class CraftIRC extends JavaPlugin {
             else
                 msg.setField("sender", "SERVER");;
             msg.setField("message", msgToSend);
+            msg.doNotColor("message");
             msg.postToUser(args[1]);
             sender.sendMessage("Message sent.");
             return true;
@@ -343,6 +351,7 @@ public class CraftIRC extends JavaPlugin {
             msg.setField("sender", ((Player) sender).getDisplayName());
             msg.setField("message", Util.combineSplit(0, args, " "));
             msg.setField("world", ((Player) sender).getWorld().getName());
+            msg.doNotColor("message");
             msg.post(true);
             sender.sendMessage("Admin notice sent.");
             return true;
@@ -563,12 +572,44 @@ public class CraftIRC extends JavaPlugin {
     
     String getPrefix(Player p) {
         if (infoservice != null) return infoservice.getPrefix(p);
-        else return "";
+        else if (getServer().getPluginManager().isPluginEnabled("bPermissions")) {
+        	PermissionSet ps = Permissions.getWorldPermissionsManager().getPermissionSet(p.getWorld());
+        	int priority = 0;
+        	String result = "";
+        	for (String group : ps.getGroups(p)) {
+        		for (String node : ps.getGroupNodes(group)) {
+        			if (!node.startsWith("prefix.")) continue;
+        			String[] parts = node.substring(7).split("\\.");
+        			if (parts.length < 2) continue;
+        			if (Integer.parseInt(parts[0]) <= priority) continue;
+        			priority = Integer.parseInt(parts[0]);
+        			result = parts[1];
+        		}
+        	}
+        	return result;
+        }
+        return "";
     }
     
     String getSuffix(Player p) {
         if (infoservice != null) return infoservice.getSuffix(p);
-        else return "";
+        else if (getServer().getPluginManager().isPluginEnabled("bPermissions")) {
+        	PermissionSet ps = Permissions.getWorldPermissionsManager().getPermissionSet(p.getWorld());
+        	int priority = 0;
+        	String result = "";
+        	for (String group : ps.getGroups(p)) {
+        		for (String node : ps.getGroupNodes(group)) {
+        			if (!node.startsWith("suffix.")) continue;
+        			String[] parts = node.substring(7).split("\\.");
+        			if (parts.length < 2) continue;
+        			if (Integer.parseInt(parts[0]) <= priority) continue;
+        			priority = Integer.parseInt(parts[0]);
+        			result = parts[1];
+        		}
+        	}
+        	return result;
+        }
+        return "";
     }
 
     boolean isDebug() {
@@ -600,7 +641,7 @@ public class CraftIRC extends JavaPlugin {
    
     protected void enqueueConsoleCommand(String cmd) {
       try {
-        getServer().dispatchCommand(new ConsoleCommandSender(getServer()), cmd);
+        getServer().dispatchCommand(getServer().getConsoleSender(), cmd);
       } catch (Exception e) {
           e.printStackTrace();
       }
@@ -631,7 +672,7 @@ public class CraftIRC extends JavaPlugin {
     
     private ConfigurationNode getPathNode(String source, String target) {
         ConfigurationNode result = paths.get(new Path(source, target));
-        if (result == null) return getConfiguration().getNode("default-attributes");
+        if (result == null) return configuration.getNode("default-attributes");
         ConfigurationNode basepath;
         if (result.getKeys().contains("base") && (basepath = result.getNode("base")) != null) {
             ConfigurationNode basenode = paths.get(new Path(basepath.getString("source", ""), basepath.getString("target", "")));
@@ -641,29 +682,29 @@ public class CraftIRC extends JavaPlugin {
     }
 
     String cMinecraftTag() {
-        return getConfiguration().getString("settings.minecraft-tag", "minecraft");
+        return configuration.getString("settings.minecraft-tag", "minecraft");
     }
     String cCancelledTag() {
-        return getConfiguration().getString("settings.cancelled-tag", "cancelled");
+        return configuration.getString("settings.cancelled-tag", "cancelled");
     }
     String cConsoleTag() {
-        return getConfiguration().getString("settings.console-tag", "console");
+        return configuration.getString("settings.console-tag", "console");
     }
     
     boolean cCancelChat() {
-        return getConfiguration().getBoolean("settings.cancel-chat", false);
+        return configuration.getBoolean("settings.cancel-chat", false);
     }
     
     boolean cDebug() {
-        return getConfiguration().getBoolean("settings.debug", false);
+        return configuration.getBoolean("settings.debug", false);
     }
 
     ArrayList<String> cConsoleCommands() {
-        return new ArrayList<String>(getConfiguration().getStringList("settings.console-commands", null));
+        return new ArrayList<String>(configuration.getStringList("settings.console-commands", null));
     }
 
     public int cHold(String eventType) {
-        return getConfiguration().getInt("settings.hold-after-enable." + eventType, 0);
+        return configuration.getInt("settings.hold-after-enable." + eventType, 0);
     }
 
     String cFormatting(String eventType, RelayedMessage msg) {
@@ -682,9 +723,9 @@ public class CraftIRC extends JavaPlugin {
             return cDefaultFormatting(eventType, msg);
     }
     String cDefaultFormatting(String eventType, RelayedMessage msg) {
-        if (msg.getSource().getType() == EndPoint.Type.MINECRAFT) return getConfiguration().getString("settings.formatting.from-game." + eventType);
-        if (msg.getSource().getType() == EndPoint.Type.IRC) return getConfiguration().getString("settings.formatting.from-irc." + eventType);
-        if (msg.getSource().getType() == EndPoint.Type.PLAIN) return getConfiguration().getString("settings.formatting.from-plain." + eventType);
+        if (msg.getSource().getType() == EndPoint.Type.MINECRAFT) return configuration.getString("settings.formatting.from-game." + eventType);
+        if (msg.getSource().getType() == EndPoint.Type.IRC) return configuration.getString("settings.formatting.from-irc." + eventType);
+        if (msg.getSource().getType() == EndPoint.Type.PLAIN) return configuration.getString("settings.formatting.from-plain." + eventType);
         return "";
     }
 
@@ -739,11 +780,11 @@ public class CraftIRC extends JavaPlugin {
     }
 
     String cBindLocalAddr() {
-        return getConfiguration().getString("settings.bind-address","");
+        return configuration.getString("settings.bind-address","");
     }
     
     int cRetryDelay() {
-        return getConfiguration().getInt("settings.retry-delay", 10) * 1000;
+        return configuration.getInt("settings.retry-delay", 10) * 1000;
     }
 
     String cBotNickname(int bot) {
@@ -779,7 +820,7 @@ public class CraftIRC extends JavaPlugin {
     }
 
     public String cCommandPrefix(int bot) {
-        return bots.get(bot).getString("command-prefix", getConfiguration().getString("settings.command-prefix", "."));
+        return bots.get(bot).getString("command-prefix", configuration.getString("settings.command-prefix", "."));
     }
 
     public ArrayList<String> cBotAdminPrefixes(int bot) {
@@ -851,7 +892,7 @@ public class CraftIRC extends JavaPlugin {
     public boolean cPathAttribute(String source, String target, String attribute) {
         ConfigurationNode node = getPathNode(source, target);
         if (node.getProperty(attribute) != null) return node.getBoolean(attribute, false);
-        else return getConfiguration().getNode("default-attributes").getBoolean(attribute, false);
+        else return configuration.getNode("default-attributes").getBoolean(attribute, false);
     }
     
     public List<ConfigurationNode> cPathFilters(String source, String target) {

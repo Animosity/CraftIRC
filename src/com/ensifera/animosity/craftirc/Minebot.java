@@ -3,6 +3,9 @@ package com.ensifera.animosity.craftirc;
 import org.jibble.pircbot.TrustingSSLSocketFactory;
 import org.jibble.pircbot.PircBot;
 import org.jibble.pircbot.IrcException;
+
+import com.sk89q.util.config.ConfigurationNode;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,10 +15,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.jibble.pircbot.*;
-import org.bukkit.util.config.ConfigurationNode;
-
 
 /**
  * @author Animosity
@@ -213,6 +212,8 @@ public class Minebot extends PircBot implements Runnable {
                 msg.setField("srcChannel", channel);
                 msg.setField("username", login);
                 msg.setField("hostname", hostname);
+                msg.doNotColor("username");
+                msg.doNotColor("hostname");
                 msg.post();
             }
         }
@@ -234,6 +235,9 @@ public class Minebot extends PircBot implements Runnable {
             msg.setField("message", reason);
             msg.setField("username", login);
             msg.setField("hostname", hostname);
+            msg.doNotColor("message");
+            msg.doNotColor("username");
+            msg.doNotColor("hostname");
             msg.post();
         }
     }
@@ -248,6 +252,9 @@ public class Minebot extends PircBot implements Runnable {
             msg.setField("message", reason);
             msg.setField("username", login);
             msg.setField("hostname", hostname);
+            msg.doNotColor("message");
+            msg.doNotColor("username");
+            msg.doNotColor("hostname");
             msg.post();
         }
     }
@@ -266,6 +273,9 @@ public class Minebot extends PircBot implements Runnable {
             msg.setField("ircModPrefix", getHighestUserPrefix(getUser(kickerNick, channel)));
             msg.setField("modUsername", kickerNick);
             msg.setField("modHostname", kickerLogin);
+            msg.doNotColor("message");
+            msg.doNotColor("modUsername");
+            msg.doNotColor("modHostname");
             msg.post();            
         }
     }
@@ -280,6 +290,8 @@ public class Minebot extends PircBot implements Runnable {
             msg.setField("message", newNick);
             msg.setField("username", login);
             msg.setField("hostname", hostname);
+            msg.doNotColor("username");
+            msg.doNotColor("hostname");
             msg.post();
         }
     }
@@ -304,6 +316,8 @@ public class Minebot extends PircBot implements Runnable {
                 cmd.setField("ircPrefix", getHighestUserPrefix(getUser(sender, channel)));
                 cmd.setField("username", login);
                 cmd.setField("hostname", hostname);
+                cmd.doNotColor("username");
+                cmd.doNotColor("hostname");
                 cmd.setFlag("admin", userAdmin);
                 cmd.act();
             } else if (command.toLowerCase().equals(cmdPrefix + "botsay") && loopbackAdmin && userAdmin) {
@@ -322,6 +336,9 @@ public class Minebot extends PircBot implements Runnable {
                 msg.setField("ircPrefix", getHighestUserPrefix(getUser(sender, channel)));
                 msg.setField("username", login);
                 msg.setField("hostname", hostname);
+                msg.doNotColor("message");
+                msg.doNotColor("username");
+                msg.doNotColor("hostname");
                 msg.post();
             }
         } catch (Exception e) {
@@ -339,6 +356,9 @@ public class Minebot extends PircBot implements Runnable {
         msg.setField("ircPrefix", getHighestUserPrefix(getUser(sender, target)));
         msg.setField("username", login);
         msg.setField("hostname", hostname);
+        msg.doNotColor("message");
+        msg.doNotColor("username");
+        msg.doNotColor("hostname");
         msg.post();
     }
     
@@ -348,6 +368,9 @@ public class Minebot extends PircBot implements Runnable {
         msg.setField("sender", sender);
         msg.setField("srcChannel", channel);
         msg.setField("message", topic);
+        msg.doNotColor("message");
+        msg.doNotColor("username");
+        msg.doNotColor("hostname");
         msg.post();
     }
     
@@ -359,6 +382,8 @@ public class Minebot extends PircBot implements Runnable {
         msg.setField("message", mode);
         msg.setField("username", sourceLogin);
         msg.setField("hostname", sourceHostname);
+        msg.doNotColor("username");
+        msg.doNotColor("hostname");
         msg.post();
     }
 

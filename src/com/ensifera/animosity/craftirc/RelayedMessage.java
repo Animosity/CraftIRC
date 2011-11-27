@@ -2,6 +2,7 @@ package com.ensifera.animosity.craftirc;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -20,12 +21,13 @@ public class RelayedMessage {
     static String typeString = "MSG";
     
     private CraftIRC plugin;
-    private EndPoint source;            //Origin endpoint of the message
-    private EndPoint target;            //Target endpoint of the message
-    private String eventType;           //Event type
-    private LinkedList<EndPoint> cc;    //Multiple extra targets for the message
-    private String template;            //Formatting string
-    private Map<String,String> fields;  //All message attributes
+    private EndPoint source;				//Origin endpoint of the message
+    private EndPoint target;				//Target endpoint of the message
+    private String eventType;				//Event type
+    private LinkedList<EndPoint> cc;    	//Multiple extra targets for the message
+    private String template;            	//Formatting string
+    private Map<String,String> fields;  	//All message attributes
+    private Set<String> doNotColorFields;	//Do not allow color codes on these fields
     
     RelayedMessage(CraftIRC plugin, EndPoint source) { this(plugin, source, null, ""); }
     RelayedMessage(CraftIRC plugin, EndPoint source, EndPoint target) { this(plugin, source, target, ""); }
@@ -39,6 +41,7 @@ public class RelayedMessage {
         if (eventType != null && eventType != "" && target != null)
             this.template = plugin.cFormatting(eventType, this);
         fields = new HashMap<String,String>();
+        doNotColorFields = new HashSet<String>();
     }
     
     public CraftIRC getPlugin() {
@@ -67,6 +70,9 @@ public class RelayedMessage {
         if (msg == null) return;
         for (String key : msg.setFields())
             setField(key, msg.getField(key));
+    }
+    public void doNotColor(String key) {
+    	doNotColorFields.add(key);
     }
     
     public boolean addExtraTarget(EndPoint ep) {
@@ -122,9 +128,12 @@ public class RelayedMessage {
         Pattern other_vars = Pattern.compile("%([A-Za-z0-9]+)%");
         Matcher find_vars = other_vars.matcher(result);
         while (find_vars.find()) {
-            if (fields.get(find_vars.group(1)) != null)
-                result = find_vars.replaceFirst(Matcher.quoteReplacement(fields.get(find_vars.group(1))));
-            else if (realTarget.getType() == EndPoint.Type.IRC)
+            if (fields.get(find_vars.group(1)) != null) {
+            	String replacement = Matcher.quoteReplacement(fields.get(find_vars.group(1)));
+            	if (!doNotColorFields.contains(find_vars.group(1)))
+            		replacement = replacement.replaceAll("&([0-9A-Fa-f])", "\u00A7$1");
+                result = find_vars.replaceFirst(replacement);
+            } else if (realTarget.getType() == EndPoint.Type.IRC)
                 result = find_vars.replaceFirst(Character.toString((char) 3) + String.format("%02d", this.plugin.cColorIrcFromName(find_vars.group(1))));
             else if (realTarget.getType() == EndPoint.Type.MINECRAFT)
                 result = find_vars.replaceFirst(this.plugin.cColorGameFromName(find_vars.group(1)));

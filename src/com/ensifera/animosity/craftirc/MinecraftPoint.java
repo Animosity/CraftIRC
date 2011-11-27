@@ -69,6 +69,7 @@ public class MinecraftPoint implements CommandEndPoint {
             RelayedMessage fwd = plugin.newMsg(cmd.getSource(), this, "chat");
             fwd.copyFields(cmd);
             fwd.setField("message", cmd.getField("args"));
+            fwd.doNotColor("message");
             this.messageIn(fwd);
         } else if (command.equals("players")) {
             List<String> users = listDisplayUsers();
