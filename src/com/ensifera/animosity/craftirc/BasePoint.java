@@ -4,8 +4,12 @@ import java.util.List;
 
 
 //Basic null endpoint that can be extended by a plugin writer.
-public abstract class BasePoint implements EndPoint {
+public abstract class BasePoint implements SecuredEndPoint {
 
+	public Security getSecurity() {
+		return Security.UNSECURED;
+	}
+	
     public void messageIn(RelayedMessage msg) {
     }
 

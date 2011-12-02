@@ -19,14 +19,24 @@ settings:
 
   #These tags identify built-in endpoints (for the paths: section). Other endpoints may be provided by plugins.
   minecraft-tag: 'minecraft'  #A basic game-side endpoint (a chat plugin may provide better functionality).
-  cancelled-tag: 'cancelled'  #Cancelled chat is sent here (and nothing else).
+  cancelled-tag: ''           #Cancelled chat is sent here. Give this tag a name only if you disable either auto-paths or minecraft-tag
   console-tag: 'console'      #The minecraft server console.
+  
+  #Automatically establish paths between unsecured communication endpoints. Turn off if you always want to configure every path manually.
+  #(Secured endpoints can still send messages through auto-paths, but not receive them)
+  auto-paths: true
   
   #Set this to true to have CraftIRC cancel all minecraft chat if no other plugin is doing it.
   cancel-chat: false
   
   #IRC commands start with this, for example '.players' (it's not part of the command name though)
   command-prefix: '.'
+  
+  #Use different words for IRC commands
+  irc-commands:
+    say: ['say','mc']
+    players: ['players']
+    cmd: ['cmd','c']
   
   #Output a LOT of crap to the console in case you're having problems or are a plugin developer.
   debug: false
@@ -145,38 +155,39 @@ bots:
   #  ...
 
 
-# ******************* COMMUNICATION PATHS ******************* [CHANGES REQUIRED]
+# ******************* COMMUNICATION PATHS *******************
+# (For most uses, only needed if settings.auto-paths is false)
 # Declare here a path for every pair of endpoints between which you want messages to flow.
 # For each path you can filter the messages sent by event type or contents.
 # Paths are one-way, so you must declare A to B and B to A if you want a two-way channel.
 paths:
 
-  - source: 'minecraft'
-    target: 'changeme'
+  #- source: 'minecraft'
+  #  target: 'changeme'
     
-  - source: 'changeme'     # These are endpoint tags
-    target: 'minecraft'    #
-    
-    #Every path can contain a list of filters. Use for swearword censorship, blocking by user, etc.
-    filters:
-      #Each filter contains regular expressions for formatting variables. This one ignores commands (.TEXT)
-      - message: '^\.[^ ]+'
-
-    #Every path can override the formatting strings defined in settings.formatting .
-    formatting:
-    #  chat: '[%srcChannel%] <%sender%> %message%'
-    #  join: '[%srcChannel%] * Joins: %sender%'
-      
-    #Every path can override the attributes block from default-attributes (see below).
-    attributes:
-    #  admin: false
-    #  ...
-    
-    #A path can inherit missing attributes from another existing path rather than from default-attributes.
-    #base: {source: 'minecraft', target: 'changeme'}
-    
-    #The disable flag allows you to disable a path temporarily without removing it from the configuration file.
-    disable: false
+  #- source: 'changeme'     # These are endpoint tags
+  #  target: 'minecraft'    #
+  #  
+  #  #Every path can contain a list of filters. Use for swearword censorship, blocking by user, etc.
+  #  filters:
+  #    #Each filter contains regular expressions for formatting variables. This one ignores commands (.TEXT)
+  #    - message: '^\.[^ ]+'
+  #
+  #  #Every path can override the formatting strings defined in settings.formatting .
+  #  formatting:
+  #  #  chat: '[%srcChannel%] <%sender%> %message%'
+  #  #  join: '[%srcChannel%] * Joins: %sender%'
+  #    
+  #  #Every path can override the attributes block from default-attributes (see below).
+  #  attributes:
+  #  #  admin: false
+  #  #  ...
+  #  
+  #  #A path can inherit missing attributes from another existing path rather than from default-attributes.
+  #  #base: {source: 'minecraft', target: 'changeme'}
+  #  
+  #  #The disable flag allows you to disable a path temporarily without removing it from the configuration file.
+  #  disable: false
       
   #- source: 'somewhere'
   #  target: 'elsewhere'

@@ -306,7 +306,17 @@ public class Minebot extends PircBot implements Runnable {
             String localTag = plugin.cChanTag(botId, channel);
             boolean loopbackAdmin = plugin.cPathAttribute(localTag, localTag, "attributes.admin");
             boolean userAdmin = plugin.cBotAdminPrefixes(botId).contains(getHighestUserPrefix(getUser(sender, channel)));
-            if (command.startsWith(cmdPrefix))
+            if (cmdPrefix.equals("")) {
+            	List<String> allCommands = new ArrayList<String>();
+            	allCommands.addAll(plugin.cCmdWordCmd(botId));
+            	allCommands.addAll(plugin.cCmdWordSay(botId));
+            	allCommands.addAll(plugin.cCmdWordPlayers(botId));
+            	for (String cmdString :allCommands)
+            		if (command.equals(cmdString)) {
+            			cmd = plugin.newCmd(channels.get(channel), command);
+            			break;
+            		}
+            } else if (command.startsWith(cmdPrefix))
                 cmd = plugin.newCmd(channels.get(channel), command.substring(cmdPrefix.length()));
             if (cmd != null) {
                 //Normal command

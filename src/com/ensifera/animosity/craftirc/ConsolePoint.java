@@ -15,7 +15,11 @@ public class ConsolePoint implements CommandEndPoint {
     }
     
     public Type getType() {
-        return Type.PLAIN;
+        return EndPoint.Type.PLAIN;
+    }
+    
+    public Security getSecurity() {
+    	return SecuredEndPoint.Security.REQUIRE_PATH;
     }
 
     public void messageIn(RelayedMessage msg) {
@@ -44,7 +48,7 @@ public class ConsolePoint implements CommandEndPoint {
         String command = cmd.getField("command").toLowerCase();
         if (plugin.cPathAttribute(cmd.getField("source"), cmd.getField("target"), "attributes.admin") && cmd.getFlag("admin")) {
             //Admin commands
-            if (command.equals("cmd") || command.equals("c")) {
+            if (plugin.cCmdWordCmd(null).contains(command)) {
                 String args = cmd.getField("args");
                 String ccmd = args.substring(0, args.indexOf(" "));
                 if (ccmd.equals("")) return;

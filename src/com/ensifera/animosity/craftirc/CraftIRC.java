@@ -42,7 +42,6 @@ import de.bananaco.permissions.interfaces.PermissionSet;
  * 
  */
 
-//TODO: Ask outsider for suggestions for appropriate command feedback (usability tests)
 //TODO: Better handling of null method returns (try to crash the bot and then stop that from happening again)
 public class CraftIRC extends JavaPlugin {
     
@@ -144,14 +143,20 @@ public class CraftIRC extends JavaPlugin {
             getServer().getPluginManager().registerEvent(Event.Type.SERVER_COMMAND, sayListener, Priority.Monitor, this);
             
             //Native endpoints!
-            registerEndPoint(cMinecraftTag(), new MinecraftPoint(this, getServer())); //The minecraft server, no bells and whistles
-            registerEndPoint(cCancelledTag(), new MinecraftPoint(this, getServer())); //Handles cancelled chat
-            registerEndPoint(cConsoleTag(), new ConsolePoint(this, getServer()));     //The minecraft console
-            registerCommand(cMinecraftTag(), "say");
-            registerCommand(cMinecraftTag(), "mc");
-            registerCommand(cMinecraftTag(), "players");
-            registerCommand(cConsoleTag(), "cmd");
-            registerCommand(cConsoleTag(), "c");
+            if (cMinecraftTag() != null && !cMinecraftTag().equals("")) {
+            	registerEndPoint(cMinecraftTag(), new MinecraftPoint(this, getServer())); //The minecraft server, no bells and whistles
+            	for (String cmd : cCmdWordSay(null))
+            		registerCommand(cMinecraftTag(), cmd);
+            	for (String cmd : cCmdWordPlayers(null))
+            		registerCommand(cMinecraftTag(), cmd);
+            }
+            if (cCancelledTag() != null && !cCancelledTag().equals(""))
+            	registerEndPoint(cCancelledTag(), new MinecraftPoint(this, getServer())); //Handles cancelled chat
+            if (cConsoleTag() != null && !cConsoleTag().equals("")) {
+            	registerEndPoint(cConsoleTag(), new ConsolePoint(this, getServer()));     //The minecraft console
+            	for (String cmd : cCmdWordCmd(null))
+            		registerCommand(cConsoleTag(), cmd);
+            }
 
             //Create bots
             instances = new ArrayList<Minebot>();
@@ -411,6 +416,7 @@ public class CraftIRC extends JavaPlugin {
     
     public boolean registerEndPoint(String tag, EndPoint ep) {
         if (isDebug()) dolog("Registering endpoint: " + tag);
+        if (tag == null) dolog("Failed to register endpoint - No tag!");
         if (endpoints.get(tag) != null || tags.get(ep) != null) {
             dolog("Couldn't register an endpoint tagged '" + tag + "' because either the tag or the endpoint already exist."); 
             return false;
@@ -490,13 +496,28 @@ public class CraftIRC extends JavaPlugin {
         List<EndPoint> destinations;
         if (this.isDebug())
             dolog("X->" + (knownDestinations.size() > 0 ? knownDestinations.toString() : "*") + ": " + msg.toString());
+        //If we weren't explicitly given a recipient for the message, let's try to find one (or more)
         if (knownDestinations.size() < 1) {
-            //Use all possible destinations
+            //Use all possible destinations (auto-targets)
             destinations = new LinkedList<EndPoint>();
             for (String targetTag : cPathsFrom(sourceTag)) {
+            	EndPoint ep = getEndPoint(targetTag);
+            	if (ep instanceof SecuredEndPoint && SecuredEndPoint.Security.REQUIRE_TARGET.equals(((SecuredEndPoint)ep).getSecurity())) continue;
                 if (!cPathAttribute(sourceTag, targetTag, "attributes." + msg.getEvent())) continue;
                 if (dm == RelayedMessage.DeliveryMethod.ADMINS && !cPathAttribute(sourceTag, targetTag, "attributes.admin")) continue;
-                destinations.add(getEndPoint(targetTag));
+                destinations.add(ep);
+            }
+            //Default paths to unsecured destinations (auto-paths)
+            if (cAutoPaths()) {
+            	for (EndPoint ep : endpoints.values()) {
+            		if (msg.getSource().equals(ep) || destinations.contains(ep)) continue;
+            		if (ep instanceof SecuredEndPoint && !SecuredEndPoint.Security.UNSECURED.equals(((SecuredEndPoint)ep).getSecurity())) continue;
+        			String targetTag = getTag(ep);
+        			if (!cPathAttribute(sourceTag, targetTag, "attributes." + msg.getEvent())) continue;
+        			if (dm == RelayedMessage.DeliveryMethod.ADMINS && !cPathAttribute(sourceTag, targetTag, "attributes.admin")) continue;
+        			if (cPathAttribute(sourceTag, targetTag, "disabled")) continue;
+        			destinations.add(ep);
+            	}
             }
         } else destinations = new LinkedList<EndPoint>(knownDestinations);
         if (destinations.size() < 1) return false;
@@ -691,6 +712,10 @@ public class CraftIRC extends JavaPlugin {
         return configuration.getString("settings.console-tag", "console");
     }
     
+    boolean cAutoPaths() {
+    	return configuration.getBoolean("settings.auto-paths", false);
+    }
+    
     boolean cCancelChat() {
         return configuration.getBoolean("settings.cancel-chat", false);
     }
@@ -821,6 +846,28 @@ public class CraftIRC extends JavaPlugin {
 
     public String cCommandPrefix(int bot) {
         return bots.get(bot).getString("command-prefix", configuration.getString("settings.command-prefix", "."));
+    }
+    
+    public List<String> cCmdWordCmd(Integer bot) {
+    	List<String> init = new ArrayList<String>(); init.add("cmd");
+    	List<String> result = configuration.getStringList("settings.irc-commands.cmd", init);
+    	if (bot != null)
+    		return bots.get(bot).getStringList("irc-commands.cmd", result);
+    	return result;
+    }
+    public List<String> cCmdWordSay(Integer bot) {
+    	List<String> init = new ArrayList<String>(); init.add("say");
+    	List<String> result = configuration.getStringList("settings.irc-commands.say", init);
+    	if (bot != null)
+    		return bots.get(bot).getStringList("irc-commands.say", result);
+    	return result;
+    }
+    public List<String> cCmdWordPlayers(Integer bot) {
+    	List<String> init = new ArrayList<String>(); init.add("players");
+    	List<String> result = configuration.getStringList("settings.irc-commands.players", init);
+    	if (bot != null)
+    		return bots.get(bot).getStringList("irc-commands.players", result);
+    	return result;
     }
 
     public ArrayList<String> cBotAdminPrefixes(int bot) {

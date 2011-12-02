@@ -25,7 +25,7 @@ class NicknameComparator implements Comparator<String> {
     
 }
 
-public class IRCChannelPoint implements EndPoint {
+public class IRCChannelPoint implements SecuredEndPoint {
 
     Minebot bot;
     String channel;
@@ -36,6 +36,10 @@ public class IRCChannelPoint implements EndPoint {
     
     public Type getType() {
         return EndPoint.Type.IRC;
+    }
+    
+    public Security getSecurity() {
+    	return SecuredEndPoint.Security.UNSECURED;
     }
 
     public void messageIn(RelayedMessage msg) {

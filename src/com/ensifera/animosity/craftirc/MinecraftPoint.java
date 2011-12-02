@@ -20,6 +20,10 @@ public class MinecraftPoint implements CommandEndPoint {
     public Type getType() {
         return EndPoint.Type.MINECRAFT;
     }
+    
+    public Security getSecurity() {
+    	return SecuredEndPoint.Security.UNSECURED;
+    }
 
     public void messageIn(RelayedMessage msg) {
         String message = msg.getMessage(this);
@@ -65,13 +69,13 @@ public class MinecraftPoint implements CommandEndPoint {
 
     public void commandIn(RelayedCommand cmd) {
         String command = cmd.getField("command").toLowerCase();
-        if (command.equals("say") || command.equals("mc")) {
+        if (plugin.cCmdWordSay(null).contains(command)) {
             RelayedMessage fwd = plugin.newMsg(cmd.getSource(), this, "chat");
             fwd.copyFields(cmd);
             fwd.setField("message", cmd.getField("args"));
             fwd.doNotColor("message");
             this.messageIn(fwd);
-        } else if (command.equals("players")) {
+        } else if (plugin.cCmdWordPlayers(null).contains(command)) {
             List<String> users = listDisplayUsers();
             int playerCount = users.size();
             String result = "Nobody is minecrafting right now.";
