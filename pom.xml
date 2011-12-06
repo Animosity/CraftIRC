@@ -24,6 +24,10 @@
       <id>sk89q-mvn2</id>
       <url>http://mvn2.sk89q.com/repo</url>
     </repository>
+    <repository>
+      <id>gestdown</id>
+      <url>http://gestdown.info:8888/artifactory</url>
+    </repository>
     </repositories>
   <dependencies>
     <dependency>
@@ -41,11 +45,9 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>com.sk89q</groupId>
-      <artifactId>dummypermscompat</artifactId>
-      <version>1.2</version>
-      <type>jar</type>
-      <scope>compile</scope>
+      <groupId>de.bananaco</groupId>
+      <artifactId>bPermissions</artifactId>
+      <version>1337-SNAPSHOT</version>
     </dependency>
   </dependencies>
   
