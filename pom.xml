@@ -26,7 +26,7 @@
     </repository>
     <repository>
       <id>gestdown</id>
-      <url>http://gestdown.info:8888/artifactory</url>
+      <url>http://gestdown.info:8888/artifactory/repo</url>
     </repository>
     </repositories>
   <dependencies>
