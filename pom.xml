@@ -48,6 +48,8 @@
       <groupId>de.bananaco</groupId>
       <artifactId>bPermissions</artifactId>
       <version>1337-SNAPSHOT</version>
+      <type>jar</type>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
   
