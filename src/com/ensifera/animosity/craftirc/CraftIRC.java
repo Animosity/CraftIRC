@@ -75,6 +75,7 @@ public class CraftIRC extends JavaPlugin {
     private Map<String,EndPoint> endpoints;
     private Map<EndPoint,String> tags;
     private Map<String,CommandEndPoint> irccmds;
+    private Map<String,List<String>> taggroups;
     
     static void dolog(String message) {
         log.info("[" + NAME + "] " + message);
@@ -95,6 +96,7 @@ public class CraftIRC extends JavaPlugin {
             endpoints = new HashMap<String,EndPoint>();
             tags = new HashMap<EndPoint,String>();
             irccmds = new HashMap<String,CommandEndPoint>();
+            taggroups = new HashMap<String,List<String>>();
             
             PluginDescriptionFile desc = this.getDescription();
             VERSION = desc.getVersion();
@@ -149,19 +151,28 @@ public class CraftIRC extends JavaPlugin {
             		registerCommand(cMinecraftTag(), cmd);
             	for (String cmd : cCmdWordPlayers(null))
             		registerCommand(cMinecraftTag(), cmd);
+            	if (!cMinecraftTagGroup().equals(""))
+            		groupTag(cMinecraftTag(), cMinecraftTagGroup());
             }
-            if (cCancelledTag() != null && !cCancelledTag().equals(""))
+            if (cCancelledTag() != null && !cCancelledTag().equals("")) {
             	registerEndPoint(cCancelledTag(), new MinecraftPoint(this, getServer())); //Handles cancelled chat
+            	if (!cMinecraftTagGroup().equals(""))
+            		groupTag(cCancelledTag(), cMinecraftTagGroup());
+            }
             if (cConsoleTag() != null && !cConsoleTag().equals("")) {
             	registerEndPoint(cConsoleTag(), new ConsolePoint(this, getServer()));     //The minecraft console
             	for (String cmd : cCmdWordCmd(null))
             		registerCommand(cConsoleTag(), cmd);
+            	if (!cMinecraftTagGroup().equals(""))
+            		groupTag(cConsoleTag(), cMinecraftTagGroup());
             }
 
             //Create bots
             instances = new ArrayList<Minebot>();
             for (int i = 0; i < bots.size(); i++)
                 instances.add(new Minebot(this, i, cDebug()));
+            
+            loadTagGroups();
 
             dolog("Enabled.");
 
@@ -466,6 +477,7 @@ public class CraftIRC extends JavaPlugin {
         if (ep == null) return false;
         endpoints.remove(tag);
         tags.remove(ep);
+        ungroupTag(tag);
         if (ep instanceof CommandEndPoint) {
             CommandEndPoint cep = (CommandEndPoint)ep;
             for (String cmd : irccmds.keySet()) {
@@ -474,6 +486,30 @@ public class CraftIRC extends JavaPlugin {
             }
         }
         return true;
+    }
+    
+    public boolean groupTag(String tag, String group) {
+    	if (getEndPoint(tag) == null) return false;
+    	List<String> tags = taggroups.get(group);
+    	if (tags == null) {
+    		tags = new ArrayList<String>();
+    		taggroups.put(group, tags);
+    	}
+    	tags.add(tag);
+    	return true;
+    }
+    public void ungroupTag(String tag) {
+    	for (String group : taggroups.keySet())
+    		taggroups.get(group).remove(tag);
+    }
+    public void clearGroup(String group) {
+    	taggroups.remove(group);
+    }
+    public boolean checkTagsGrouped(String tagA, String tagB) {
+    	for (String group : taggroups.keySet())
+    		if (taggroups.get(group).contains(tagA) && taggroups.get(group).contains(tagB))
+    			return true;
+    	return false;
     }
     
     /***************************
@@ -513,6 +549,7 @@ public class CraftIRC extends JavaPlugin {
             		if (msg.getSource().equals(ep) || destinations.contains(ep)) continue;
             		if (ep instanceof SecuredEndPoint && !SecuredEndPoint.Security.UNSECURED.equals(((SecuredEndPoint)ep).getSecurity())) continue;
         			String targetTag = getTag(ep);
+        			if (checkTagsGrouped(sourceTag,targetTag)) continue;
         			if (!cPathAttribute(sourceTag, targetTag, "attributes." + msg.getEvent())) continue;
         			if (dm == RelayedMessage.DeliveryMethod.ADMINS && !cPathAttribute(sourceTag, targetTag, "attributes.admin")) continue;
         			if (cPathAttribute(sourceTag, targetTag, "disabled")) continue;
@@ -710,6 +747,13 @@ public class CraftIRC extends JavaPlugin {
     }
     String cConsoleTag() {
         return configuration.getString("settings.console-tag", "console");
+    }
+    
+    String cMinecraftTagGroup() {
+    	return configuration.getString("settings.minecraft-group-name", "minecraft");
+    }
+    String cIrcTagGroup() {
+    	return configuration.getString("settings.irc-group-name", "irc");
     }
     
     boolean cAutoPaths() {
@@ -944,6 +988,26 @@ public class CraftIRC extends JavaPlugin {
     
     public List<ConfigurationNode> cPathFilters(String source, String target) {
         return getPathNode(source, target).getNodeList("filters", new ArrayList<ConfigurationNode>());
+    }
+    
+    void loadTagGroups() {
+    	List<String> groups = configuration.getKeys("settings.tag-groups");
+    	if (groups == null) return;
+    	for (String group : groups)
+    		for (String tag : configuration.getStringList("settings.tag-groups." + group, new ArrayList<String>()))
+    			groupTag(tag, group);
+    }
+    
+    boolean cUseMapAsWhitelist() {
+        return configuration.getBoolean("settings.use-map-as-whitelist", false);
+    }
+    
+    String cIrcDisplayName(String nickname) {
+    	return configuration.getString("settings.irc-nickname-map." + nickname, nickname);
+    }
+    
+    boolean cNicknameIsInIrcMap(String nickname) {
+    	return configuration.getString("settings.irc-nickname-map." + nickname) != null;
     }
 
     enum HoldType {

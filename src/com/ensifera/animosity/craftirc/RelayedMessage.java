@@ -57,8 +57,9 @@ public class RelayedMessage {
         return eventType;
     }
     
-    public void setField(String key, String value) {
+    public RelayedMessage setField(String key, String value) {
         fields.put(key, value);
+        return this;
     }
     public String getField(String key) {
         return fields.get(key);

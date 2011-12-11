@@ -19,12 +19,24 @@ settings:
 
   #These tags identify built-in endpoints (for the paths: section). Other endpoints may be provided by plugins.
   minecraft-tag: 'minecraft'  #A basic game-side endpoint (a chat plugin may provide better functionality).
-  cancelled-tag: ''           #Cancelled chat is sent here. Give this tag a name only if you disable either auto-paths or minecraft-tag
+  cancelled-tag: 'canceled'   #Cancelled chat is sent here. Give this tag a name only if you disable either auto-paths or minecraft-tag
   console-tag: 'console'      #The minecraft server console.
   
   #Automatically establish paths between unsecured communication endpoints. Turn off if you always want to configure every path manually.
   #(Secured endpoints can still send messages through auto-paths, but not receive them)
   auto-paths: true
+  
+  #Paths between endpoints within the same group are not established. These groups will be created automatically (set to '' to disable):
+  #*For the three endpoints above 
+  minecraft-group-name: 'minecraft'
+  #*For all your IRC endpoints
+  irc-group-name: 'irc'
+  
+  #Here you can define custom tag groups.
+  tag-groups:
+  #  group-name:
+  #    - tagname
+  #    - ...
   
   #Set this to true to have CraftIRC cancel all minecraft chat if no other plugin is doing it.
   cancel-chat: false
@@ -101,6 +113,14 @@ settings:
     #  nick: '%grey%[%srcChannel%]%darkgreen% * %sender% is now known as %message%'
     #  generic: '%grey%%message%'
     #======================================
+
+  #Define here alternative display names for users of your IRC channel (useful if you want anonymous admins).
+  #To override these in a formatting string use %realSender%.
+  irc-nickname-map:
+  #  Animosity: Ytisomina
+  
+  #Set this to true if you only want the above nicknames to be able to communicate from IRC. Everyone else will be filtered.
+  use-map-as-whitelist: false
 
 
 # ******************* IRC BOTS/SERVERS AND CHANNELS ******************* [CHANGES REQUIRED]
