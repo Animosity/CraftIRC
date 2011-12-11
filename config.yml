@@ -114,14 +114,6 @@ settings:
     #  generic: '%grey%%message%'
     #======================================
 
-  #Define here alternative display names for users of your IRC channel (useful if you want anonymous admins).
-  #To override these in a formatting string use %realSender%.
-  irc-nickname-map:
-  #  Animosity: Ytisomina
-  
-  #Set this to true if you only want the above nicknames to be able to communicate from IRC. Everyone else will be filtered.
-  use-map-as-whitelist: false
-
 
 # ******************* IRC BOTS/SERVERS AND CHANNELS ******************* [CHANGES REQUIRED]
 # Every bot connects to one IRC server and can contain any amount of channels.
@@ -170,6 +162,14 @@ bots:
         
       #- name: '#anotherchannel'
       #  ...
+      
+    #Define here alternative display names for users of your IRC channels (useful if you want anonymous admins).
+    #To override these in a formatting string use %realSender%.
+    irc-nickname-map:
+    #  Animosity: Ytisomina
+  
+    #Set this to true if you only want the above nicknames to be able to communicate from IRC. Everyone else will be filtered.
+    use-map-as-whitelist: false
         
   #- nickname: 'AnotherBot'
   #  ...

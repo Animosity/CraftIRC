@@ -208,10 +208,10 @@ public class Minebot extends PircBot implements Runnable {
         if (this.channels.containsKey(channel)) {
             if (sender.equals(this.nickname)) amNowInChannel(channel);
             else {
-            	if (plugin.cUseMapAsWhitelist() && !plugin.cNicknameIsInIrcMap(sender)) return;
+            	if (plugin.cUseMapAsWhitelist(botId) && !plugin.cNicknameIsInIrcMap(botId, sender)) return;
                 RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "join");
                 if (msg == null) return;
-                msg.setField("sender", plugin.cIrcDisplayName(sender));
+                msg.setField("sender", plugin.cIrcDisplayName(botId, sender));
                 msg.setField("realSender", sender);
                 msg.setField("srcChannel", channel);
                 msg.setField("username", login);
@@ -232,10 +232,10 @@ public class Minebot extends PircBot implements Runnable {
     public void onPart(String channel, String sender, String login, String hostname, String reason) {
         if (sender.equals(this.nickname)) noLongerInChannel(channel, true);
         if (this.channels.containsKey(channel)) {
-        	if (plugin.cUseMapAsWhitelist() && !plugin.cNicknameIsInIrcMap(sender)) return;
+        	if (plugin.cUseMapAsWhitelist(botId) && !plugin.cNicknameIsInIrcMap(botId, sender)) return;
             RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "part");
             if (msg == null) return;
-            msg.setField("sender", plugin.cIrcDisplayName(sender));
+            msg.setField("sender", plugin.cIrcDisplayName(botId, sender));
             msg.setField("realSender", sender);
             msg.setField("srcChannel", channel);
             msg.setField("message", reason);
@@ -251,10 +251,10 @@ public class Minebot extends PircBot implements Runnable {
     public void onChannelQuit(String channel, String sender, String login, String hostname, String reason) {
         if (sender.equals(this.nickname)) noLongerInChannel(channel, false);
         if (this.channels.containsKey(channel)) {
-        	if (plugin.cUseMapAsWhitelist() && !plugin.cNicknameIsInIrcMap(sender)) return;
+        	if (plugin.cUseMapAsWhitelist(botId) && !plugin.cNicknameIsInIrcMap(botId, sender)) return;
             RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "quit");
             if (msg == null) return;
-            msg.setField("sender", plugin.cIrcDisplayName(sender));
+            msg.setField("sender", plugin.cIrcDisplayName(botId, sender));
             msg.setField("realSender", sender);
             msg.setField("srcChannel", channel);
             msg.setField("message", reason);
@@ -272,14 +272,14 @@ public class Minebot extends PircBot implements Runnable {
         if (this.channels.containsKey(channel)) {
             if (recipientNick.equalsIgnoreCase(this.getNick()))
                 this.joinChannel(channel, this.plugin.cChanPassword(botId, channel));
-            if (plugin.cUseMapAsWhitelist() && (!plugin.cNicknameIsInIrcMap(kickerNick) || !plugin.cNicknameIsInIrcMap(recipientNick))) return;
+            if (plugin.cUseMapAsWhitelist(botId) && (!plugin.cNicknameIsInIrcMap(botId, kickerNick) || !plugin.cNicknameIsInIrcMap(botId, recipientNick))) return;
             RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "kick");
             if (msg == null) return;
-            msg.setField("sender", plugin.cIrcDisplayName(recipientNick));
+            msg.setField("sender", plugin.cIrcDisplayName(botId, recipientNick));
             msg.setField("realSender", recipientNick);
             msg.setField("srcChannel", channel);
             msg.setField("message", reason);
-            msg.setField("moderator", plugin.cIrcDisplayName(kickerNick));
+            msg.setField("moderator", plugin.cIrcDisplayName(botId, kickerNick));
             msg.setField("realModerator", kickerNick);
             msg.setField("ircModPrefix", getHighestUserPrefix(getUser(kickerNick, channel)));
             msg.setField("modUsername", kickerNick);
@@ -294,13 +294,13 @@ public class Minebot extends PircBot implements Runnable {
     public void onChannelNickChange(String channel, String oldNick, String login, String hostname, String newNick) {
         if (oldNick.equals(this.nickname)) this.nickname = newNick;
         if (this.channels.containsKey(channel)) {
-        	if (plugin.cUseMapAsWhitelist() && (!plugin.cNicknameIsInIrcMap(oldNick) || !plugin.cNicknameIsInIrcMap(newNick))) return;
+        	if (plugin.cUseMapAsWhitelist(botId) && (!plugin.cNicknameIsInIrcMap(botId, oldNick) || !plugin.cNicknameIsInIrcMap(botId, newNick))) return;
             RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "nick");
             if (msg == null) return;
-            msg.setField("sender", plugin.cIrcDisplayName(oldNick));
+            msg.setField("sender", plugin.cIrcDisplayName(botId, oldNick));
             msg.setField("realSender", oldNick);
             msg.setField("srcChannel", channel);
-            msg.setField("message", plugin.cIrcDisplayName(newNick));
+            msg.setField("message", plugin.cIrcDisplayName(botId, newNick));
             msg.setField("realMessage", newNick);
             msg.setField("username", login);
             msg.setField("hostname", hostname);
@@ -313,7 +313,7 @@ public class Minebot extends PircBot implements Runnable {
     public void onMessage(String channel, String sender, String login, String hostname, String message) {
         if (ignores.contains(sender)) return;
         try {
-        	if (plugin.cUseMapAsWhitelist() && !plugin.cNicknameIsInIrcMap(sender)) return;
+        	if (plugin.cUseMapAsWhitelist(botId) && !plugin.cNicknameIsInIrcMap(botId, sender)) return;
             String[] splitMessage = message.split(" ");
             String command = splitMessage[0];
             String args = Util.combineSplit(1, splitMessage, " ");
@@ -335,7 +335,7 @@ public class Minebot extends PircBot implements Runnable {
                 cmd = plugin.newCmd(channels.get(channel), command.substring(cmdPrefix.length()));
             if (cmd != null) {
                 //Normal command
-            	cmd.setField("sender", plugin.cIrcDisplayName(sender));
+            	cmd.setField("sender", plugin.cIrcDisplayName(botId, sender));
                 cmd.setField("realSender", sender);
                 cmd.setField("srcChannel", channel);
                 cmd.setField("args", args);
@@ -356,7 +356,7 @@ public class Minebot extends PircBot implements Runnable {
                 //Not a command
                 RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "chat");
                 if (msg == null) return;
-                msg.setField("sender", plugin.cIrcDisplayName(sender));
+                msg.setField("sender", plugin.cIrcDisplayName(botId, sender));
                 msg.setField("realSender", sender);
                 msg.setField("srcChannel", channel);
                 msg.setField("message", message);
@@ -377,8 +377,8 @@ public class Minebot extends PircBot implements Runnable {
     public void onAction(String sender, String login, String hostname, String target, String action) {
         RelayedMessage msg = this.plugin.newMsg(channels.get(target), null, "action");
         if (msg == null) return;
-        if (plugin.cUseMapAsWhitelist() && !plugin.cNicknameIsInIrcMap(sender)) return;
-        msg.setField("sender", plugin.cIrcDisplayName(sender));
+        if (plugin.cUseMapAsWhitelist(botId) && !plugin.cNicknameIsInIrcMap(botId, sender)) return;
+        msg.setField("sender", plugin.cIrcDisplayName(botId, sender));
         msg.setField("realSender", sender);
         msg.setField("srcChannel", target);
         msg.setField("message", action);
@@ -394,8 +394,8 @@ public class Minebot extends PircBot implements Runnable {
     public void onTopic(String channel, String topic, String sender, long date, boolean changed) {
         RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "topic");
         if (msg == null) return;
-        if (plugin.cUseMapAsWhitelist() && !plugin.cNicknameIsInIrcMap(sender)) return;
-        msg.setField("sender", plugin.cIrcDisplayName(sender));
+        if (plugin.cUseMapAsWhitelist(botId) && !plugin.cNicknameIsInIrcMap(botId, sender)) return;
+        msg.setField("sender", plugin.cIrcDisplayName(botId, sender));
         msg.setField("realSender", sender);
         msg.setField("srcChannel", channel);
         msg.setField("message", topic);
@@ -408,8 +408,8 @@ public class Minebot extends PircBot implements Runnable {
     protected void onMode(String channel, String moderator, String sourceLogin, String sourceHostname, String mode) {
         RelayedMessage msg = this.plugin.newMsg(channels.get(channel), null, "mode");
         if (msg == null) return;
-        if (plugin.cUseMapAsWhitelist() && !plugin.cNicknameIsInIrcMap(moderator)) return;
-        msg.setField("moderator", plugin.cIrcDisplayName(moderator));
+        if (plugin.cUseMapAsWhitelist(botId) && !plugin.cNicknameIsInIrcMap(botId, moderator)) return;
+        msg.setField("moderator", plugin.cIrcDisplayName(botId, moderator));
         msg.setField("realModerator", moderator);
         msg.setField("srcChannel", channel);
         msg.setField("message", mode);

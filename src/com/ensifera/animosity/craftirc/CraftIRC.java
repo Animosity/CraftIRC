@@ -998,16 +998,16 @@ public class CraftIRC extends JavaPlugin {
     			groupTag(tag, group);
     }
     
-    boolean cUseMapAsWhitelist() {
-        return configuration.getBoolean("settings.use-map-as-whitelist", false);
+    boolean cUseMapAsWhitelist(int bot) {
+        return bots.get(bot).getBoolean("use-map-as-whitelist", false);
     }
     
-    String cIrcDisplayName(String nickname) {
-    	return configuration.getString("settings.irc-nickname-map." + nickname, nickname);
+    String cIrcDisplayName(int bot, String nickname) {
+    	return bots.get(bot).getString("irc-nickname-map." + nickname, nickname);
     }
     
-    boolean cNicknameIsInIrcMap(String nickname) {
-    	return configuration.getString("settings.irc-nickname-map." + nickname) != null;
+    boolean cNicknameIsInIrcMap(int bot, String nickname) {
+    	return bots.get(bot).getString("irc-nickname-map." + nickname) != null;
     }
 
     enum HoldType {
