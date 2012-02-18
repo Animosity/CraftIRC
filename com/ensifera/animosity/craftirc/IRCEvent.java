@@ -4,8 +4,11 @@
 package com.ensifera.animosity.craftirc;
 
 import org.bukkit.event.Event;
+import org.bukkit.event.HandlerList;
 
+@SuppressWarnings("serial")
 public class IRCEvent extends Event {
+    private static final HandlerList handlers = new HandlerList();
     Minebot bot;
     public Mode eventMode;
     public RelayedMessage msgData;
@@ -80,6 +83,15 @@ public class IRCEvent extends Event {
             return true;
         else
             return false;
+    }
+    
+    @Override
+    public HandlerList getHandlers() {
+        return IRCEvent.handlers;
+    }
+    
+    public static HandlerList getHandlerList() {
+        return IRCEvent.handlers;
     }
 
 }

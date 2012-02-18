@@ -1,22 +1,16 @@
 package com.ensifera.animosity.craftirc;
 
 import java.lang.Exception;
-import java.util.ArrayList;
-import java.util.Iterator;
-import org.bukkit.entity.Player;
-import org.bukkit.ChatColor;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
-import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerListener;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 
-public class CraftIRCListener extends PlayerListener {
+public class CraftIRCListener implements Listener {
 
     private CraftIRC plugin = null;
 
@@ -24,6 +18,7 @@ public class CraftIRCListener extends PlayerListener {
         this.plugin = plugin;
     }
     
+    @EventHandler(priority=EventPriority.MONITOR)
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
         try {
             String[] split = event.getMessage().split(" ");
@@ -40,6 +35,7 @@ public class CraftIRCListener extends PlayerListener {
         }
     } 
     
+    @EventHandler(priority=EventPriority.MONITOR)
     public void onPlayerChat(PlayerChatEvent event) {
        
         if (this.plugin.isHeld(CraftIRC.HoldType.CHAT)) {
@@ -65,6 +61,7 @@ public class CraftIRCListener extends PlayerListener {
         }
     }
 
+    @EventHandler(priority=EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (this.plugin.isHeld(CraftIRC.HoldType.JOINS))
             return;
@@ -79,6 +76,7 @@ public class CraftIRCListener extends PlayerListener {
         }
     }
 
+    @EventHandler(priority=EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
         if (this.plugin.isHeld(CraftIRC.HoldType.QUITS))
             return;
@@ -94,6 +92,7 @@ public class CraftIRCListener extends PlayerListener {
         }
     }
 
+    @EventHandler(priority=EventPriority.MONITOR)
     public void onPlayerKick(PlayerKickEvent event) {
         if (this.plugin.isHeld(CraftIRC.HoldType.KICKS))
             return;

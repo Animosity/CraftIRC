@@ -1,17 +1,8 @@
-/**
- * 
- */
 package com.ensifera.animosity.craftirc.example;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.logging.Logger;
-import org.bukkit.Server;
-import org.bukkit.event.Event;
-import org.bukkit.event.Event.Priority;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
 import com.ensifera.animosity.craftirc.CraftIRC;
 
@@ -25,10 +16,6 @@ public class CraftIRCPluginExample extends JavaPlugin {
     protected CraftIRCPluginExampleListener ircListener;
     ArrayList<String> ircTags = new ArrayList<String>();
 
-    /* (non-Javadoc)
-     * @see org.bukkit.plugin.Plugin#onEnable()
-     */
-   
     public void onEnable() {
         Plugin checkplugin = this.getServer().getPluginManager().getPlugin("CraftIRC");
         if (checkplugin == null || !checkplugin.isEnabled()) {
@@ -40,8 +27,7 @@ public class CraftIRCPluginExample extends JavaPlugin {
                 // Get handle to CraftIRC, add&register your custom listener
                 craftircHandle = (CraftIRC) checkplugin;
                 ircListener = new CraftIRCPluginExampleListener(craftircHandle);
-                this.getServer().getPluginManager()
-                        .registerEvent(Event.Type.CUSTOM_EVENT, ircListener, Priority.Monitor, this);
+                this.getServer().getPluginManager().registerEvents(ircListener, this);
 
                 // Server owners who use CraftIRC can assign 'tags' to their bots or IRC channels, they should specify
                 // which of these tags to associate with your plugin, in your plugin's configuration.
@@ -60,9 +46,6 @@ public class CraftIRCPluginExample extends JavaPlugin {
 
     }
 
-    /* (non-Javadoc)
-     * @see org.bukkit.plugin.Plugin#onDisable()
-     */
     @Override
     public void onDisable() {
 

@@ -26,7 +26,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -82,12 +81,6 @@ public class CraftIRC extends JavaPlugin {
             cfield.setAccessible(true);
             console = (MinecraftServer) cfield.get((CraftServer)getServer());
             
-            //Load node lists. Bukkit does it now, hurray!
-            if (null == getConfiguration()) {
-                CraftIRC.log.info(String.format(CraftIRC.NAME + " config.yml could not be found in plugins/CraftIRC/ -- disabling!"));
-                getServer().getPluginManager().disablePlugin(((Plugin) (this)));
-                return;
-            }
             bots = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("bots", null));
             colormap = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("colormap", null));
             channodes = new HashMap<Integer, ArrayList<ConfigurationNode>>();
@@ -107,10 +100,7 @@ public class CraftIRC extends JavaPlugin {
             if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " Channel tag map: " + chanTagMap.toString()));
 
             //Event listeners
-            getServer().getPluginManager().registerEvent(Event.Type.PLAYER_COMMAND_PREPROCESS, listener, Priority.Monitor, this);
-            getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, listener, Priority.Monitor, this);
-            getServer().getPluginManager().registerEvent(Event.Type.PLAYER_QUIT, listener, Priority.Monitor, this);
-            getServer().getPluginManager().registerEvent(Event.Type.PLAYER_CHAT, listener, Priority.Monitor, this);
+            getServer().getPluginManager().registerEvents(listener, this);
 
             //Create bots
             instances = new ArrayList<Minebot>();
