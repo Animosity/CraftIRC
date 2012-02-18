@@ -1,15 +1,18 @@
 package com.ensifera.animosity.craftirc;
 
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerCommandEvent;
-import org.bukkit.event.server.ServerListener;
 
-public class ConsoleListener extends ServerListener {
+public class ConsoleListener implements Listener {
 	CraftIRC plugin;
 	
 	public ConsoleListener(CraftIRC craftIRC) {
 		plugin = craftIRC;
 	}
 
+	@EventHandler(priority=EventPriority.MONITOR)
 	public void onServerCommand(ServerCommandEvent event) {
 		if(event.getCommand().toLowerCase().startsWith("say")) {
 			String message = event.getCommand().substring(4);

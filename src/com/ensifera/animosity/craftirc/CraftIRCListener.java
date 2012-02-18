@@ -1,14 +1,17 @@
 package com.ensifera.animosity.craftirc;
 
 import java.lang.Exception;
+
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerListener;
 
-public class CraftIRCListener extends PlayerListener {
+public class CraftIRCListener implements Listener {
 
     private CraftIRC plugin = null;
 
@@ -16,6 +19,7 @@ public class CraftIRCListener extends PlayerListener {
         this.plugin = plugin;
     }
     
+    @EventHandler(priority=EventPriority.MONITOR)
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
         try {
             String[] split = event.getMessage().split(" ");
@@ -37,6 +41,7 @@ public class CraftIRCListener extends PlayerListener {
         }
     } 
     
+    @EventHandler(priority=EventPriority.MONITOR)
     public void onPlayerChat(PlayerChatEvent event) {
         if (this.plugin.isHeld(CraftIRC.HoldType.CHAT)) return;
         try {
@@ -60,6 +65,7 @@ public class CraftIRCListener extends PlayerListener {
         }
     }
 
+    @EventHandler(priority=EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (this.plugin.isHeld(CraftIRC.HoldType.JOINS)) return;
         try {
@@ -76,6 +82,7 @@ public class CraftIRCListener extends PlayerListener {
         }
     }
 
+    @EventHandler(priority=EventPriority.MONITOR)
     public void onPlayerQuit(PlayerQuitEvent event) {
         if (this.plugin.isHeld(CraftIRC.HoldType.QUITS)) return;
         try {
@@ -92,6 +99,7 @@ public class CraftIRCListener extends PlayerListener {
         }
     }
 
+    @EventHandler(priority=EventPriority.MONITOR)
     public void onPlayerKick(PlayerKickEvent event) {
         if (this.plugin.isHeld(CraftIRC.HoldType.KICKS)) return;
         RelayedMessage msg = plugin.newMsg(plugin.getEndPoint(plugin.cMinecraftTag()), null, "kick");

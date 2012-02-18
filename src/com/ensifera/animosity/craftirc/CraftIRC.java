@@ -17,22 +17,18 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import net.myshelter.minecraft.PlayerInfo;
+import net.milkbowl.vault.chat.Chat;
+import org.bukkit.plugin.RegisteredServiceProvider;
 
 import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event.Priority;
-import org.bukkit.event.Event;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.sk89q.util.config.Configuration;
 import com.sk89q.util.config.ConfigurationNode;
-
-import de.bananaco.permissions.Permissions;
-import de.bananaco.permissions.interfaces.PermissionSet;
 
 
 /**
@@ -63,7 +59,6 @@ public class CraftIRC extends JavaPlugin {
     private Timer retryTimer = new Timer();
     Map<HoldType, Boolean> hold;
     Map<String, RetryTask> retry;
-    private PlayerInfo infoservice = null;
 
     //Bots and channels config storage
     private List<ConfigurationNode> bots;
@@ -76,6 +71,7 @@ public class CraftIRC extends JavaPlugin {
     private Map<EndPoint,String> tags;
     private Map<String,CommandEndPoint> irccmds;
     private Map<String,List<String>> taggroups;
+    private Chat vault;
     
     static void dolog(String message) {
         log.info("[" + NAME + "] " + message);
@@ -127,22 +123,13 @@ public class CraftIRC extends JavaPlugin {
                     paths.put(identifier, path);
             }
             
-            //Prefixes and suffixes
-            try {
-                infoservice = getServer().getServicesManager().load(PlayerInfo.class);
-            } catch (java.lang.NoClassDefFoundError e) {}
-            
             //Retry timers
             retry = new HashMap<String, RetryTask>();
             retryTimer = new Timer();
 
             //Event listeners
-            getServer().getPluginManager().registerEvent(Event.Type.PLAYER_COMMAND_PREPROCESS, listener, Priority.Monitor, this);
-            getServer().getPluginManager().registerEvent(Event.Type.PLAYER_JOIN, listener, Priority.Monitor, this);
-            getServer().getPluginManager().registerEvent(Event.Type.PLAYER_QUIT, listener, Priority.Monitor, this);
-            getServer().getPluginManager().registerEvent(Event.Type.PLAYER_CHAT, listener, Priority.Monitor, this);
-            getServer().getPluginManager().registerEvent(Event.Type.PLAYER_KICK, listener, Priority.Monitor, this);
-            getServer().getPluginManager().registerEvent(Event.Type.SERVER_COMMAND, sayListener, Priority.Monitor, this);
+            getServer().getPluginManager().registerEvents(listener, this);
+            getServer().getPluginManager().registerEvents(sayListener, this);
             
             //Native endpoints!
             if (cMinecraftTag() != null && !cMinecraftTag().equals("")) {
@@ -205,6 +192,18 @@ public class CraftIRC extends JavaPlugin {
             } else
                 hold.put(HoldType.BANS, false);
                         
+            this.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable(){
+                public void run() {
+                    if(CraftIRC.this.getServer().getPluginManager().isPluginEnabled("Vault")){
+                        try{
+                            CraftIRC.this.vault=((RegisteredServiceProvider<Chat>)getServer().getServicesManager().getRegistration(Chat.class)).getProvider();
+                        } catch (Exception e){
+                        
+                        }
+                    }
+                }
+            });
+            
             setDebug(cDebug());
         } catch (Exception e) {
             e.printStackTrace();
@@ -629,45 +628,27 @@ public class CraftIRC extends JavaPlugin {
     }
     
     String getPrefix(Player p) {
-        if (infoservice != null) return infoservice.getPrefix(p);
-        else if (getServer().getPluginManager().isPluginEnabled("bPermissions")) {
-        	PermissionSet ps = Permissions.getWorldPermissionsManager().getPermissionSet(p.getWorld());
-        	int priority = 0;
-        	String result = "";
-        	for (String group : ps.getGroups(p)) {
-        		for (String node : ps.getGroupNodes(group)) {
-        			if (!node.startsWith("prefix.")) continue;
-        			String[] parts = node.substring(7).split("\\.");
-        			if (parts.length < 2) continue;
-        			if (Integer.parseInt(parts[0]) <= priority) continue;
-        			priority = Integer.parseInt(parts[0]);
-        			result = parts[1];
-        		}
-        	}
-        	return result;
+        String result="";
+        if(this.vault!=null){
+            try{
+                result=vault.getPlayerPrefix(p);
+            }catch (Exception e){
+            
+            }
         }
-        return "";
+        return result;
     }
     
     String getSuffix(Player p) {
-        if (infoservice != null) return infoservice.getSuffix(p);
-        else if (getServer().getPluginManager().isPluginEnabled("bPermissions")) {
-        	PermissionSet ps = Permissions.getWorldPermissionsManager().getPermissionSet(p.getWorld());
-        	int priority = 0;
-        	String result = "";
-        	for (String group : ps.getGroups(p)) {
-        		for (String node : ps.getGroupNodes(group)) {
-        			if (!node.startsWith("suffix.")) continue;
-        			String[] parts = node.substring(7).split("\\.");
-        			if (parts.length < 2) continue;
-        			if (Integer.parseInt(parts[0]) <= priority) continue;
-        			priority = Integer.parseInt(parts[0]);
-        			result = parts[1];
-        		}
-        	}
-        	return result;
+        String result="";
+        if(this.vault!=null){
+            try{
+                result=vault.getPlayerSuffix(p);
+            }catch (Exception e){
+            
+            }
         }
-        return "";
+        return result;
     }
 
     boolean isDebug() {
