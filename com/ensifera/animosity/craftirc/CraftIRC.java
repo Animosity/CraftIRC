@@ -35,8 +35,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 import org.bukkit.util.config.ConfigurationNode;
 import net.minecraft.server.MinecraftServer;
-import com.nijikokun.bukkit.Permissions.*;
-import com.nijiko.permissions.PermissionHandler;
 //import net.minecraft.server.ICommandListener;
 
 /**
@@ -61,7 +59,6 @@ public class CraftIRC extends JavaPlugin {
     public Server server = null;
     private MinecraftServer console;
     private final CraftIRCListener listener = new CraftIRCListener(this);
-    private PermissionHandler perms = null;
     private ArrayList<Minebot> instances;
     private boolean debug;
     private Timer holdTimer = new Timer();
@@ -108,15 +105,6 @@ public class CraftIRC extends JavaPlugin {
             }
 
             if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " Channel tag map: " + chanTagMap.toString()));
-
-            //Permissions
-            Plugin check = this.getServer().getPluginManager().getPlugin("Permissions");
-            if (check != null) {
-                perms = ((Permissions) check).getHandler();
-                log.info("Permissions detected by CraftIRC.");
-            } else {
-                log.info("Permissions not detected.");
-            }
 
             //Event listeners
             getServer().getPluginManager().registerEvent(Event.Type.PLAYER_COMMAND_PREPROCESS, listener, Priority.Monitor, this);
@@ -193,27 +181,27 @@ public class CraftIRC extends JavaPlugin {
             
             if (commandName.equals("irc")) {
                 if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener onCommand(): commandName=irc" + " " + args.toString()));
-                if ( ((sender instanceof Player) && this.checkPerms((Player) sender, "craftirc.irc")) || (sender instanceof IRCConsoleCommandSender ))
+                if ( ((sender instanceof Player) && sender.hasPermission("craftirc.irc")) || (sender instanceof IRCConsoleCommandSender ))
                     return this.cmdMsgToAll(sender, args);
             
             } else if (commandName.equals("ircm")) {
                 if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener onCommand(): commandName=ircm"));
-                if ( ((sender instanceof Player) && this.checkPerms((Player) sender, "craftirc.ircm")) || (sender instanceof IRCConsoleCommandSender )) 
+                if ( ((sender instanceof Player) && sender.hasPermission("craftirc.ircm")) || (sender instanceof IRCConsoleCommandSender )) 
                     return this.cmdMsgToTag(sender, args);                
                 
             } else if (commandName.equals("ircwho")) {
                 if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener onCommand(): commandName=ircwho"));
-                if ( ((sender instanceof Player) && this.checkPerms((Player) sender, "craftirc.ircwho")) || (sender instanceof IRCConsoleCommandSender ))
+                if ( ((sender instanceof Player) && sender.hasPermission("craftirc.ircwho")) || (sender instanceof IRCConsoleCommandSender ))
                     return this.cmdGetIrcUserList(sender, args);
              
             } else if (commandName.equals("admins!")) {
                 if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener onCommand(): commandName=admins!"));
-                if ( ((sender instanceof Player) && this.checkPerms((Player) sender, "craftirc.admins!")) || (sender instanceof IRCConsoleCommandSender )) 
+                if ( ((sender instanceof Player) && sender.hasPermission("craftirc.admins!")) || (sender instanceof IRCConsoleCommandSender )) 
                     return this.cmdNotifyIrcAdmins(sender, args);
                 
             } else if (commandName.equals("ircraw")) {
                 if (this.isDebug()) CraftIRC.log.info(String.format(CraftIRC.NAME + " CraftIRCListener onCommand(): commandName=ircraw"));
-                if ( ((sender instanceof Player) && !this.checkPerms((Player) sender, "craftirc.ircraw"))) return false;
+                if ( ((sender instanceof Player) && !sender.hasPermission("craftirc.ircraw"))) return false;
                 return this.cmdRawIrcCommand(sender, args);
                 
             } else if (commandName.equals("say")) {
@@ -759,27 +747,6 @@ public class CraftIRC extends JavaPlugin {
 
     protected boolean isHeld(HoldType ht) {
         return hold.get(ht);
-    }
-
-    protected boolean hasPerms() {
-        return perms != null;
-    }
-
-    protected boolean checkPerms(Player pl, String path) {
-        if (perms == null)
-            return true;
-        if (pl != null)
-            return perms.has(pl, path);
-        return false;
-    }
-
-    protected boolean checkPerms(String pl, String path) {
-        if (perms == null)
-            return true;
-        Player pit = getServer().getPlayer(pl);
-        if (pit != null)
-            return perms.has(pit, path);
-        return false;
     }
 
     protected String colorizeName(String name) {
