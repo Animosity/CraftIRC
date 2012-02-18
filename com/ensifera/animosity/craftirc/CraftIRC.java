@@ -2,23 +2,13 @@ package com.ensifera.animosity.craftirc;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import net.milkbowl.vault.chat.Chat;
-import net.milkbowl.vault.permission.Permission;
 import net.minecraft.server.MinecraftServer;
 
 import org.bukkit.ChatColor;
@@ -28,16 +18,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.RegisteredServiceProvider;
-// import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.config.Configuration;
-import org.bukkit.util.config.ConfigurationNode;
-import net.minecraft.server.MinecraftServer;
-//import net.minecraft.server.ICommandListener;
+
+import com.sk89q.util.config.Configuration;
+import com.sk89q.util.config.ConfigurationNode;
 
 /**
  * @author Animosity
@@ -73,10 +59,12 @@ public class CraftIRC extends JavaPlugin {
     private HashMap<Integer, ArrayList<String>> channames;
     protected HashMap<DualKey, String> chanTagMap;
     protected Chat vault;
+    private Configuration configuration;
 
     public void onEnable() {
         try {
-            
+            configuration = new Configuration(new File(getDataFolder().getPath() + "/config.yml"));
+            configuration.load();
             PluginDescriptionFile desc = this.getDescription();
             VERSION = desc.getVersion();
             server = this.getServer();
@@ -85,8 +73,8 @@ public class CraftIRC extends JavaPlugin {
             cfield.setAccessible(true);
             console = (MinecraftServer) cfield.get((CraftServer)getServer());
             
-            bots = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("bots", null));
-            colormap = new ArrayList<ConfigurationNode>(getConfiguration().getNodeList("colormap", null));
+            bots = new ArrayList<ConfigurationNode>(configuration.getNodeList("bots", null));
+            colormap = new ArrayList<ConfigurationNode>(configuration.getNodeList("colormap", null));
             channodes = new HashMap<Integer, ArrayList<ConfigurationNode>>();
             channames = new HashMap<Integer, ArrayList<String>>();
             chanTagMap = new HashMap<DualKey, String>();
@@ -116,7 +104,6 @@ public class CraftIRC extends JavaPlugin {
             //Hold timers
             hold = new HashMap<HoldType, Boolean>();
             holdTimer = new Timer();
-            Date now = new Date();
             if (cHold("chat") > 0) {
                 hold.put(HoldType.CHAT, true);
                 holdTimer.schedule(new RemoveHoldTask(this, HoldType.CHAT), cHold("chat"));
@@ -149,7 +136,11 @@ public class CraftIRC extends JavaPlugin {
             this.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable(){
                 public void run() {
                     if(CraftIRC.this.getServer().getPluginManager().isPluginEnabled("Vault")){
-                        CraftIRC.this.vault=((RegisteredServiceProvider<Chat>)getServer().getServicesManager().getRegistration(Chat.class)).getProvider();
+                        try{
+                            CraftIRC.this.vault=((RegisteredServiceProvider<Chat>)getServer().getServicesManager().getRegistration(Chat.class)).getProvider();
+                        } catch (Exception e){
+                        
+                        }
                     }
                 }
             });
@@ -450,10 +441,10 @@ public class CraftIRC extends JavaPlugin {
      * CraftIRC API call - getBotFromTag(tag) Gets the bot id# from a source tag
      * @param tag
      * @return
-     */
+     
     private int getBotIdFromTag(String tag) {
         return 0;
-    }
+    }*/
     
     /** TODO: MAKE THIS
      * CraftIRC API call - getBotFromId(id) Gets the bot id# from a source tag
@@ -519,23 +510,23 @@ public class CraftIRC extends JavaPlugin {
     }
 
     protected boolean cDebug() {
-        return getConfiguration().getBoolean("settings.debug", false);
+        return configuration.getBoolean("settings.debug", false);
     }
 
     protected String cAdminsCmd() {
-        return getConfiguration().getString("settings.admins-cmd", "/admins!");
+        return configuration.getString("settings.admins-cmd", "/admins!");
     }
 
     protected ArrayList<String> cConsoleCommands() {
-        return new ArrayList<String>(getConfiguration().getStringList("settings.console-commands", null));
+        return new ArrayList<String>(configuration.getStringList("settings.console-commands", null));
     }
 
     protected ArrayList<String> cIgnoredPrefixes(String source) {
-        return new ArrayList<String>(getConfiguration().getStringList("settings.ignored-prefixes." + source, null));
+        return new ArrayList<String>(configuration.getStringList("settings.ignored-prefixes." + source, null));
     }
 
     protected int cHold(String eventType) {
-        return getConfiguration().getInt("settings.hold-after-enable." + eventType, 0);
+        return configuration.getInt("settings.hold-after-enable." + eventType, 0);
     }
 
     protected String cFormatting(String eventType, int bot, String channel) {
@@ -545,7 +536,7 @@ public class CraftIRC extends JavaPlugin {
         if (source == null || source.getString("formatting." + eventType) == null)
             source = bots.get(bot);
         if (source == null || source.getString("formatting." + eventType) == null)
-            result = getConfiguration().getString("settings.formatting." + eventType, null);
+            result = configuration.getString("settings.formatting." + eventType, null);
         else
             result = source.getString("formatting." + eventType, null);
         return result;
@@ -560,7 +551,7 @@ public class CraftIRC extends JavaPlugin {
         if ((source == null || source.getProperty("events." + eventType) == null) && bot > -1)
             source = bots.get(bot);
         if (source == null || source.getProperty("events." + eventType) == null)
-            return getConfiguration().getBoolean("settings.events." + eventType, def);
+            return configuration.getBoolean("settings.events." + eventType, def);
         else
             return source.getBoolean("events." + eventType, false);
     }
@@ -617,7 +608,7 @@ public class CraftIRC extends JavaPlugin {
 
     //For binding Minebot to a particular local address
     protected String cBindLocalAddr() {
-        return getConfiguration().getString("settings.bind-address","");
+        return configuration.getString("settings.bind-address","");
     }
     
     protected ArrayList<String> cBotChannels(int bot) {
@@ -657,7 +648,7 @@ public class CraftIRC extends JavaPlugin {
     }
 
     protected String cCommandPrefix(int bot) {
-        return bots.get(bot).getString("command-prefix", getConfiguration().getString("settings.command-prefix", "."));
+        return bots.get(bot).getString("command-prefix", configuration.getString("settings.command-prefix", "."));
     }
 
     protected ArrayList<String> cBotAdminPrefixes(int bot) {
@@ -720,7 +711,7 @@ public class CraftIRC extends JavaPlugin {
     protected boolean cChanCheckTag(String tag, int bot, String channel) {
         if (tag == null || tag.equals(""))
             return false;
-        if (getConfiguration().getString("settings.tag", "all").equalsIgnoreCase(tag))
+        if (configuration.getString("settings.tag", "all").equalsIgnoreCase(tag))
             return true;
         if (bots.get(bot).getString("tag", "").equalsIgnoreCase(tag))
             return true;

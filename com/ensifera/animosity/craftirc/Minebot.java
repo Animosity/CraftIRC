@@ -6,12 +6,13 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.logging.Level;
 
-import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.craftbukkit.CraftServer;
-import org.jibble.pircbot.*;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.jibble.pircbot.IrcException;
+import org.jibble.pircbot.PircBot;
+import org.jibble.pircbot.TrustingSSLSocketFactory;
+import org.jibble.pircbot.User;
 
 import com.ensifera.animosity.craftirc.IRCEvent.Mode;
 
@@ -525,7 +526,7 @@ public class Minebot extends PircBot implements Runnable {
             return false;
         }
         
-        if (this.plugin.defaultConsoleCommands.contains(rootCommand)) {
+        if (CraftIRC.defaultConsoleCommands.contains(rootCommand)) {
             if (this.plugin.isDebug()) {
                 CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand(default) fullCommand=" + fullCommand
                         + " -- rootCommand=" + rootCommand));

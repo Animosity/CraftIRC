@@ -2,8 +2,10 @@ package com.ensifera.animosity.craftirc.example;
 
 import java.util.ArrayList;
 import java.util.logging.Logger;
+
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+
 import com.ensifera.animosity.craftirc.CraftIRC;
 
 /**
