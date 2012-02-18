@@ -1,6 +1,6 @@
 name: CraftIRC
 main: com.ensifera.animosity.craftirc.CraftIRC
-version: 2.13
+version: 2.14
 softdepend: [Vault]
 commands:
   irc:
