@@ -541,8 +541,9 @@ public class Minebot extends PircBot implements Runnable {
                         + " -- rootCommand=" + rootCommand));
                 CraftIRC.log.info(String.format(CraftIRC.NAME + " Minebot routeCommand() -> Bukkit dispatchCommand()"));
             }
-            IRCConsoleCommandSender console = new IRCConsoleCommandSender(this.plugin.server, ircConCmd, true);
-            if (((CraftServer) this.plugin.server).dispatchCommand(console, fullCommand)) {
+            
+            IRCConsoleCommandSender console = new IRCConsoleCommandSender(this.plugin.server, ircConCmd, true,this.plugin.server.getConsoleSender());
+            if (this.plugin.server.dispatchCommand(console, fullCommand)) {
                 return true;
             }
 
@@ -660,13 +661,13 @@ public class Minebot extends PircBot implements Runnable {
         sendMessage(target, message);
     }
 
-    @Override
-    public void run() {
-        this.init(false);
-    }
 
     private enum messageMode {
         MSG_ALL, ACTION_ALL, MSG_PLAYER, IRC_JOIN, IRC_QUIT, IRC_PART
+    }
+
+    public void run() {
+        this.init(false);
     }
 
 }// EO Minebot
