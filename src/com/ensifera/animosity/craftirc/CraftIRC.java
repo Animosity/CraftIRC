@@ -35,6 +35,7 @@ import com.sk89q.util.config.ConfigurationNode;
  * @author Animosity
  * @author ricin
  * @author Protected
+ * @author mbaxter
  * 
  */
 

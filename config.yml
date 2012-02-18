@@ -9,7 +9,7 @@
 #   will NOT WORK PROPERLY.
 # The CraftIRC developers can be found on #craftirc in irc.esper.net . Read the topic on arrival. If you have a specific issue you need
 #   help with and we are around, we will help. BUT WE WILL NOT SET UP CRAFTIRC FOR YOU. If you don't want to/can't do this yourself, try
-#   asking a friend or maybe if you're really lucky a user in #crafirc is feeling generous ;)
+#   asking a friend or maybe if you're really lucky a user in #craftirc is feeling generous ;)
 
 # Recommendations: http://instantyaml.appspot.com/ (the output doesn't matter, just see if there are errors) ; save as UTF-8 ; use a text
 #   editor with YAML syntax highlighting to make the file more readable.
@@ -19,7 +19,7 @@ settings:
 
   #These tags identify built-in endpoints (for the paths: section). Other endpoints may be provided by plugins.
   minecraft-tag: 'minecraft'  #A basic game-side endpoint (a chat plugin may provide better functionality).
-  cancelled-tag: 'canceled'   #Cancelled chat is sent here. Give this tag a name only if you disable either auto-paths or minecraft-tag
+  cancelled-tag: 'cancelled'   #Cancelled chat is sent here. Give this tag a name only if you disable either auto-paths or minecraft-tag
   console-tag: 'console'      #The minecraft server console.
   
   #Automatically establish paths between unsecured communication endpoints. Turn off if you always want to configure every path manually.
@@ -188,7 +188,7 @@ paths:
   #- source: 'changeme'     # These are endpoint tags
   #  target: 'minecraft'    #
   #  
-  #  #Every path can contain a list of filters. Use for swearword censorship, blocking by user, etc.
+  #  #Every path can contain a list of filters. Use for swear word censorship, blocking by user, etc.
   #  filters:
   #    #Each filter contains regular expressions for formatting variables. This one ignores commands (.TEXT)
   #    - message: '^\.[^ ]+'
