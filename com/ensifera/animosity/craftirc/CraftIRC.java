@@ -17,6 +17,8 @@ import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import net.milkbowl.vault.chat.Chat;
+import net.milkbowl.vault.permission.Permission;
 import net.minecraft.server.MinecraftServer;
 
 import org.bukkit.ChatColor;
@@ -29,6 +31,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.plugin.RegisteredServiceProvider;
 // import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
@@ -69,6 +72,7 @@ public class CraftIRC extends JavaPlugin {
     private HashMap<Integer, ArrayList<ConfigurationNode>> channodes;
     private HashMap<Integer, ArrayList<String>> channames;
     protected HashMap<DualKey, String> chanTagMap;
+    protected Chat vault;
 
     public void onEnable() {
         try {
@@ -141,6 +145,15 @@ public class CraftIRC extends JavaPlugin {
             
             // TODO: Not yet supported: Register custom "admins!" command alias
             // this.getCommand("admins!").setAliases(Arrays.asList(this.cAdminsCmd()));
+            
+            this.getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable(){
+                public void run() {
+                    if(CraftIRC.this.getServer().getPluginManager().isPluginEnabled("Vault")){
+                        CraftIRC.this.vault=((RegisteredServiceProvider<Chat>)getServer().getServicesManager().getRegistration(Chat.class)).getProvider();
+                    }
+                }
+            });
+            
             
             setDebug(cDebug());
         } catch (Exception e) {
@@ -751,26 +764,26 @@ public class CraftIRC extends JavaPlugin {
     }
 
     protected String getPermPrefix(String world, String pl) {
-        if (perms == null)
-            return "";
-        String group = perms.getGroup(world, pl);
-        if (group == null)
-            return "";
-        String result = perms.getGroupPrefix(world, group);
-        if (result == null)
-            return "";
+        String result="";
+        if(this.vault!=null){
+            try{
+                result=vault.getPlayerPrefix(world, pl);
+            }catch (Exception e){
+            
+            }
+        }
         return colorizeName(result.replaceAll("&([0-9a-f])", "§$1"));
     }
 
     protected String getPermSuffix(String world, String pl) {
-        if (perms == null)
-            return "";
-        String group = perms.getGroup(world, pl);
-        if (group == null)
-            return "";
-        String result = perms.getGroupSuffix(world, group);
-        if (result == null)
-            return "";
+        String result="";
+        if(this.vault!=null){
+            try{
+                result=vault.getPlayerSuffix(world, pl);
+            }catch (Exception e){
+            
+            }
+        }
         return colorizeName(result.replaceAll("&([0-9a-f])", "§$1"));
     }
    
