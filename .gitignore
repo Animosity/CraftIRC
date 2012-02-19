@@ -1,15 +1,41 @@
-bin
-META-INF
-MANIFEST.MF
-pircbot.jar
-Minecraft_Mod.jar
-Thumbs.db
-CraftIRC.class
-CraftIRCListener.class
-Minebot.class
-*.class
-build.xml
-build/
-.classpath
-.project
-/dist/
+# Eclipse stuff
+/.classpath
+/.project
+/.settings
+/.checkstyle
+
+# netbeans
+/nbproject
+
+# we use maven!
+/build.xml
+
+# maven
+/target
+
+# vim
+.*.sw[a-p]
+
+# various other potential build files
+/build
+/bin
+/dist
+/manifest.mf
+
+/world
+
+# Mac filesystem dust
+*.DS_Store
+
+# intellij
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Testing files:
+debug.log
+
+# Doxygen
+/docs/html
+debug.txt
