@@ -28,6 +28,10 @@
       <id>gestdown</id>
       <url>http://gestdown.info:8888/artifactory/repo</url>
     </repository>
+    <repository>
+      <id>ci.milkbowl</id>
+      <url>http://ci.milkbowl.net/plugin/repository/</url>
+    </repository>
     </repositories>
   <dependencies>
     <dependency>
