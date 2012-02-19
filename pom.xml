@@ -18,7 +18,7 @@
   <repositories>
     <repository>
       <id>bukkit-repo</id>
-      <url>http://repo.bukkit.org/artifactory/repo</url>
+      <url>http://repo.bukkit.org/content/groups/public</url>
     </repository>
     <repository>
       <id>sk89q-mvn2</id>
@@ -33,21 +33,20 @@
     <dependency>
       <groupId>org.bukkit</groupId>
       <artifactId>bukkit</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>1.1-R5-SNAPSHOT</version>
       <type>jar</type>
-      <scope>compile</scope>
     </dependency>
-    <dependency>
-      <groupId>org.bukkit</groupId>
-      <artifactId>minecraft-server</artifactId>
-      <version>1.7.3</version>
-      <type>jar</type>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
+    <!--<dependency>
       <groupId>de.bananaco</groupId>
       <artifactId>bPermissions</artifactId>
-      <version>1337-SNAPSHOT</version>
+      <version>dev-SNAPSHOT</version>
+      <type>jar</type>
+      <scope>compile</scope>
+    </dependency>-->
+    <dependency>
+      <groupId>net.milkbowl.vault</groupId>
+      <artifactId>Vault</artifactId>
+      <version>1.2.9-SNAPSHOT</version>
       <type>jar</type>
       <scope>compile</scope>
     </dependency>
@@ -57,7 +56,7 @@
   <build>
     <directory>target</directory>
     <outputDirectory>target/classes</outputDirectory>
-    <finalName>${artifactId}</finalName>
+    <finalName>${project.artifactId}</finalName>
     <sourceDirectory>src</sourceDirectory>
     <defaultGoal>clean install</defaultGoal>
     

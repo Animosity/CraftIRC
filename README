@@ -10,5 +10,9 @@ I reserve the right to utilize any changes found on your forks which have not be
 
 BUILDING
 
-Requires: Bukkit, CraftBukkit, and Vault on your classpath
+Requires: Bukkit and Vault on your classpath
 Package the plugin.yml in the root of the jar.
+
+MAVEN BUILDING
+
+Build Vault first from it's repos, then maven clean package install in this one. (Vault's repository pom has no place to automatically download a build from.)
